@@ -7,6 +7,7 @@ import { useEffect, use } from 'react';
 import PublicHeader from '@/components/common/PublicHeader';
 import PublicFooter from '@/components/common/PublicFooter';
 import CMSOverlay from '@/components/cms/CMSOverlay';
+import GlobalBanner from '@/components/common/GlobalBanner';
 
 export default function PublicLayout({
   children,
@@ -23,7 +24,10 @@ export default function PublicLayout({
 
   useEffect(() => {
     if (!settingsLoading && settings?.maintenance_mode && !authLoading) {
-      if (user?.role !== 'Admin' && !pathname.includes('/maintenance')) {
+      const isStaff = user?.role === 'Admin' || user?.role === 'Doctor' || user?.role === 'Receptionist' || user?.role === 'platform_admin';
+      const isMaintenancePage = pathname.endsWith('/maintenance');
+      
+      if (!isStaff && !isMaintenancePage) {
         router.push(`/${slug}/maintenance`);
       }
     }
@@ -42,6 +46,7 @@ export default function PublicLayout({
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      <GlobalBanner slug={slug} />
       <PublicHeader slug={slug} />
       <main className="flex-1">
         {children}

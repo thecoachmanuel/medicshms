@@ -14,6 +14,7 @@ import { useAuth } from '@/context/AuthContext';
 import DemoBookingModal from '@/components/modals/DemoBookingModal';
 import { useRouter } from 'next/navigation';
 import HospitalLogo from '@/components/common/HospitalLogo';
+import GlobalBanner from '@/components/common/GlobalBanner';
 
 interface Plan {
   id: string;
@@ -51,8 +52,12 @@ export default function SaaSLandingPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 overflow-hidden font-sans">
+      <GlobalBanner />
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl border-b border-slate-200/50">
+      <nav className={cn(
+        "fixed w-full z-50 bg-white/70 backdrop-blur-xl border-b border-slate-200/50 transition-all duration-300",
+        "top-0" // This will be pushed down handle by CSS or just keep as is
+      )}>
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <Link href="/">
             <HospitalLogo size="md" />
