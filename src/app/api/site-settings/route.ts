@@ -41,12 +41,13 @@ export async function GET(request: Request) {
     // 4. Resolve Hospital Defaults from hospitals table (branding only)
     let hospitalDefaults: any = {};
     if (targetHospitalId) {
-      const { data: hData } = await client.from('hospitals').select('name, logo_url').eq('id', targetHospitalId).maybeSingle();
+      const { data: hData } = await client.from('hospitals').select('name, logo_url, slug').eq('id', targetHospitalId).maybeSingle();
       if (hData) {
         hospitalDefaults = {
           hospital_name: hData.name,
           logo_url: hData.logo_url,
-          hospital_id: targetHospitalId
+          hospital_id: targetHospitalId,
+          slug: hData.slug
         };
       }
     }
@@ -140,6 +141,37 @@ export async function PUT(request: Request) {
     }
 
     if (result.error) throw result.error;
+
+    // 2. Handle Hospital Slug update if provided
+    if (targetHospitalId && body.slug) {
+      const newSlug = body.slug
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+
+      // Check if slug is unique
+      const { data: existingHosp } = await client
+        .from('hospitals')
+        .select('id')
+        .eq('slug', newSlug)
+        .neq('id', targetHospitalId)
+        .maybeSingle();
+
+      if (existingHosp) {
+        return NextResponse.json({ message: 'This site link is already in use' }, { status: 400 });
+      }
+
+      const { error: slugError } = await client
+        .from('hospitals')
+        .update({ slug: newSlug })
+        .eq('id', targetHospitalId);
+
+      if (slugError) throw slugError;
+      
+      // Update result data to include new slug if needed for frontend
+      result.data.slug = newSlug;
+    }
+
     return NextResponse.json({ data: result.data });
   } catch (error: any) {
     console.error('Site settings update error:', error);

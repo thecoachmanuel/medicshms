@@ -5,9 +5,9 @@ import {
   Layout, Globe, Image as ImageIcon, Type, 
   Save, Loader2, RefreshCw, ChevronRight,
   Home, Info, Briefcase, Phone, Plus, Trash2,
-  AlertCircle, Eye
+  AlertCircle, Eye, Upload, List
 } from 'lucide-react';
-import { contentAPI } from '@/lib/api';
+import { contentAPI, uploadAPI } from '@/lib/api';
 import { toast } from 'react-hot-toast';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -16,11 +16,44 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// Default Templates for Sections
+const TEMPLATES: any = {
+  home: {
+    hero: { title: "Compassionate Care, Advanced Technology.", description: "We provide world-class medical services...", image_url: "", button_primary: "Book Appointment" },
+    stats: [
+        { label: "Doctors", value: "50+" },
+        { label: "Patients", value: "10k+" }
+    ]
+  },
+  about: {
+    story: { title: "Our Medical Legacy", content: "Founded in 1995, our hospital has been...", image_url: "" },
+    values: [
+        { title: "Integrity", desc: "Honesty in every diagnosis" },
+        { title: "Excellence", desc: "Highest standards of care" }
+    ]
+  },
+  services: {
+    intro: { title: "Comprehensive Specializations", description: "From pediatrics to neurosurgery..." },
+    list: [
+        { name: "Emergency Care", desc: "24/7 critical response", icon: "Emergency" },
+        { name: "Diagnostics", desc: "Advanced laboratory testing", icon: "Labs" }
+    ]
+  },
+  contact: {
+    info: { email: "", phone: "", address: "", emergency: "" },
+    hours: [
+        { day: "Mon-Fri", time: "24 Hours" },
+        { day: "Sat-Sun", time: "8 AM - 8 PM" }
+    ]
+  }
+};
+
 export default function SiteEditorPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activePage, setActivePage] = useState('home');
   const [content, setContent] = useState<any[]>([]);
+  const [uploading, setUploading] = useState<string | null>(null);
 
   const pages = [
     { id: 'home', icon: Home, label: 'Home Page' },
@@ -37,7 +70,8 @@ export default function SiteEditorPage() {
     try {
       setLoading(true);
       const res = await contentAPI.getByPage(activePage) as any;
-      setContent(Array.isArray(res) ? res : res.data || []);
+      const data = Array.isArray(res) ? res : res.data || [];
+      setContent(data);
     } catch (error) {
       console.error('Failed to fetch content:', error);
       toast.error('Failed to load page content');
@@ -56,7 +90,7 @@ export default function SiteEditorPage() {
     try {
       setSaving(true);
       await contentAPI.update(content);
-      toast.success('Page content updated successfully');
+      toast.success('Page content published successfully');
     } catch (error) {
       console.error('Save error:', error);
       toast.error('Failed to save changes');
@@ -65,30 +99,66 @@ export default function SiteEditorPage() {
     }
   };
 
-  const addSection = (key: string) => {
-      const newSection = {
+  const initializePage = () => {
+      const template = TEMPLATES[activePage] || {};
+      const newSections = Object.keys(template).map(key => ({
           page_path: activePage,
           section_key: key,
-          content: {}
+          content: template[key],
+          updated_at: new Date().toISOString()
+      }));
+      setContent(newSections);
+      toast.success(`Standard ${activePage} sections initialized`);
+  };
+
+  const addCustomSection = () => {
+      const section_key = prompt("Enter a key for this section (e.g., 'highlights')");
+      if (!section_key) return;
+
+      const newSection = {
+          page_path: activePage,
+          section_key: section_key.toLowerCase().replace(/ /g, '_'),
+          content: { title: "", description: "" },
+          updated_at: new Date().toISOString()
       };
       setContent([...content, newSection]);
+  };
+
+  const handleImageUpload = async (sectionKey: string, fieldKey: string, file: File) => {
+    try {
+        setUploading(`${sectionKey}:${fieldKey}`);
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', 'site-content');
+        
+        const res = await uploadAPI.upload(formData) as any;
+        const section = content.find(s => s.section_key === sectionKey);
+        if (section) {
+            handleUpdateSection(sectionKey, { ...section.content, [fieldKey]: res.url });
+        }
+        toast.success('Image uploaded');
+    } catch (error) {
+        toast.error('Upload failed');
+    } finally {
+        setUploading(null);
+    }
   };
 
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 animate-spin text-primary-600" /></div>;
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
+    <div className="space-y-8 max-w-6xl mx-auto pb-20">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 leading-tight">Site Content Manager</h1>
-          <p className="text-gray-500 text-sm mt-1">Directly edit text and media for every section of your public website.</p>
+          <h1 className="text-2xl font-bold text-gray-900 leading-tight">Public Site Editor</h1>
+          <p className="text-gray-500 text-sm mt-1 uppercase font-black tracking-widest text-[10px]">Customize your hospital's online presence</p>
         </div>
         <div className="flex items-center gap-3">
             <a href={`/${activePage === 'home' ? '' : activePage}`} target="_blank" className="btn-secondary border-none hover:bg-gray-100 px-4">
                 <Eye className="w-4 h-4" /> Preview
             </a>
-            <button onClick={handleSave} disabled={saving} className="btn-primary min-w-[140px]">
-                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-4 h-4" /> Publish Changes</>}
+            <button onClick={handleSave} disabled={saving} className="btn-primary min-w-[140px] shadow-xl shadow-primary-600/20">
+                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-4 h-4" /> Save Changes</>}
             </button>
         </div>
       </div>
@@ -123,69 +193,173 @@ export default function SiteEditorPage() {
 
         <main className="lg:col-span-3 space-y-8">
             {content.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 card border-dashed border-2 border-gray-200 bg-gray-50">
-                    <Layout className="w-12 h-12 text-gray-300 mb-4" />
-                    <p className="text-gray-400 font-bold uppercase tracking-widest">No sections found for this page</p>
-                    <button onClick={() => addSection('new_section')} className="mt-4 text-primary-600 font-bold flex items-center gap-2">
-                        <Plus className="w-4 h-4" /> Initialize Content
+                <div className="flex flex-col items-center justify-center py-24 card border-dashed border-2 border-slate-200 bg-slate-50 rounded-[3rem]">
+                    <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center shadow-sm mb-6">
+                        <Layout className="w-10 h-10 text-slate-200" />
+                    </div>
+                    <h3 className="text-slate-900 font-black uppercase tracking-[0.2em] text-xs">No Content Found</h3>
+                    <p className="text-slate-400 text-xs mt-2 font-medium mb-8">Start by initializing the standard page sections</p>
+                    <button onClick={initializePage} className="btn-primary px-8 rounded-2xl">
+                        <Plus className="w-4 h-4" /> Initialize {activePage} Sections
                     </button>
                 </div>
             ) : (
-                <div className="space-y-6">
+                <div className="space-y-8">
                     {content.map((section, idx) => (
-                        <div key={idx} className="card p-8 space-y-6">
-                            <div className="flex items-center justify-between border-b border-gray-50 pb-4">
+                        <div key={idx} className="card p-8 space-y-8 relative group">
+                            <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                                        <Type className="w-4 h-4 text-gray-400" />
+                                    <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center">
+                                        {Array.isArray(section.content) ? <List className="w-5 h-5 text-primary-600" /> : <Type className="w-5 h-5 text-primary-600" />}
                                     </div>
-                                    <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">
-                                        Section: {section.section_key}
-                                    </h3>
+                                    <div>
+                                        <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">
+                                            {section.section_key.replace('_', ' ')} Section
+                                        </h3>
+                                        <p className="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Page: {section.page_path}</p>
+                                    </div>
                                 </div>
-                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                    Last Entry: {new Date(section.updated_at).toLocaleDateString()}
-                                </span>
+                                <button 
+                                    onClick={() => setContent(content.filter(s => s.section_key !== section.section_key))}
+                                    className="p-2 text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
                             </div>
 
-                            <div className="grid grid-cols-1 gap-6">
-                                {Object.keys(section.content).map((key) => (
-                                    <div key={key} className="space-y-2">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">
-                                            {key.split('_').join(' ')}
-                                        </label>
-                                        {key.includes('description') || key.includes('text') || key.includes('address') ? (
-                                            <textarea 
-                                                value={section.content[key]}
-                                                onChange={(e) => handleUpdateSection(section.section_key, { ...section.content, [key]: e.target.value })}
-                                                className="input py-3 min-h-[100px]"
-                                            />
-                                        ) : (
-                                            <div className="relative">
-                                                <input 
-                                                    type="text" 
-                                                    value={section.content[key]}
-                                                    onChange={(e) => handleUpdateSection(section.section_key, { ...section.content, [key]: e.target.value })}
-                                                    className="input py-3"
-                                                />
-                                                {key.includes('image') || key.includes('url') ? (
-                                                    <ImageIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-                                                ) : null}
+                            <div className="grid grid-cols-1 gap-8">
+                                {Array.isArray(section.content) ? (
+                                    <div className="space-y-4">
+                                        {section.content.map((item: any, itemIdx: number) => (
+                                            <div key={itemIdx} className="bg-slate-50 p-6 rounded-3xl border border-slate-100 space-y-4 relative">
+                                                <div className="absolute top-4 right-4">
+                                                    <button 
+                                                        onClick={() => {
+                                                            const newList = [...section.content];
+                                                            newList.splice(itemIdx, 1);
+                                                            handleUpdateSection(section.section_key, newList);
+                                                        }}
+                                                        className="text-slate-300 hover:text-rose-500"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {Object.keys(item).map(ikey => (
+                                                        <div key={ikey} className="space-y-1.5">
+                                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{ikey}</label>
+                                                            <input 
+                                                                type="text"
+                                                                value={item[ikey]}
+                                                                onChange={(e) => {
+                                                                    const newList = [...section.content];
+                                                                    newList[itemIdx] = { ...item, [ikey]: e.target.value };
+                                                                    handleUpdateSection(section.section_key, newList);
+                                                                }}
+                                                                className="input py-2 text-sm"
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
-                                        )}
+                                        ))}
+                                        <button 
+                                            onClick={() => {
+                                                const newItem = section.content[0] ? Object.fromEntries(Object.keys(section.content[0]).map(k => [k, ""])) : {};
+                                                handleUpdateSection(section.section_key, [...section.content, newItem]);
+                                            }}
+                                            className="w-full py-4 border-2 border-dashed border-slate-200 rounded-3xl text-sm font-bold text-slate-400 hover:text-primary-600 hover:border-primary-100 hover:bg-primary-50 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <Plus className="w-4 h-4" /> Add Item
+                                        </button>
                                     </div>
-                                ))}
+                                ) : (
+                                    Object.keys(section.content).map((key) => {
+                                        const isImage = key.includes('image') || key.includes('url') || key.includes('photo');
+                                        const isLongText = key.includes('description') || key.includes('content') || key.includes('desc') || key.includes('address');
+                                        
+                                        return (
+                                            <div key={key} className="space-y-2">
+                                                <div className="flex items-center justify-between px-1">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                        {key.split('_').join(' ')}
+                                                    </label>
+                                                </div>
+                                                
+                                                {isImage ? (
+                                                    <div className="flex flex-col md:flex-row gap-6">
+                                                        <div className="w-24 h-24 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[2rem] flex items-center justify-center relative overflow-hidden group">
+                                                            {section.content[key] ? (
+                                                                <img src={section.content[key]} alt="Preview" className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <ImageIcon className="w-8 h-8 text-slate-300" />
+                                                            )}
+                                                            <label className="absolute inset-0 bg-primary-600/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                                                                <Upload className="w-6 h-6 text-white" />
+                                                                <input 
+                                                                    type="file" 
+                                                                    className="hidden" 
+                                                                    accept="image/*" 
+                                                                    onChange={(e) => {
+                                                                        const file = e.target.files?.[0];
+                                                                        if (file) handleImageUpload(section.section_key, key, file);
+                                                                    }}
+                                                                />
+                                                            </label>
+                                                            {uploading === `${section.section_key}:${key}` && (
+                                                                <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                                                                    <Loader2 className="w-6 h-6 animate-spin text-primary-600" />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1 space-y-2">
+                                                             <input 
+                                                                type="text" 
+                                                                value={section.content[key] || ''}
+                                                                onChange={(e) => handleUpdateSection(section.section_key, { ...section.content, [key]: e.target.value })}
+                                                                placeholder="Paste direct URL or upload using the icon"
+                                                                className="input py-3 text-xs font-mono"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ) : isLongText ? (
+                                                    <textarea 
+                                                        value={section.content[key] || ''}
+                                                        onChange={(e) => handleUpdateSection(section.section_key, { ...section.content, [key]: e.target.value })}
+                                                        className="input py-3 min-h-[120px] text-sm"
+                                                    />
+                                                ) : (
+                                                    <input 
+                                                        type="text" 
+                                                        value={section.content[key] || ''}
+                                                        onChange={(e) => handleUpdateSection(section.section_key, { ...section.content, [key]: e.target.value })}
+                                                        className="input py-3"
+                                                    />
+                                                )}
+                                            </div>
+                                        );
+                                    })
+                                )}
                             </div>
                         </div>
                     ))}
+                    
+                    <button 
+                        onClick={addCustomSection}
+                        className="w-full py-10 border-2 border-dashed border-slate-200 rounded-[3rem] text-slate-400 font-bold uppercase tracking-[0.3em] text-xs hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center justify-center gap-3"
+                    >
+                        <Plus className="w-5 h-5" /> Add Custom Content Section
+                    </button>
                 </div>
             )}
 
-            <div className="p-6 bg-amber-50 rounded-[2rem] border border-amber-100 flex items-start gap-4">
-               <AlertCircle className="w-6 h-6 text-amber-500 mt-0.5" />
+            <div className="p-8 bg-slate-900 rounded-[3rem] border border-slate-800 flex items-start gap-6 shadow-2xl">
+               <div className="w-12 h-12 bg-primary-600 rounded-2xl flex items-center justify-center shrink-0">
+                   <AlertCircle className="w-6 h-6 text-white" />
+               </div>
                <div>
-                   <p className="text-xs font-bold text-amber-900 uppercase tracking-widest mb-1">Advanced Editing Note</p>
-                   <p className="text-xs text-amber-700 leading-relaxed font-medium">To change images, provide the local path (e.g., /assets/images/hero.jpg) or a Cloudinary URL. Changes to text are reflected globally on next page refresh.</p>
+                   <p className="text-sm font-black text-white uppercase tracking-[0.2em] mb-2">Publishing Protocol</p>
+                   <p className="text-xs text-slate-400 leading-relaxed font-bold">Changes will be saved to our cloud servers immediately but may take up to 60 seconds to reflect on your public website due to global edge caching. Always preview before publishing.</p>
                </div>
             </div>
         </main>

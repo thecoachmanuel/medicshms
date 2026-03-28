@@ -33,6 +33,7 @@ interface SiteSettings {
   smtp_port: string;
   smtp_user: string;
   smtp_pass: string;
+  slug: string;
   security_settings: {
     password_min_length: number;
     require_special_char: boolean;
@@ -61,6 +62,7 @@ export default function SettingsPage() {
     smtp_port: '587',
     smtp_user: '',
     smtp_pass: '',
+    slug: '',
     security_settings: {
       password_min_length: 8,
       require_special_char: true,
@@ -137,7 +139,7 @@ export default function SettingsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 leading-tight">System Settings</h1>
-          <p className="text-gray-500 text-sm mt-1">Configure global application behavior and administrative controls.</p>
+          <p className="text-gray-500 text-sm mt-1">Configure your hospital's branding, site link, and administrative controls.</p>
         </div>
         <button onClick={handleSave} disabled={syncing} className="btn-primary min-w-[140px]">
           {syncing ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-4 h-4" /> Sync Changes</>}
@@ -230,6 +232,24 @@ export default function SettingsPage() {
                                   onChange={e => setSettings({...settings, hospital_name: e.target.value})}
                                   className="input py-2.5" 
                                />
+                            </div>
+                            <div className="space-y-1.5 md:col-span-2">
+                               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Site Link Slug (e.g. your-hospital-name)</label>
+                               <div className="relative">
+                                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-300 pointer-events-none">
+                                     {typeof window !== 'undefined' ? window.location.origin : ''}/
+                                  </div>
+                                  <input 
+                                     type="text" 
+                                     value={settings.slug} 
+                                     onChange={e => setSettings({...settings, slug: e.target.value.toLowerCase().replace(/ /g, '-')})}
+                                     placeholder="hospital-slug"
+                                     className="input py-2.5 pl-24 font-bold text-primary-600" 
+                                  />
+                               </div>
+                               <p className="text-[9px] text-rose-500 font-bold uppercase tracking-widest mt-1">
+                                  Warning: Changing this will change your website and dashboard URL!
+                               </p>
                             </div>
                              <div className="space-y-1.5">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Institution Short Name</label>
