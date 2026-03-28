@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
+import { calculateAge } from '@/lib/utils';
 
 // GET all patients
 export async function GET(request: Request) {
@@ -36,7 +37,8 @@ export async function GET(request: Request) {
       fullName: p.full_name,
       mobileNumber: p.mobile_number,
       emailAddress: p.email_address,
-      totalAppointments: 0 // Will be handled by a separate count if needed, or left as 0 for now to prevent joins in main list
+      age: p.age || calculateAge(p.date_of_birth),
+      totalAppointments: 0 
     }));
 
     return NextResponse.json({ 
@@ -98,6 +100,7 @@ export async function POST(request: Request) {
       mobile_number: body.mobileNumber,
       gender: body.gender,
       date_of_birth: body.dateOfBirth,
+      age: calculateAge(body.dateOfBirth),
       blood_group: body.bloodGroup,
       address: body.address,
       emergency_contact_name: body.emergencyContactName,

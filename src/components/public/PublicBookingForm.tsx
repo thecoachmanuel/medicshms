@@ -9,12 +9,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { publicAppointmentsAPI, departmentsAPI, doctorsAPI } from '@/lib/api';
 import { DOBInput } from '@/components/common/DOBInput';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { calculateAge, cn } from '@/lib/utils';
 
 const STEPS = [
   { key: 'personal', label: 'Personal Info', icon: User },
@@ -126,6 +121,7 @@ export default function PublicBookingForm({ hospitalId, slug }: Props) {
     try {
       await publicAppointmentsAPI.book({
         ...formData,
+        age: calculateAge(formData.dateOfBirth),
         hospitalId
       });
       setIsSuccess(true);

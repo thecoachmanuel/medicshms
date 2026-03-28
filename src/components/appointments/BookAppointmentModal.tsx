@@ -9,12 +9,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { appointmentsAPI, departmentsAPI, doctorsAPI } from '@/lib/api';
 import { DOBInput } from '@/components/common/DOBInput';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { calculateAge, cn } from '@/lib/utils';
 
 const STEPS_NEW = [
   { key: 'personal', label: 'Patient Info', icon: User },
@@ -121,6 +116,7 @@ export default function BookAppointmentModal({ onClose, onSuccess }: Props) {
         ...formData, 
         visitType, 
         patientId: existingPatientId,
+        age: calculateAge(formData.dateOfBirth),
         doctorName: selectedDoctor ? (selectedDoctor.user?.name || selectedDoctor.name) : undefined
       };
       console.log('Booking Payload:', payload);

@@ -75,7 +75,7 @@ export async function POST(request: Request) {
       knownAllergies, allergiesDetails, reasonForVisit, primaryConcern, 
       existingConditions, department, doctorAssigned, appointmentDate, 
       appointmentTime, address, emergencyContactName, emergencyContactNumber,
-      visitType, patientId
+      visitType, patientId, age
     } = body;
     
     // Generate Appointment ID
@@ -94,6 +94,7 @@ export async function POST(request: Request) {
         full_name: fullName,
         gender,
         date_of_birth: dateOfBirth,
+        age: age || null,
         mobile_number: mobileNumber,
         email_address: emailAddress,
         known_allergies: knownAllergies === 'Yes' || knownAllergies === true,
@@ -109,7 +110,7 @@ export async function POST(request: Request) {
         emergency_contact_name: emergencyContactName,
         emergency_contact_number: emergencyContactNumber,
         visit_type: visitType,
-        patient_id: patientId,
+        patient_id: patientId || `PAT-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
         appointment_id: appointmentId,
         appointment_status: 'Pending',
         hospital_id: userProfile?.hospital_id,

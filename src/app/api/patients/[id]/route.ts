@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
+import { calculateAge } from '@/lib/utils';
 
 // GET patient details and history
 export async function GET(
@@ -41,6 +42,7 @@ export async function GET(
     const formattedPatient = {
       ...patient,
       _id: patient.id,
+      age: patient.age || calculateAge(patient.date_of_birth),
       appointments: appointments || []
     };
 
@@ -71,6 +73,7 @@ export async function PATCH(
       mobile_number: body.mobileNumber || body.mobile_number,
       gender: body.gender,
       date_of_birth: body.dateOfBirth || body.date_of_birth,
+      age: calculateAge(body.dateOfBirth || body.date_of_birth),
       address: body.address,
       blood_group: body.bloodGroup || body.blood_group,
       known_allergies: body.knownAllergies || body.known_allergies,
