@@ -1,0 +1,77 @@
+import { NextResponse } from 'next/server';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
+import { withAuth } from '@/lib/auth';
+
+// Create a new user (Post)
+export async function POST(request: Request) {
+  const { error: authError, profile: adminProfile } = await withAuth(request, ['Admin']);
+  if (authError) return authError;
+
+  if (!supabaseAdmin) {
+    return NextResponse.json({ message: 'Supabase Admin client not configured' }, { status: 500 });
+  }
+
+  try {
+    const { name, email, phone, role } = await request.json();
+
+    if (!['Admin', 'Doctor', 'Receptionist'].includes(role)) {
+      return NextResponse.json({ message: 'Invalid role' }, { status: 400 });
+    }
+
+    // Set default password based on role
+    let defaultPassword = '';
+    switch (role) {
+      case 'Doctor': defaultPassword = 'hms@doctor'; break;
+      case 'Receptionist': defaultPassword = 'hms@receptionist'; break;
+      case 'Admin': defaultPassword = 'hms@admin'; break;
+      default: defaultPassword = 'hms@default';
+    }
+
+    // 1. Create user in Supabase Auth (requires SERVICE_ROLE_KEY)
+    const { data: authData, error: createAuthError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: defaultPassword,
+      email_confirm: true,
+      user_metadata: { name, role, phone, hospital_id: adminProfile?.hospital_id }
+    });
+
+    if (createAuthError) return NextResponse.json({ message: createAuthError.message }, { status: 400 });
+
+    const user = authData.user;
+
+    // 2. Create profile
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .insert([{ 
+        id: user.id, 
+        name, 
+        email, 
+        phone, 
+        role,
+        hospital_id: adminProfile?.hospital_id,
+        is_active: true
+      }])
+      .select()
+      .single();
+
+    if (profileError) return NextResponse.json({ message: profileError.message }, { status: 400 });
+
+    // 3. Auto-create role-specific profile
+    if (role === 'Doctor') {
+      await (supabaseAdmin || supabase).from('doctors').insert([{ user_id: user.id, hospital_id: adminProfile?.hospital_id }]);
+    } else if (role === 'Receptionist') {
+      await (supabaseAdmin || supabase).from('receptionists').insert([{ user_id: user.id, hospital_id: adminProfile?.hospital_id }]);
+    } else if (role === 'Admin') {
+      await (supabaseAdmin || supabase).from('admins').insert([{ user_id: user.id, hospital_id: adminProfile?.hospital_id }]);
+    }
+
+    return NextResponse.json({
+      _id: profile.id,
+      ...profile,
+      isActive: profile.is_active,
+      createdAt: profile.created_at
+    }, { status: 201 });
+  } catch (error: any) {
+    return NextResponse.json({ message: error.message }, { status: 500 });
+  }
+}

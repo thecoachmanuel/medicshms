@@ -1,0 +1,97 @@
+import { NextResponse } from 'next/server';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
+
+export async function POST(request: Request) {
+  try {
+    const { 
+      hospital_name, 
+      hospital_email, 
+      admin_name, 
+      admin_email, 
+      password, 
+      phone 
+    } = await request.json();
+
+    // 1. Generate slug from hospital name
+    const slug = hospital_name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+
+    const client = supabaseAdmin || supabase;
+
+    // 2. Create hospital record
+    const { data: hospital, error: hospitalError } = await client
+      .from('hospitals')
+      .insert([
+        {
+          name: hospital_name,
+          slug,
+          email: hospital_email,
+          status: 'active',
+          subscription_status: 'trial',
+          trial_start_date: new Date().toISOString(),
+          trial_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        }
+      ])
+      .select()
+      .single();
+
+    if (hospitalError) {
+      console.error('Hospital creation error:', hospitalError);
+      return NextResponse.json({ message: 'Failed to create hospital: ' + hospitalError.message }, { status: 400 });
+    }
+
+    // 3. Sign up the admin user
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: admin_email,
+      password,
+      options: {
+        data: {
+          name: admin_name,
+          role: 'Admin',
+          hospital_id: hospital.id
+        }
+      }
+    });
+
+    if (authError) {
+      // Cleanup hospital if auth fails? (Optional, maybe keep it)
+      return NextResponse.json({ message: authError.message }, { status: 400 });
+    }
+
+    const { user } = authData;
+    if (!user) {
+      return NextResponse.json({ message: 'Admin registration failed' }, { status: 400 });
+    }
+
+    // 4. Create profile for the admin
+    const { error: profileError } = await client
+      .from('profiles')
+      .insert([
+        {
+          id: user.id,
+          name: admin_name,
+          email: admin_email,
+          phone: phone,
+          role: 'Admin',
+          hospital_id: hospital.id,
+          is_active: true
+        }
+      ]);
+
+    if (profileError) {
+      console.error('Admin profile error:', profileError);
+      return NextResponse.json({ message: 'Hospital created but admin profile failed: ' + profileError.message }, { status: 400 });
+    }
+
+    return NextResponse.json({ 
+      message: 'Hospital and Admin account created successfully',
+      hospital_id: hospital.id
+    }, { status: 201 });
+
+  } catch (error: any) {
+    console.error('Signup error:', error);
+    return NextResponse.json({ message: error.message }, { status: 500 });
+  }
+}

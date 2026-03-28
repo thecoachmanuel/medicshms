@@ -1,0 +1,273 @@
+'use client';
+
+import React, { useState } from 'react';
+import { 
+  X, User, Mail, Phone, Calendar, Clock, Stethoscope, 
+  CheckCircle2, AlertCircle, Printer, Save, Loader2, UserPlus, XCircle,
+  Eye, Edit2, Building2
+} from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { appointmentAPI } from '@/lib/api';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+interface Props {
+  appointment: any;
+  type: 'view' | 'edit' | 'assign';
+  doctors: any[];
+  departments: any[];
+  onClose: () => void;
+  onRefresh: () => void;
+}
+
+export default function AppointmentModal({ appointment, type, doctors, departments, onClose, onRefresh }: Props) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedDoctor, setSelectedDoctor] = useState(appointment?.doctorAssigned?._id || '');
+  const [editData, setEditData] = useState({
+    fullName: appointment?.fullName || '',
+    mobileNumber: appointment?.mobileNumber || '',
+    emailAddress: appointment?.emailAddress || '',
+    appointmentDate: appointment?.appointmentDate?.split('T')[0] || '',
+    appointmentTime: appointment?.appointmentTime || '',
+    appointmentStatus: appointment?.appointmentStatus || 'Pending',
+  });
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      if (type === 'assign') {
+        await appointmentAPI.assignDoctor(appointment._id, selectedDoctor);
+        toast.success('Doctor assigned successfully');
+      } else {
+        await appointmentAPI.update(appointment._id, editData);
+        toast.success('Appointment updated successfully');
+      }
+      onRefresh();
+      onClose();
+    } catch (err: any) {
+      toast.error('Failed to update appointment');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const statusColors = {
+    'Pending': 'bg-amber-50 text-amber-700 border-amber-200',
+    'Confirmed': 'bg-blue-50 text-blue-700 border-blue-200',
+    'Completed': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    'Cancelled': 'bg-rose-50 text-rose-700 border-rose-200',
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose}></div>
+      <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        
+        <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "w-10 h-10 rounded-xl flex items-center justify-center shadow-sm",
+              type === 'view' ? "bg-white" : type === 'edit' ? "bg-primary-50" : "bg-emerald-50"
+            )}>
+              {type === 'view' ? <Eye className="w-5 h-5 text-gray-500" /> : type === 'edit' ? <Edit2 className="w-5 h-5 text-primary-600" /> : <UserPlus className="w-5 h-5 text-emerald-600" />}
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">
+                {type === 'view' ? 'Appointment Ticket' : type === 'edit' ? 'Reschedule Appointment' : 'Assign Specialist'}
+              </h2>
+              <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">{appointment.appointmentId}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-white rounded-xl transition-colors shadow-sm">
+            <X className="w-6 h-6 text-gray-400" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-8 py-8">
+          {type === 'view' ? (
+            <div className="space-y-8">
+              <div className="flex items-center justify-between p-6 bg-primary-900 rounded-2xl text-white shadow-lg overflow-hidden relative">
+                <div className="relative z-10">
+                  <p className="text-primary-200 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Current Status</p>
+                  <h3 className="text-2xl font-bold">{appointment.appointmentStatus}</h3>
+                </div>
+                <div className="relative z-10 text-right">
+                  <p className="text-primary-200 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Queue Number</p>
+                  <p className="text-3xl font-black">#{(appointment.queueNumber || 'N/A')}</p>
+                </div>
+                <Stethoscope className="absolute -right-4 -bottom-4 w-32 h-32 text-primary-800/40 rotate-12" />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <section className="space-y-4">
+                  <h4 className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b pb-2">
+                    <User className="w-3 h-3" /> Patient Information
+                  </h4>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">{appointment.fullName}</p>
+                      <p className="text-xs text-gray-500">{appointment.gender}, {appointment.age} Years</p>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Mail className="w-4 h-4 text-gray-400" />
+                      {appointment.emailAddress}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Phone className="w-4 h-4 text-gray-400" />
+                      {appointment.mobileNumber}
+                    </div>
+                  </div>
+                </section>
+
+                <section className="space-y-4">
+                  <h4 className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b pb-2">
+                    <Calendar className="w-3 h-3" /> Schedule Details
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Clock className="w-4 h-4 text-primary-500" />
+                      <span className="font-bold text-gray-900">
+                        {new Date(appointment.appointmentDate).toLocaleDateString()} at {appointment.appointmentTime}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Building2 className="w-4 h-4 text-gray-400" />
+                      {appointment.department}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Stethoscope className="w-4 h-4 text-gray-400" />
+                      Dr. {appointment.doctorAssigned?.user?.name || 'Not Assigned'}
+                    </div>
+                  </div>
+                </section>
+
+                <section className="md:col-span-2 space-y-4">
+                  <h4 className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b pb-2">
+                    <AlertCircle className="w-3 h-3" /> Medical Notes
+                  </h4>
+                  <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      <span className="font-bold text-gray-900">Chief Complaint:</span> {appointment.primaryConcern || 'Routine checkup'}
+                    </p>
+                    {appointment.knownAllergies === 'Yes' && (
+                      <p className="mt-2 text-sm text-rose-600 font-medium">
+                        ⚠️ High Allergy Alert: {appointment.allergiesDetails}
+                      </p>
+                    )}
+                  </div>
+                </section>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleUpdate} className="space-y-6">
+              {type === 'assign' ? (
+                <div className="space-y-4">
+                  <label className="block text-sm font-bold text-gray-700">Select Specialist for {appointment.department}</label>
+                  <div className="grid grid-cols-1 gap-3">
+                    {doctors.filter(d => d.department?.name === appointment.department).map(doc => (
+                      <button
+                        key={doc._id}
+                        type="button"
+                        onClick={() => setSelectedDoctor(doc._id)}
+                        className={cn(
+                          "flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all",
+                          selectedDoctor === doc._id ? "border-primary-500 bg-primary-50" : "border-gray-100 hover:border-gray-200"
+                        )}
+                      >
+                        <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                          <Stethoscope className="w-6 h-6 text-primary-600" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-900">Dr. {doc.user?.name}</p>
+                          <p className="text-xs text-gray-500">{doc.qualifications || 'Expert Specialist'}</p>
+                        </div>
+                        {selectedDoctor === doc._id && <CheckCircle2 className="w-5 h-5 text-primary-500 ml-auto" />}
+                      </button>
+                    ))}
+                    {doctors.filter(d => d.department?.name === appointment.department).length === 0 && (
+                      <div className="text-center py-8 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                        <UserPlus className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                        <p className="text-sm text-gray-500">No doctors found in {appointment.department}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Patient Name</label>
+                    <input type="text" className="input w-full" value={editData.fullName} onChange={e => setEditData({...editData, fullName: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Reschedule Date</label>
+                    <input type="date" className="input w-full" value={editData.appointmentDate} onChange={e => setEditData({...editData, appointmentDate: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Slot Time</label>
+                    <input type="text" className="input w-full" value={editData.appointmentTime} onChange={e => setEditData({...editData, appointmentTime: e.target.value})} />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Update Status</label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {Object.keys(statusColors).map(s => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => setEditData({...editData, appointmentStatus: s})}
+                          className={cn(
+                            "px-3 py-2 rounded-xl text-xs font-bold border-2 transition-all",
+                            editData.appointmentStatus === s 
+                              ? "bg-primary-900 text-white border-primary-900 shadow-lg" 
+                              : "bg-white text-gray-500 border-gray-100 hover:border-gray-200"
+                          )}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </form>
+          )}
+        </div>
+
+        <div className="px-8 py-6 border-t border-gray-100 flex items-center justify-between bg-gray-50/30">
+          {type === 'view' ? (
+            <>
+              <button 
+                onClick={() => window.print()}
+                className="btn-secondary"
+              >
+                <Printer className="w-4 h-4" />
+                Print Ticket
+              </button>
+              <button onClick={onClose} className="btn-primary min-w-[120px]">Done</button>
+            </>
+          ) : (
+            <>
+              <button onClick={onClose} className="btn-secondary">Cancel</button>
+              <button 
+                disabled={isSubmitting || (type === 'assign' && !selectedDoctor)} 
+                onClick={handleUpdate}
+                className="btn-primary min-w-[140px]"
+              >
+                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    {type === 'assign' ? 'Confirm Assignment' : 'Save Changes'}
+                  </>
+                )}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

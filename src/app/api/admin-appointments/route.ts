@@ -1,0 +1,101 @@
+import { NextResponse } from 'next/server';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
+import { withAuth } from '@/lib/auth';
+
+// GET all public appointments (Admin/Receptionist)
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const { profile: userProfile, error: authError } = await withAuth(request, ['Admin', 'Receptionist']);
+    if (authError) return authError;
+
+    const search = searchParams.get('search');
+    const status = searchParams.get('status');
+    const date = searchParams.get('date');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    let query = (supabaseAdmin || supabase)
+      .from('public_appointments')
+      .select('id, appointment_id, full_name, mobile_number, email_address, appointment_date, appointment_time, department, appointment_status, doctors:doctor_assigned_id(id, profiles:user_id(name))', { count: 'planned' })
+      .eq('hospital_id', userProfile?.hospital_id);
+
+    if (status && status !== 'All' && status !== 'all') query = query.eq('appointment_status', status);
+    if (date) query = query.eq('appointment_date', date);
+    if (search) {
+      query = query.or(`full_name.ilike.%${search}%,appointment_id.ilike.%${search}%,mobile_number.ilike.%${search}%`);
+    }
+
+    const { data: appointments, error, count } = await query
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (error) throw error;
+
+    const formatted = (appointments || []).map(apt => ({
+      _id: apt.id,
+      appointmentId: apt.appointment_id,
+      fullName: apt.full_name,
+      emailAddress: apt.email_address,
+      mobileNumber: apt.mobile_number,
+      appointmentDate: apt.appointment_date,
+      appointmentTime: apt.appointment_time,
+      department: apt.department,
+      appointmentStatus: apt.appointment_status,
+      doctorAssigned: {
+        ...apt.doctors,
+        user: (apt.doctors as any)?.profiles
+      }
+    }));
+
+    return NextResponse.json({ 
+      data: formatted, 
+      pagination: { 
+        total: count || 0, 
+        pages: Math.ceil((count || 0) / limit),
+        currentPage: page
+      } 
+    });
+  } catch (error: any) {
+    return NextResponse.json({ message: error.message }, { status: 500 });
+  }
+}
+
+// Create appointment by Admin/Receptionist
+export async function POST(request: Request) {
+  const { error: authError, profile: userProfile } = await withAuth(request, ['Admin', 'Receptionist']);
+  if (authError) return authError;
+
+  try {
+    const body = await request.json();
+    
+    // Generate Appointment ID (simplified: HM-YYYYMMDD-XXXX)
+    const date = new Date();
+    const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
+    const { count } = await (supabaseAdmin || supabase)
+      .from('public_appointments')
+      .select('*', { count: 'exact', head: true })
+      .eq('hospital_id', userProfile?.hospital_id);
+      
+    const appointmentId = `HM-${dateStr}-${String((count || 0) + 1).padStart(4, '0')}`;
+
+    const { data: appointment, error } = await (supabaseAdmin || supabase)
+      .from('public_appointments')
+      .insert([{
+        ...body,
+        appointment_id: appointmentId,
+        appointment_status: 'Pending',
+        hospital_id: userProfile?.hospital_id,
+        created_by: userProfile?.id
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return NextResponse.json({ ...appointment, _id: appointment.id }, { status: 201 });
+  } catch (error: any) {
+    return NextResponse.json({ message: error.message }, { status: 400 });
+  }
+}
