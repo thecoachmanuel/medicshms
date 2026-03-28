@@ -47,6 +47,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { message, linkText, linkUrl, backgroundColor, textColor, startDate, endDate, isActive } = await request.json();
 
+    // Sanitize dates
+    const formattedStartDate = startDate && startDate.trim() !== '' ? startDate : null;
+    const formattedEndDate = endDate && endDate.trim() !== '' ? endDate : null;
+
     const { data: banner, error } = await supabase
       .from('site_updates')
       .update({
@@ -55,8 +59,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         link_url: linkUrl,
         background_color: backgroundColor,
         text_color: textColor,
-        start_date: startDate,
-        end_date: endDate,
+        start_date: formattedStartDate,
+        end_date: formattedEndDate,
         is_active: isActive
       })
       .eq('id', id)

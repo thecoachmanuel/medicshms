@@ -9,11 +9,17 @@ export async function GET(request: Request) {
   if (authError) return authError;
 
   try {
-    const { data: banners, error } = await supabase
+    let query = supabase
       .from('site_updates')
-      .select('*, profiles:created_by(name, email)')
-      .eq('hospital_id', profile.role === 'platform_admin' ? null : profile.hospital_id)
-      .order('created_at', { ascending: false });
+      .select('*, profiles:created_by(name, email)');
+    
+    if (profile.role === 'platform_admin') {
+      query = query.is('hospital_id', null);
+    } else {
+      query = query.eq('hospital_id', profile.hospital_id);
+    }
+
+    const { data: banners, error } = await query.order('created_at', { ascending: false });
 
     if (error) throw error;
 
@@ -39,6 +45,10 @@ export async function POST(request: Request) {
   try {
     const { message, linkText, linkUrl, backgroundColor, textColor, startDate, endDate } = await request.json();
 
+    // Sanitize dates: convert empty strings to null for optional columns
+    const formattedStartDate = startDate && startDate.trim() !== '' ? startDate : new Date().toISOString();
+    const formattedEndDate = endDate && endDate.trim() !== '' ? endDate : null;
+
     const { data: banner, error } = await supabase
       .from('site_updates')
       .insert([{
@@ -47,8 +57,8 @@ export async function POST(request: Request) {
         link_url: linkUrl,
         background_color: backgroundColor,
         text_color: textColor,
-        start_date: startDate,
-        end_date: endDate,
+        start_date: formattedStartDate,
+        end_date: formattedEndDate,
         hospital_id: profile.role === 'platform_admin' ? null : profile.hospital_id,
         created_by: profile?.id
       }])
