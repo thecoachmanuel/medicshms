@@ -14,7 +14,7 @@ interface Banner {
   text_color?: string;
 }
 
-export default function GlobalBanner({ slug }: { slug?: string }) {
+export default function GlobalBanner({ slug, settings }: { slug?: string, settings?: any }) {
   const [banner, setBanner] = useState<Banner | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(true);

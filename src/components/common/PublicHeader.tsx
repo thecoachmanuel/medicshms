@@ -19,10 +19,11 @@ const getNavLinks = (slug?: string) => [
 
 import HospitalLogo from './HospitalLogo';
 
-export default function PublicHeader({ slug }: { slug?: string }) {
+export default function PublicHeader({ slug, settings: initialSettings }: { slug?: string, settings?: any }) {
   const pathname = usePathname();
   const { user } = useAuth();
-  const { settings } = useSettings(slug);
+  const { settings: hookSettings } = useSettings(initialSettings ? undefined : slug);
+  const settings = initialSettings || hookSettings;
   const { getContent, refresh } = useContent('common', slug);
   const NAV_LINKS = getNavLinks(slug);
   const [isOpen, setIsOpen] = useState(false);

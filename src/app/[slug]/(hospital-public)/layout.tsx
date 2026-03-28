@@ -50,12 +50,12 @@ export default function PublicLayout({
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {showHeaderFooter && <GlobalBanner slug={slug} />}
-      {showHeaderFooter && <PublicHeader slug={slug} />}
+      {showHeaderFooter && <GlobalBanner slug={slug} settings={settings} />}
+      {showHeaderFooter && <PublicHeader slug={slug} settings={settings} />}
       <main className="flex-1">
         {children}
       </main>
-      {showHeaderFooter && <PublicFooter slug={slug} />}
+      {showHeaderFooter && <PublicFooter slug={slug} settings={settings} />}
       <CMSOverlay />
     </div>
   );

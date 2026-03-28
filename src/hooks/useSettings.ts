@@ -16,16 +16,20 @@ export function useSettings(slug?: string) {
         const { data } = await siteSettingsAPI.get(
           slug ? { slug } : (user?.hospital_id ? { hospital_id: user.hospital_id } : {})
         ) as any;
-        const themeColor = data?.theme_color || '#2563eb';
+        
+        const primaryColor = data?.primary_color || data?.theme_color || '#2563eb';
+        const secondaryColor = data?.secondary_color || '#0f172a';
+        
         setSettings({
           ...data,
-          theme_color: themeColor
+          primary_color: primaryColor,
+          secondary_color: secondaryColor
         });
         
-        // Apply theme color to CSS variables
+        // Apply branding colors to CSS variables
         if (typeof document !== 'undefined') {
-          document.documentElement.style.setProperty('--primary-color', themeColor);
-          // Optional: generate shades or specific classes if needed
+          document.documentElement.style.setProperty('--primary-color', primaryColor);
+          document.documentElement.style.setProperty('--secondary-color', secondaryColor);
         }
       } catch (error) {
         console.error('Settings hook error:', error);

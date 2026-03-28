@@ -9,9 +9,10 @@ import { useSettings } from '@/hooks/useSettings';
 import SectionEditorModal from '@/components/cms/SectionEditorModal';
 import HospitalLogo from './HospitalLogo';
 
-export default function PublicFooter({ slug }: { slug?: string }) {
+export default function PublicFooter({ slug, settings: initialSettings }: { slug?: string, settings?: any }) {
   const { user } = useAuth();
-  const { settings } = useSettings(slug);
+  const { settings: hookSettings } = useSettings(initialSettings ? undefined : slug);
+  const settings = initialSettings || hookSettings;
   const { getContent, refresh } = useContent('common', slug);
   const [isEditing, setIsEditing] = useState(false);
   const isEditor = user?.role === 'Admin' || (user?.role === 'platform_admin' && !slug);
