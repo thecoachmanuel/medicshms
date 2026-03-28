@@ -17,14 +17,16 @@ export const DOBInput = ({ value, onChange, label, required }: DOBInputProps) =>
 
   const monthRef = useRef<HTMLInputElement>(null);
   const yearRef = useRef<HTMLInputElement>(null);
+  const lastEmittedValue = useRef('');
 
   // Initialize from value prop
   useEffect(() => {
-    if (value && value.includes('-')) {
+    if (value && value.includes('-') && value !== lastEmittedValue.current) {
       const [vYear, vMonth, vDay] = value.split('-');
       setYear(vYear || '');
       setMonth(vMonth || '');
       setDay(vDay || '');
+      lastEmittedValue.current = value;
     }
   }, [value]);
 
@@ -53,10 +55,13 @@ export const DOBInput = ({ value, onChange, label, required }: DOBInputProps) =>
   useEffect(() => {
     if (day.length === 2 && month.length === 2 && year.length === 4) {
       const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-      // Basic validation check
-      const date = new Date(formattedDate);
-      if (!isNaN(date.getTime())) {
-        onChange(formattedDate);
+      if (formattedDate !== lastEmittedValue.current) {
+        // Basic validation check
+        const date = new Date(formattedDate);
+        if (!isNaN(date.getTime())) {
+          lastEmittedValue.current = formattedDate;
+          onChange(formattedDate);
+        }
       }
     }
   }, [day, month, year, onChange]);

@@ -70,8 +70,15 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
+    const { 
+      fullName, gender, dateOfBirth, mobileNumber, emailAddress, 
+      knownAllergies, allergiesDetails, reasonForVisit, primaryConcern, 
+      existingConditions, department, doctorAssigned, appointmentDate, 
+      appointmentTime, address, emergencyContactName, emergencyContactNumber,
+      visitType, patientId
+    } = body;
     
-    // Generate Appointment ID (simplified: HM-YYYYMMDD-XXXX)
+    // Generate Appointment ID
     const date = new Date();
     const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
     const { count } = await (supabaseAdmin || supabase)
@@ -84,7 +91,25 @@ export async function POST(request: Request) {
     const { data: appointment, error } = await (supabaseAdmin || supabase)
       .from('public_appointments')
       .insert([{
-        ...body,
+        full_name: fullName,
+        gender,
+        date_of_birth: dateOfBirth,
+        mobile_number: mobileNumber,
+        email_address: emailAddress,
+        known_allergies: knownAllergies === 'Yes' || knownAllergies === true,
+        allergies_details: allergiesDetails,
+        reason_for_visit: reasonForVisit,
+        primary_concern: primaryConcern,
+        existing_conditions: existingConditions,
+        department,
+        doctor_assigned_id: doctorAssigned || null,
+        appointment_date: appointmentDate,
+        appointment_time: appointmentTime,
+        address,
+        emergency_contact_name: emergencyContactName,
+        emergency_contact_number: emergencyContactNumber,
+        visit_type: visitType,
+        patient_id: patientId,
         appointment_id: appointmentId,
         appointment_status: 'Pending',
         hospital_id: userProfile?.hospital_id,
