@@ -19,31 +19,50 @@ function cn(...inputs: ClassValue[]) {
 // Default Templates for Sections
 const TEMPLATES: any = {
   home: {
-    hero: { title: "Compassionate Care, Advanced Technology.", description: "We provide world-class medical services...", image_url: "", button_primary: "Book Appointment" },
+    hero: { title: "Compassionate Care, Advanced Technology.", description: "We provide world-class medical services...", image_url: "", button_primary: "Book Consultation", button_secondary: "Portal Login", badge_text: "5000+ Happy Patients" },
     stats: [
-        { label: "Doctors", value: "50+" },
-        { label: "Patients", value: "10k+" }
-    ]
+        { label: "Specialist Doctors", value: "150+" },
+        { label: "Patient Recovered", value: "45k+" },
+        { label: "Success Rate", value: "98%" },
+        { label: "Years Experience", value: "25+" }
+    ],
+    departments_intro: { tagline: "Our Departments", title: "Comprehensive Care in Every Specialty", description: "Equipped with state-of-the-art technology..." },
+    departments_list: [
+        { name: "Emergency", desc: "24/7 critical response", icon_name: "Activity" },
+        { name: "Cardiology", desc: "Expert heart care", icon_name: "Heart" }
+    ],
+    doctors_section: { tagline: "Our Specialists", title: "Learn from Our Renowned Medical Professionals", button_text: "View All Doctors" },
+    doctors_list: [
+        { name: "Dr. Sarah Johnson", role: "Senior Surgeon", specialty: "Cardiology", image_url: "" },
+        { name: "Dr. Michael Chen", role: "Chief Medical Officer", specialty: "Neurology", image_url: "" }
+    ],
+    cta: { title: "Ready to Experience Better Healthcare Management?", description: "Book your appointment today...", button_primary: "Book Visit Now", button_secondary: "Learn About MedicsHMS" }
   },
   about: {
-    story: { title: "Our Medical Legacy", content: "Founded in 1995, our hospital has been...", image_url: "" },
-    values: [
-        { title: "Integrity", desc: "Honesty in every diagnosis" },
-        { title: "Excellence", desc: "Highest standards of care" }
+    about_header: { tagline: "Our Story", title_part1: "A Legacy of", title_part2: "Care and Innovation", description: "Founded on the principles of empathy...", image_url: "", stat1_label: "Years of Excellence", stat1_value: "25+", stat2_label: "Staff Members", stat2_value: "500+" },
+    mission: { title: "Our Mission", description: "To provide world-class, affordable healthcare to all..." },
+    vision: { title: "Our Vision", description: "To become the most trusted healthcare partner globally..." },
+    values_intro: { tagline: "Our Values", title: "The Pillars of MedicsHMS" },
+    values_list: [
+        { title: "Compassion", desc: "Treating with empathy", icon_name: "Heart" },
+        { title: "Excellence", desc: "Clinical perfection", icon_name: "Zap" },
+        { title: "Innovation", desc: "Pushing boundaries", icon_name: "Activity" }
     ]
   },
   services: {
-    intro: { title: "Comprehensive Specializations", description: "From pediatrics to neurosurgery..." },
-    list: [
-        { name: "Emergency Care", desc: "24/7 critical response", icon: "Emergency" },
-        { name: "Diagnostics", desc: "Advanced laboratory testing", icon: "Labs" }
-    ]
+    services_header: { tagline: "What We Do", title_part1: "Advanced Healthcare", title_part2: "Tailored for You.", description: "We offer a wide range of medical services..." },
+    services_list: [
+        { title: "General Checkup", desc: "Regular health screenings", icon_name: "Activity" },
+        { title: "Cardiology", desc: "Expert heart care", icon_name: "Heart" }
+    ],
+    process_cta: { title: "Experience Seamless Patient Care Journey", button_text: "Get Started Today", subtext: "No payment required for booking" }
   },
   contact: {
-    info: { email: "", phone: "", address: "", emergency: "" },
-    hours: [
-        { day: "Mon-Fri", time: "24 Hours" },
-        { day: "Sat-Sun", time: "8 AM - 8 PM" }
+    contact_header: { tagline: "Get in Touch", title: "Contact Us", description: "We are here for you 24/7." },
+    contact_info: { email: "", phone: "", address: "", emergency: "" },
+    quick_access: [
+        { title: "Emergency", desc: "Call 911 for immediate help", path: "/emergency" },
+        { title: "Portal", desc: "Access your records", path: "/login" }
     ]
   }
 };
