@@ -24,10 +24,7 @@ export async function GET(request: Request) {
   }
 }
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: Request) {
   const { error: authError } = await withAuth(request, ['platform_admin']);
   if (authError) return authError;
 
