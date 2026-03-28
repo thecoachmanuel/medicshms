@@ -9,6 +9,8 @@ import {
   Edit3, Zap, Mail, Phone, MapPin, Globe, Share2
 } from 'lucide-react';
 import { useSettings } from '@/hooks/useSettings';
+import { useAuth } from '@/context/AuthContext';
+import { useContent } from '@/hooks/useContent';
 import SectionEditorModal from '@/components/cms/SectionEditorModal';
 import { use } from 'react';
 

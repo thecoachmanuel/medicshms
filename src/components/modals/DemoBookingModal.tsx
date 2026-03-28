@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { 
   X, Calendar, Clock, Building2, 
   User, Mail, Phone, MessageSquare, 
-  CheckCircle2, Loader2 
+  CheckCircle2, Loader2, ArrowRight
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 

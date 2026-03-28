@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
 
 export async function POST(request: Request) {
-  const { error: authError, user } = await withAuth(request, ['Admin']);
+  const { error: authError, profile: user } = await withAuth(request, ['Admin']);
   if (authError) return authError;
 
   try {

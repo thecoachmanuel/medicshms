@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useSettings } from '@/hooks/useSettings';
@@ -8,7 +8,7 @@ import HospitalLogo from '@/components/common/HospitalLogo';
 import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-export default function LoginPage() {
+function LoginForm() {
   const searchParams = useSearchParams();
   const slug = searchParams.get('slug') || undefined;
   
@@ -139,5 +139,17 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-primary-600" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
