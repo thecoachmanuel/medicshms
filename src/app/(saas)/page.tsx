@@ -215,7 +215,7 @@ export default function SaaSLandingPage() {
                           if (user?.role === 'Admin' && (user as any).hospital?.slug) {
                              router.push(`/${(user as any).hospital.slug}/admin/billing?plan=${plan.id}&cycle=${billingCycle}`);
                           } else {
-                             router.push('/signup');
+                             router.push(`/signup?plan=${plan.slug}&cycle=${billingCycle}`);
                           }
                         }}
                         className={cn(

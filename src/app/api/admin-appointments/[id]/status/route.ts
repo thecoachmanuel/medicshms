@@ -6,7 +6,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { error: authError } = await withAuth(request, ['Admin', 'Receptionist']);
+  const { error: authError } = await withAuth(request, ['Admin', 'Receptionist', 'Doctor']);
   if (authError) return authError;
 
   try {

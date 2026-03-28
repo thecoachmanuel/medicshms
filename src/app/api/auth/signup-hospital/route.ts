@@ -9,7 +9,9 @@ export async function POST(request: Request) {
       admin_name, 
       admin_email, 
       password, 
-      phone 
+      phone,
+      plan_id,
+      billing_cycle = 'monthly'
     } = await request.json();
 
     // 1. Generate slug from hospital name
@@ -32,6 +34,8 @@ export async function POST(request: Request) {
           subscription_status: 'trial',
           trial_start_date: new Date().toISOString(),
           trial_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          plan_id: plan_id || null,
+          billing_cycle
         }
       ])
       .select()

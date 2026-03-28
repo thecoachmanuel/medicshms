@@ -27,23 +27,42 @@ export default function SignupPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [successData, setSuccessData] = useState<{ slug: string; name: string } | null>(null);
 
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const planSlug = searchParams?.get('plan') || 'free-trial';
+  const billingCycle = searchParams?.get('cycle') || 'monthly';
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
+      // 1. Fetch plans to get the ID for the selected slug
+      const plansRes = await fetch('/api/subscription-plans/public');
+      const plansData = await plansRes.json();
+      const selectedPlan = plansData.data?.find((p: any) => p.slug === planSlug);
+
       // API call to /api/auth/signup-hospital
       const res = await fetch('/api/auth/signup-hospital', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          plan_id: selectedPlan?.id,
+          billing_cycle: billingCycle
+        }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Signup failed');
 
-      setSuccessData({ slug: data.slug, name: formData.hospital_name });
-      setIsSuccess(true);
       toast.success('Hospital registered successfully!');
+
+      // Redirect logic
+      if (planSlug !== 'free-trial') {
+        router.push(`/${data.slug}/admin/subscription?plan=${selectedPlan?.id}&cycle=${billingCycle}&new=true`);
+      } else {
+        setSuccessData({ slug: data.slug, name: formData.hospital_name });
+        setIsSuccess(true);
+      }
     } catch (error: any) {
       toast.error(error.message);
     } finally {

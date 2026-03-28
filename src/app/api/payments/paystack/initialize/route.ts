@@ -7,23 +7,19 @@ export async function POST(request: Request) {
   if (authError) return authError;
 
   try {
-    const { plan } = await request.json();
+    const { amount, metadata = {} } = await request.json();
     
-    // Define amounts (in Naira, will be converted to kobo in lib/paystack)
-    const amounts: Record<string, number> = {
-      pro: 99.00, // Example monthly price
-      yearly: 990.00,
-    };
+    if (!amount) {
+      return NextResponse.json({ message: 'Amount is required' }, { status: 400 });
+    }
 
-    const amount = amounts[plan] || 99.00;
-
-    const metadata = {
-      hospital_id: profile.hospital_id,
+    const finalMetadata = {
+      ...metadata,
+      hospital_id: profile.hospital_id || metadata.hospitalId,
       user_id: profile.id,
-      plan_type: plan,
     };
 
-    const result = await paystack.initializeTransaction(profile.email, amount, metadata);
+    const result = await paystack.initializeTransaction(profile.email, amount, finalMetadata);
 
     if (result.status) {
       return NextResponse.json(result.data);
