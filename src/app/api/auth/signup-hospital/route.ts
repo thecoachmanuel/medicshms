@@ -42,21 +42,39 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Failed to create hospital: ' + hospitalError.message }, { status: 400 });
     }
 
-    // 3. Sign up the admin user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: admin_email,
-      password,
-      options: {
-        data: {
+    // 3. Register the admin user (bypass email confirmation if admin client is available)
+    let authData, authError;
+
+    if (supabaseAdmin) {
+      const result = await supabaseAdmin.auth.admin.createUser({
+        email: admin_email,
+        password,
+        email_confirm: true,
+        user_metadata: {
           name: admin_name,
           role: 'Admin',
           hospital_id: hospital.id
         }
-      }
-    });
+      });
+      authData = { user: result.data.user };
+      authError = result.error;
+    } else {
+      const result = await supabase.auth.signUp({
+        email: admin_email,
+        password,
+        options: {
+          data: {
+            name: admin_name,
+            role: 'Admin',
+            hospital_id: hospital.id
+          }
+        }
+      });
+      authData = result.data;
+      authError = result.error;
+    }
 
     if (authError) {
-      // Cleanup hospital if auth fails? (Optional, maybe keep it)
       return NextResponse.json({ message: authError.message }, { status: 400 });
     }
 
