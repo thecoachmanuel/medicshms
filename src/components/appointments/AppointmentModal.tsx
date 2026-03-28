@@ -26,14 +26,15 @@ interface Props {
 
 export default function AppointmentModal({ appointment, type, doctors, departments, onClose, onRefresh }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedDoctor, setSelectedDoctor] = useState(appointment?.doctorAssigned?._id || '');
+  const [selectedDoctor, setSelectedDoctor] = useState(appointment?.doctorAssigned?._id || appointment?.doctorAssigned?.id || '');
   const [editData, setEditData] = useState({
-    fullName: appointment?.fullName || '',
+    fullName: appointment?.fullName || appointment?.patientName || '',
     mobileNumber: appointment?.mobileNumber || '',
     emailAddress: appointment?.emailAddress || '',
-    appointmentDate: appointment?.appointmentDate?.split('T')[0] || '',
+    appointmentDate: appointment?.appointmentDate ? 
+      (typeof appointment.appointmentDate === 'string' ? appointment.appointmentDate.split('T')[0] : '') : '',
     appointmentTime: appointment?.appointmentTime || '',
-    appointmentStatus: appointment?.appointmentStatus || 'Pending',
+    appointmentStatus: appointment?.appointmentStatus || appointment?.status || 'Pending',
   });
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -132,7 +133,7 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Clock className="w-4 h-4 text-primary-500" />
                       <span className="font-bold text-gray-900">
-                        {new Date(appointment.appointmentDate).toLocaleDateString()} at {appointment.appointmentTime}
+                        {appointment.appointmentDate ? new Date(appointment.appointmentDate).toLocaleDateString() : 'N/A'} at {appointment.appointmentTime || 'N/A'}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600">

@@ -44,13 +44,26 @@ export async function POST(request: Request) {
     if (!client) throw new Error('Supabase Admin client not initialized');
 
     const { name, slug, email, subscription_status } = body;
+    const finalSlug = slug || name.toLowerCase().replace(/ /g, '-');
+
+    // 1. Check for duplicates manually for better error message
+    const { data: existing } = await client
+      .from('hospitals')
+      .select('id, slug, email')
+      .or(`slug.eq.${finalSlug},email.eq.${email}`)
+      .single();
+
+    if (existing) {
+      const conflict = existing.slug === finalSlug ? 'Slug' : 'Email';
+      return NextResponse.json({ message: `${conflict} is already in use by another hospital.` }, { status: 400 });
+    }
 
     const { data: hospital, error } = await client
       .from('hospitals')
       .insert([
         { 
           name, 
-          slug: slug || name.toLowerCase().replace(/ /g, '-'), 
+          slug: finalSlug, 
           email, 
           subscription_status: subscription_status || 'trial',
           trial_start_date: new Date().toISOString(),

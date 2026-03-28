@@ -34,21 +34,26 @@ export async function GET(request: Request) {
 
     if (error) throw error;
 
-    const formatted = (appointments || []).map(apt => ({
-      _id: apt.id,
-      appointmentId: apt.appointment_id,
-      fullName: apt.full_name,
-      emailAddress: apt.email_address,
-      mobileNumber: apt.mobile_number,
-      appointmentDate: apt.appointment_date,
-      appointmentTime: apt.appointment_time,
-      department: apt.department,
-      appointmentStatus: apt.appointment_status,
-      doctorAssigned: {
-        ...apt.doctors,
-        user: (apt.doctors as any)?.profiles
-      }
-    }));
+    const formatted = (appointments || []).map(apt => {
+      const doctor = apt.doctors;
+      const profile = (doctor as any)?.profiles;
+      
+      return {
+        _id: apt.id,
+        appointmentId: apt.appointment_id,
+        fullName: apt.full_name,
+        emailAddress: apt.email_address,
+        mobileNumber: apt.mobile_number,
+        appointmentDate: apt.appointment_date,
+        appointmentTime: apt.appointment_time,
+        department: apt.department,
+        appointmentStatus: apt.appointment_status,
+        doctorAssigned: doctor ? {
+          ...doctor,
+          user: profile
+        } : null
+      };
+    });
 
     return NextResponse.json({ 
       data: formatted, 

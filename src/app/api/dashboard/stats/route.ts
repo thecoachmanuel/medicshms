@@ -19,6 +19,7 @@ export async function GET(request: Request) {
       { count: totalPatients },
       { count: totalDoctors },
       { count: totalDepartments },
+      { data: todayAppointmentsData },
       { data: appointmentStatsData },
       { data: revenueData },
       { count: pendingBills },
@@ -28,7 +29,9 @@ export async function GET(request: Request) {
       (supabaseAdmin || supabase).from('public_appointments').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id),
       (supabaseAdmin || supabase).from('doctors').select('*', { count: 'exact', head: true }).eq('is_active', true).eq('hospital_id', userProfile?.hospital_id),
       (supabaseAdmin || supabase).from('departments').select('*', { count: 'exact', head: true }).eq('is_active', true).eq('hospital_id', userProfile?.hospital_id),
-      // Fetch all appointments from start of last month to now for internal counting
+      // Fetch all appointments for today specifically
+      (supabaseAdmin || supabase).from('public_appointments').select('appointment_date, appointment_status, visit_type, created_at').eq('hospital_id', userProfile?.hospital_id).eq('appointment_date', startOfToday.split('T')[0]),
+      // Fetch recent appointments for growth calculation
       (supabaseAdmin || supabase).from('public_appointments').select('appointment_date, appointment_status, visit_type, created_at').eq('hospital_id', userProfile?.hospital_id).gte('created_at', startOfLastMonth),
       // Fetch all bills for revenue calculation (optimized to necessary fields)
       (supabaseAdmin || supabase).from('bills').select('total_amount, paid_amount, created_at').eq('hospital_id', userProfile?.hospital_id),
@@ -39,7 +42,8 @@ export async function GET(request: Request) {
 
     // Process Appointment Stats in-memory
     const apts = appointmentStatsData || [];
-    const todayAppointments = apts.filter(a => a.appointment_date === startOfToday.split('T')[0] && ['Pending', 'Confirmed'].includes(a.appointment_status)).length;
+    const todayApts = todayAppointmentsData || [];
+    const todayAppointments = todayApts.filter(a => ['Pending', 'Confirmed'].includes(a.appointment_status)).length;
     const monthAppointments = apts.filter(a => a.created_at >= startOfMonth).length;
     const lastMonthAppointments = apts.filter(a => a.created_at >= startOfLastMonth && a.created_at <= endOfLastMonth).length;
     

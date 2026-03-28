@@ -44,14 +44,18 @@ export default function PublicLayout({
     </div>
   );
 
+  const isStaff = user?.role === 'Admin' || user?.role === 'Doctor' || user?.role === 'Receptionist' || user?.role === 'platform_admin';
+  const isMaintenancePage = pathname.endsWith('/maintenance');
+  const showHeaderFooter = !settings?.maintenance_mode || isStaff || !isMaintenancePage;
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <GlobalBanner slug={slug} />
-      <PublicHeader slug={slug} />
+      {showHeaderFooter && <GlobalBanner slug={slug} />}
+      {showHeaderFooter && <PublicHeader slug={slug} />}
       <main className="flex-1">
         {children}
       </main>
-      <PublicFooter slug={slug} />
+      {showHeaderFooter && <PublicFooter slug={slug} />}
       <CMSOverlay />
     </div>
   );

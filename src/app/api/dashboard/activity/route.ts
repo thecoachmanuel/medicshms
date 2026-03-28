@@ -23,7 +23,7 @@ export async function GET(request: Request) {
 
     const feed: any[] = [];
     (appointments || []).forEach(a => feed.push({ type: 'appointment', title: `New appointment ${a.appointment_id}`, description: `${a.full_name} — ${a.department || 'General'}`, status: a.appointment_status, time: a.created_at }));
-    (bills || []).forEach(b => feed.push({ type: 'bill', title: `Invoice ${b.bill_number}`, description: `₹${Number(b.total_amount).toLocaleString('en-IN')} — ${b.payment_status}`, status: b.payment_status, time: b.created_at }));
+    (bills || []).forEach(b => feed.push({ type: 'bill', title: `Invoice ${b.bill_number}`, description: `₦${Number(b.total_amount).toLocaleString('en-NG')} — ${b.payment_status}`, status: b.payment_status, time: b.created_at }));
     (tickets || []).forEach(t => feed.push({ type: 'support', title: `Ticket: ${t.issue_type}`, description: `From ${t.name} — ${t.status}`, status: t.status, time: t.created_at }));
     (announcements || []).forEach(a => feed.push({ type: 'announcement', title: a.title, description: `${a.type} — ${a.priority} priority`, status: a.type, time: a.created_at }));
 

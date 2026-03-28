@@ -36,7 +36,8 @@ export async function GET(request: Request) {
 
     const result = (appointments || []).map(apt => ({
       _id: apt.id,
-      patientName: apt.full_name,
+      fullName: apt.full_name,
+      patientName: apt.full_name, // Alias
       patientId: apt.patient_id,
       appointmentId: apt.appointment_id,
       gender: apt.gender,
@@ -44,7 +45,8 @@ export async function GET(request: Request) {
       department: apt.department || 'General',
       appointmentDate: apt.appointment_date,
       appointmentTime: apt.appointment_time,
-      status: apt.appointment_status,
+      appointmentStatus: apt.appointment_status,
+      status: apt.appointment_status, // Alias
       visitType: apt.visit_type,
       reasonForVisit: apt.reason_for_visit || apt.primary_concern || '',
       mobileNumber: apt.mobile_number,

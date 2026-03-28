@@ -95,7 +95,6 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
         { icon: DollarSign, label: 'Billing', path: `${base}/receptionist/billing` },
         { icon: CalendarClock, label: 'Slot Management', path: `${base}/receptionist/slot-management` },
         { icon: User, label: 'My Profile', path: `${base}/receptionist/profile` },
-        { icon: Settings, label: 'Settings', path: `${base}/receptionist/settings` },
       ];
     } else if (role === 'Doctor') {
       return [
