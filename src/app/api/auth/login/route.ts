@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     } as any);
 
     if (error) {
-      return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
+      return NextResponse.json({ message: error.message || 'Invalid credentials' }, { status: 401 });
     }
 
     const user = data.user;
