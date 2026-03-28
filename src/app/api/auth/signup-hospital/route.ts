@@ -85,9 +85,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Hospital created but admin profile failed: ' + profileError.message }, { status: 400 });
     }
 
+    // 5. Initialize Site Settings for the new hospital
+    const { error: settingsError } = await client
+      .from('site_settings')
+      .insert([
+        {
+          hospital_id: hospital.id,
+          hospital_name: hospital_name,
+          hospital_short_name: hospital_name.split(' ')[0], // Default short name
+          theme_color: '#2563eb', // Default theme color
+          updated_at: new Date().toISOString(),
+        }
+      ]);
+
+    if (settingsError) {
+      console.error('Site settings initialization error:', settingsError);
+      // We don't fail the whole signup if settings fails, but we log it
+    }
+
     return NextResponse.json({ 
       message: 'Hospital and Admin account created successfully',
-      hospital_id: hospital.id
+      hospital_id: hospital.id,
+      slug: slug
     }, { status: 201 });
 
   } catch (error: any) {

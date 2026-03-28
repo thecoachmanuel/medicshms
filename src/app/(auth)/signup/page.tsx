@@ -7,9 +7,10 @@ import {
   Hospital, ArrowRight, Loader2, 
   Building2, Mail, Lock, User, 
   Phone, CheckCircle2, ShieldCheck,
-  Zap, Globe
+  Zap, Globe, Copy, ExternalLink, ArrowLeft
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import HospitalLogo from '@/components/common/HospitalLogo';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -23,6 +24,8 @@ export default function SignupPage() {
     password: '',
     phone: '',
   });
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [successData, setSuccessData] = useState<{ slug: string; name: string } | null>(null);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,14 +41,119 @@ export default function SignupPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Signup failed');
 
-      toast.success('Hospital registered successfully! Redirecting to dashboard...');
-      router.push('/login');
+      setSuccessData({ slug: data.slug, name: formData.hospital_name });
+      setIsSuccess(true);
+      toast.success('Hospital registered successfully!');
     } catch (error: any) {
       toast.error(error.message);
     } finally {
       setLoading(false);
     }
   };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Link copied to clipboard!');
+  };
+
+  if (isSuccess && successData) {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const tenantUrl = `${baseUrl}/${successData.slug}`;
+    const adminUrl = `${baseUrl}/${successData.slug}/login`;
+
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans overflow-hidden">
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary-600/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-indigo-600/10 rounded-full blur-[120px] translate-y-1/2 -translate-x-1/2"></div>
+
+        <div className="w-full max-w-4xl bg-white rounded-[4rem] p-12 md:p-20 shadow-2xl shadow-slate-200/60 border border-slate-100 relative z-10 text-center space-y-12 animate-in zoom-in-95 duration-700">
+          <div className="w-24 h-24 bg-emerald-100 rounded-[2rem] flex items-center justify-center mx-auto text-emerald-600 shadow-xl shadow-emerald-500/20 rotate-12 scale-110">
+            <CheckCircle2 className="w-12 h-12" />
+          </div>
+
+          <div className="space-y-4">
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight">
+              Welcome to the Hub, <br />
+              <span className="text-primary-600">{successData.name}!</span>
+            </h2>
+            <p className="text-lg text-slate-500 font-medium max-w-2xl mx-auto">
+              Your hospital ecosystem is ready. We've set up your isolated tenant environment with all the tools you need.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+            {/* Public Website Card */}
+            <div className="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100 space-y-6 group hover:bg-white hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500">
+              <div className="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center text-primary-600 group-hover:scale-110 transition-transform">
+                <Globe className="w-6 h-6" />
+              </div>
+              <div className="space-y-2 text-left">
+                <h4 className="font-black text-slate-900 uppercase text-[10px] tracking-widest text-primary-600">Public Portal</h4>
+                <p className="text-sm font-bold text-slate-700 break-all">{tenantUrl}</p>
+                <p className="text-xs text-slate-400 font-medium">Your patients visit this link to book appointments.</p>
+              </div>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => copyToClipboard(tenantUrl)}
+                  className="p-3 bg-white rounded-xl text-slate-400 hover:text-primary-600 border border-slate-100 hover:border-primary-100 transition-all"
+                  title="Copy Link"
+                >
+                  <Copy className="w-5 h-5" />
+                </button>
+                <Link 
+                  href={tenantUrl}
+                  className="flex-1 py-3 bg-white text-slate-900 rounded-xl font-bold text-sm border border-slate-100 hover:border-slate-900 transition-all flex items-center justify-center gap-2"
+                >
+                  Visit Site <ExternalLink className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Admin Portal Card */}
+            <div className="bg-slate-900 rounded-[2.5rem] p-8 space-y-6 group hover:scale-[1.02] transition-all duration-500 relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-32 h-32 bg-primary-600/20 rounded-full blur-3xl"></div>
+              <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-primary-400 group-hover:scale-110 transition-transform">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <div className="space-y-2 text-left">
+                <h4 className="font-black text-primary-400 uppercase text-[10px] tracking-widest">Admin Dashboard</h4>
+                <p className="text-sm font-bold text-white break-all">{adminUrl}</p>
+                <p className="text-xs text-slate-400 font-medium">Manage your staff, patients, and clinical settings.</p>
+              </div>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => copyToClipboard(adminUrl)}
+                  className="p-3 bg-white/5 rounded-xl text-slate-400 hover:text-primary-400 border border-white/5 hover:border-primary-400/30 transition-all"
+                  title="Copy Link"
+                >
+                  <Copy className="w-5 h-5" />
+                </button>
+                <Link 
+                  href={adminUrl}
+                  className="flex-1 py-3 bg-primary-600 text-white rounded-xl font-bold text-sm hover:bg-primary-500 transition-all flex items-center justify-center gap-2"
+                >
+                  Go to Admin <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-8 border-t border-slate-50 flex flex-col items-center gap-6">
+            <p className="text-sm text-slate-400 font-medium italic">
+              "We recommend bookmarking these links for easy access."
+            </p>
+            <button 
+              onClick={() => setIsSuccess(false)}
+              className="text-slate-400 hover:text-slate-900 font-bold text-sm flex items-center gap-2 group transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              Back to Registration
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans">
@@ -55,12 +163,9 @@ export default function SignupPage() {
       <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
         {/* Left Side: Branding & Info */}
         <div className="hidden lg:block space-y-12">
-           <div className="flex items-center gap-2">
-            <div className="w-12 h-12 bg-primary-600 rounded-2xl flex items-center justify-center shadow-xl shadow-primary-600/20">
-              <Hospital className="w-7 h-7 text-white" />
-            </div>
-            <span className="text-2xl font-black text-slate-900 tracking-tighter italic">Medics<span className="text-primary-600">HMS</span></span>
-          </div>
+          <Link href="/">
+            <HospitalLogo size="lg" />
+          </Link>
 
           <h1 className="text-6xl font-black text-slate-900 leading-[1.1] tracking-tighter">
             Join the <span className="text-primary-600">Future</span> of <br />

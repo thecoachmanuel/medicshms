@@ -13,6 +13,7 @@ import { subscriptionPlansAPI } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import DemoBookingModal from '@/components/modals/DemoBookingModal';
 import { useRouter } from 'next/navigation';
+import HospitalLogo from '@/components/common/HospitalLogo';
 
 interface Plan {
   id: string;
@@ -53,12 +54,9 @@ export default function SaaSLandingPage() {
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl border-b border-slate-200/50">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-600/20">
-              <Activity className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xl font-black text-slate-900 tracking-tighter italic">Medics<span className="text-primary-600">HMS</span></span>
-          </div>
+          <Link href="/">
+            <HospitalLogo size="md" />
+          </Link>
           <div className="hidden md:flex items-center gap-8">
              <a href="#features" className="text-sm font-bold text-slate-600 hover:text-primary-600 transition-colors uppercase tracking-widest">Features</a>
              <a href="#pricing" className="text-sm font-bold text-slate-600 hover:text-primary-600 transition-colors uppercase tracking-widest">Pricing</a>
@@ -234,12 +232,7 @@ export default function SaaSLandingPage() {
       {/* Footer */}
       <footer className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-6 text-center space-y-8">
-          <div className="flex items-center justify-center gap-2">
-            <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-              <Activity className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-lg font-black text-slate-900 tracking-tighter italic">Medics<span className="text-primary-600">HMS</span></span>
-          </div>
+          <HospitalLogo size="md" className="justify-center" />
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">© 2026 Medics HMS Platform. All Rights Reserved.</p>
         </div>
       </footer>
