@@ -4,8 +4,9 @@ import { withAuth } from '@/lib/auth';
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const { error: authError } = await withAuth(request, ['platform_admin']);
   if (authError) return authError;
 
@@ -17,7 +18,7 @@ export async function PUT(
     const { data: plan, error } = await client
       .from('subscription_plans')
       .update(body)
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -32,8 +33,9 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const { error: authError } = await withAuth(request, ['platform_admin']);
   if (authError) return authError;
 
@@ -44,7 +46,7 @@ export async function DELETE(
     const { error } = await client
       .from('subscription_plans')
       .delete()
-      .eq('id', params.id);
+      .eq('id', id);
 
     if (error) throw error;
 
