@@ -10,7 +10,7 @@ import {
   Wallet, ListChecks, UserCog
 } from 'lucide-react';
 import { DashboardCard } from '@/components/admin/DashboardCard';
-import { useSettings } from '@/hooks/useSettings';
+import { useTheme } from '@/components/common/ThemeProvider';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
@@ -35,7 +35,7 @@ export default function ReceptionistDashboard({ params }: { params: Promise<{ sl
   const [recentAppointments, setRecentAppointments] = useState<any[]>([]);
   const [dailyAppointments, setDailyAppointments] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const { settings } = useSettings(slug);
+  const { settings } = useTheme();
   const primaryColor = settings?.primary_color || '#6366f1';
 
   const fetchAll = useCallback(async () => {

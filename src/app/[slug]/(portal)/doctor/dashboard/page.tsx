@@ -10,7 +10,7 @@ import {
   ClipboardList, Users as UsersIcon, LayoutDashboard
 } from 'lucide-react';
 import { DashboardCard } from '@/components/admin/DashboardCard';
-import { useSettings } from '@/hooks/useSettings';
+import { useTheme } from '@/components/common/ThemeProvider';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
@@ -37,7 +37,7 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
   const [activity, setActivity] = useState<any[]>([]);
   const [monthlyTrend, setMonthlyTrend] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const { settings } = useSettings(slug);
+  const { settings } = useTheme();
   const primaryColor = settings?.primary_color || '#6366f1';
 
   const fetchAll = useCallback(async () => {

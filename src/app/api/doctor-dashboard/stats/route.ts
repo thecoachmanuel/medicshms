@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
+import { getLocalDateString } from '@/lib/utils';
 
 // Helper: get Doctor document for logged-in user
 const getDoctorDoc = async (userId: string, hospitalId?: string) => {
@@ -30,7 +31,7 @@ export async function GET(request: Request) {
 
     const doctorId = doctor.id;
     const now = new Date();
-    const startOfToday = now.toISOString().split('T')[0];
+    const startOfToday = getLocalDateString();
     const endOfToday = startOfToday; // For DATE column, start and end are the same
     const startOfWeek = new Date(now);
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
