@@ -122,6 +122,8 @@ export async function POST(request: Request) {
       .single();
 
     if (error) return NextResponse.json({ message: error.message }, { status: 400 });
+    if (!patient) return NextResponse.json({ message: 'Failed to create patient record' }, { status: 400 });
+    
     return NextResponse.json({ ...patient, _id: patient.id }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
