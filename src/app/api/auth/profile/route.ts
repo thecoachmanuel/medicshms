@@ -16,6 +16,7 @@ export async function GET(request: Request) {
       email: profile.email,
       role: profile.role,
       phone: profile.phone,
+      profile_photo: profile.profile_photo,
       hospital_id: profile.hospital_id,
       hospital_slug: profile.hospital?.slug
     });

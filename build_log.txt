@@ -6,3 +6,34 @@
 - Environments: .env.local
 
   Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 2 errors:
+./src/app/api/admin-appointments/[id]/status/route.ts:52:5
+Expected a semicolon
+  [90m50 |[0m
+  [90m51 |[0m     [36mreturn[0m [33mNextRes...[0m
+[31m[1m>[0m [90m52 |[0m   } [36mcatch[0m (error: ...
+  [90m   |[0m     [31m[1m^^^^^[0m
+  [90m53 |[0m     [36mreturn[0m [33mNextRes...[0m
+  [90m54 |[0m   }
+  [90m55 |[0m }
+
+Parsing ecmascript source code failed
+
+
+./src/app/api/admin-appointments/[id]/status/route.ts:53:5
+Return statement is not allowed here
+  [90m51 |[0m ...[36mtrue[0m, message: [32m...[0m
+  [90m52 |[0m ...
+[31m[1m>[0m [90m53 |[0m ...[36mfalse[0m, message:...
+  [90m   |[0m    [31m[1m^^^^^^^^^^^^^^^^^^[0m
+  [90m54 |[0m ...
+  [90m55 |[0m ...
+  [90m56 |[0m ...
+
+Parsing ecmascript source code failed
+
+
+    at <unknown> (./src/app/api/admin-appointments/[id]/status/route.ts:52:5)
+    at <unknown> (./src/app/api/admin-appointments/[id]/status/route.ts:53:5)

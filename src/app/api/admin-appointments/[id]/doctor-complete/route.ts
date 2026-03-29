@@ -12,6 +12,7 @@ export async function PATCH(
   if (authError) return authError;
 
   try {
+    const { doctor_notes, prescription } = await request.json();
     const { data: doctor } = await (supabaseAdmin || supabase)
       .from('doctors')
       .select('id')
@@ -25,7 +26,12 @@ export async function PATCH(
     const { id } = await params;
     const { data: appointment, error } = await (supabaseAdmin || supabase)
       .from('public_appointments')
-      .update({ appointment_status: 'Completed' })
+      .update({ 
+        appointment_status: 'Completed',
+        doctor_notes,
+        prescription,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', id)
       .eq('doctor_assigned_id', doctor.id)
       .select()

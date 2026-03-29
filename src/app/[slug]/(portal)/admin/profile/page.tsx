@@ -25,6 +25,8 @@ export default function ProfilePage() {
     phone: ''
   });
 
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (user) {
       setFormData({
@@ -51,6 +53,42 @@ export default function ProfilePage() {
     }
   };
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    setLoading(true);
+    try {
+      const res = await (authAPI as any).uploadPhoto(formData);
+      if (res.url) {
+        updateUser({ profile_photo: res.url });
+        toast.success('Photo updated');
+      }
+    } catch (error: any) {
+      toast.error('Failed to upload photo');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePhotoDelete = async () => {
+    if (!confirm('Are you sure you want to remove your profile photo?')) return;
+    
+    setLoading(true);
+    try {
+      await (authAPI as any).deletePhoto();
+      updateUser({ profile_photo: undefined });
+      toast.success('Photo removed');
+    } catch (error: any) {
+      toast.error('Failed to remove photo');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (authLoading) return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 animate-spin text-primary-600" /></div>;
 
   return (
@@ -64,16 +102,36 @@ export default function ProfilePage() {
         <div className="lg:col-span-1 space-y-6">
           <div className="card p-8 flex flex-col items-center text-center">
              <div className="relative group">
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  className="hidden" 
+                  accept="image/*" 
+                  onChange={handlePhotoUpload} 
+                />
                 <div className="w-32 h-32 rounded-[2.5rem] bg-indigo-50 border-4 border-white shadow-xl flex items-center justify-center overflow-hidden">
-                   {user?.profilePhoto ? (
-                     <img src={user.profilePhoto} className="w-full h-full object-cover" />
+                   {user?.profile_photo ? (
+                     <img src={user.profile_photo} className="w-full h-full object-cover" />
                    ) : (
                      <User className="w-12 h-12 text-indigo-200" />
                    )}
                 </div>
-                <button className="absolute bottom-1 right-1 p-2 bg-gray-900 text-white rounded-xl shadow-lg hover:scale-110 transition-transform">
-                  <Camera className="w-4 h-4" />
-                </button>
+                <div className="absolute bottom-1 right-1 flex gap-1">
+                  {user?.profile_photo && (
+                    <button 
+                      onClick={handlePhotoDelete}
+                      className="p-2 bg-red-500 text-white rounded-xl shadow-lg hover:scale-110 transition-transform"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-2 bg-gray-900 text-white rounded-xl shadow-lg hover:scale-110 transition-transform"
+                  >
+                    <Camera className="w-4 h-4" />
+                  </button>
+                </div>
              </div>
              
              <div className="mt-6">

@@ -27,17 +27,9 @@ interface Props {
 
 export default function AppointmentModal({ appointment, type, doctors, departments, onClose, onRefresh }: Props) {
   const { user } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedDoctor, setSelectedDoctor] = useState(appointment?.doctorAssigned?._id || appointment?.doctorAssigned?.id || '');
-  const [editData, setEditData] = useState({
-    fullName: appointment?.fullName || appointment?.patientName || '',
-    mobileNumber: appointment?.mobileNumber || '',
-    emailAddress: appointment?.emailAddress || '',
-    appointmentDate: appointment?.appointmentDate ? 
-      (typeof appointment.appointmentDate === 'string' ? appointment.appointmentDate.split('T')[0] : '') : '',
-    appointmentTime: appointment?.appointmentTime || '',
-    appointmentStatus: appointment?.appointmentStatus || appointment?.status || 'Pending',
-  });
+  const [showCompleteForm, setShowCompleteForm] = useState(false);
+  const [completeNotes, setCompleteNotes] = useState('');
+  const [completePrescription, setCompletePrescription] = useState('');
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +46,29 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
       onClose();
     } catch (err: any) {
       toast.error('Failed to update appointment');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleComplete = async () => {
+    setIsSubmitting(true);
+    try {
+      const data = {
+        doctor_notes: completeNotes,
+        prescription: completePrescription
+      };
+
+      if (user?.role === 'Doctor') {
+        await (appointmentAPI as any).doctorComplete(appointment._id, data);
+      } else {
+        await appointmentAPI.updateStatus(appointment._id, 'Completed', '', data);
+      }
+      toast.success('Appointment completed');
+      onRefresh();
+      onClose();
+    } catch (err) {
+      toast.error('Failed to complete appointment');
     } finally {
       setIsSubmitting(false);
     }
@@ -81,7 +96,7 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">
-                {type === 'view' ? 'Appointment Ticket' : type === 'edit' ? 'Reschedule Appointment' : 'Assign Specialist'}
+                {type === 'view' ? (showCompleteForm ? 'Complete Consultation' : 'Appointment Ticket') : type === 'edit' ? 'Reschedule Appointment' : 'Assign Specialist'}
               </h2>
               <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">{appointment.appointmentId}</p>
             </div>
@@ -93,106 +108,175 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
 
         <div className="flex-1 overflow-y-auto px-8 py-8">
           {type === 'view' ? (
-            <div className="space-y-8">
-              <div className="flex items-center justify-between p-6 bg-primary-900 rounded-2xl text-white shadow-lg overflow-hidden relative">
-                <div className="relative z-10">
-                  <p className="text-primary-200 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Current Status</p>
-                  <h3 className="text-2xl font-bold">{appointment.appointmentStatus}</h3>
-                </div>
-                <div className="relative z-10 text-right">
-                  <p className="text-primary-200 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Queue Number</p>
-                  <p className="text-3xl font-black">#{(appointment.queueNumber || 'N/A')}</p>
-                </div>
-                <Stethoscope className="absolute -right-4 -bottom-4 w-32 h-32 text-primary-800/40 rotate-12" />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <section className="space-y-4">
-                  <h4 className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b pb-2">
-                    <User className="w-3 h-3" /> Patient Information
-                  </h4>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-sm font-bold text-gray-900">{appointment.fullName}</p>
-                      <p className="text-xs text-gray-500">{appointment.gender}, {appointment.age} Years</p>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Mail className="w-4 h-4 text-gray-400" />
-                      {appointment.emailAddress}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Phone className="w-4 h-4 text-gray-400" />
-                      {appointment.mobileNumber}
-                    </div>
-                  </div>
-                </section>
-
-                <section className="space-y-4">
-                  <h4 className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b pb-2">
-                    <Calendar className="w-3 h-3" /> Schedule Details
-                  </h4>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Clock className="w-4 h-4 text-primary-500" />
-                      <span className="font-bold text-gray-900">
-                        {appointment.appointmentDate ? new Date(appointment.appointmentDate).toLocaleDateString() : 'N/A'} at {appointment.appointmentTime || 'N/A'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Building2 className="w-4 h-4 text-gray-400" />
-                      {appointment.department}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Stethoscope className="w-4 h-4 text-gray-400" />
-                      Dr. {appointment.doctorAssigned?.user?.name || 'Not Assigned'}
-                    </div>
-                  </div>
-                </section>
-
-                <section className="md:col-span-2 space-y-4">
-                  <h4 className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b pb-2">
-                    <AlertCircle className="w-3 h-3" /> Medical Notes
-                  </h4>
-                  <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      <span className="font-bold text-gray-900">Chief Complaint:</span> {appointment.primaryConcern || 'Routine checkup'}
+            showCompleteForm ? (
+              <div className="space-y-6">
+                <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl flex items-start gap-4">
+                  <CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="text-emerald-900 font-bold text-sm">Finishing Appointment</h3>
+                    <p className="text-emerald-700 text-xs leading-relaxed mt-1">
+                      Please enter the final consultation notes and any medications prescribed for this patient.
                     </p>
-                    {appointment.knownAllergies === 'Yes' && (
-                      <p className="mt-2 text-sm text-rose-600 font-medium">
-                        ⚠️ High Allergy Alert: {appointment.allergiesDetails}
-                      </p>
-                    )}
                   </div>
-                </section>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Doctor's Consultation Notes</label>
+                    <textarea 
+                      className="input w-full min-h-[120px] py-3 text-sm" 
+                      placeholder="Enter clinical findings, observations, and recommendations..."
+                      value={completeNotes}
+                      onChange={e => setCompleteNotes(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Prescription Details</label>
+                    <textarea 
+                      className="input w-full min-h-[100px] py-3 text-sm" 
+                      placeholder="List of medications, dosage, and frequency..."
+                      value={completePrescription}
+                      onChange={e => setCompletePrescription(e.target.value)}
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-8">
+                <div className="flex items-center justify-between p-6 bg-primary-900 rounded-2xl text-white shadow-lg overflow-hidden relative">
+                  <div className="relative z-10">
+                    <p className="text-primary-200 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Current Status</p>
+                    <h3 className="text-2xl font-bold">{appointment.appointmentStatus}</h3>
+                  </div>
+                  <div className="relative z-10 text-right">
+                    <p className="text-primary-200 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Queue Number</p>
+                    <p className="text-3xl font-black">#{(appointment.queueNumber || 'N/A')}</p>
+                  </div>
+                  <Stethoscope className="absolute -right-4 -bottom-4 w-32 h-32 text-primary-800/40 rotate-12" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <section className="space-y-4">
+                    <h4 className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b pb-2">
+                      <User className="w-3 h-3" /> Patient Information
+                    </h4>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-sm font-bold text-gray-900">{appointment.fullName}</p>
+                        <p className="text-xs text-gray-500">{appointment.gender}, {appointment.age} Years</p>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Mail className="w-4 h-4 text-gray-400" />
+                        {appointment.emailAddress}
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Phone className="w-4 h-4 text-gray-400" />
+                        {appointment.mobileNumber}
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="space-y-4">
+                    <h4 className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b pb-2">
+                      <Calendar className="w-3 h-3" /> Schedule Details
+                    </h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Clock className="w-4 h-4 text-primary-500" />
+                        <span className="font-bold text-gray-900">
+                          {appointment.appointmentDate ? new Date(appointment.appointmentDate).toLocaleDateString() : 'N/A'} at {appointment.appointmentTime || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Building2 className="w-4 h-4 text-gray-400" />
+                        {appointment.department}
+                      </div>
+                      <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-xl border border-gray-100">
+                        <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center shrink-0">
+                          <Stethoscope className="w-4 h-4 text-primary-600" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Assigned Specialist</p>
+                          <p className="text-xs font-bold text-gray-900">Dr. {appointment.doctorAssigned?.user?.name || appointment.doctorAssigned?.name || 'Not Assigned'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  {(appointment.appointmentStatus === 'Completed' && (appointment.doctor_notes || appointment.prescription)) ? (
+                    <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                       <section className="space-y-3">
+                        <h4 className="flex items-center gap-2 text-[10px] font-bold text-emerald-600 uppercase tracking-widest border-b border-emerald-100 pb-2">
+                          <FileText className="w-3 h-3" /> Consultation Summary
+                        </h4>
+                        <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100/50">
+                          <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap">
+                            {appointment.doctor_notes || 'No notes provided.'}
+                          </p>
+                        </div>
+                      </section>
+                      <section className="space-y-3">
+                        <h4 className="flex items-center gap-2 text-[10px] font-bold text-indigo-600 uppercase tracking-widest border-b border-indigo-100 pb-2">
+                          <Stethoscope className="w-3 h-3" /> Prescription
+                        </h4>
+                        <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100/50">
+                          <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap italic font-medium">
+                            {appointment.prescription || 'No medicines prescribed.'}
+                          </p>
+                        </div>
+                      </section>
+                    </div>
+                  ) : (
+                    <section className="md:col-span-2 space-y-4">
+                      <h4 className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b pb-2">
+                        <AlertCircle className="w-3 h-3" /> Medical Notes
+                      </h4>
+                      <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                          <span className="font-bold text-gray-900">Chief Complaint:</span> {appointment.primaryConcern || 'Routine checkup'}
+                        </p>
+                        {(appointment.knownAllergies === 'Yes' || appointment.known_allergies === true) && (
+                          <p className="mt-2 text-sm text-rose-600 font-medium flex items-center gap-1.5">
+                            <span className="p-1 bg-rose-100 rounded-md">⚠️</span> High Allergy Alert: {appointment.allergiesDetails || appointment.allergies_details}
+                          </p>
+                        )}
+                      </div>
+                    </section>
+                  )}
+                </div>
+              </div>
+            )
           ) : (
             <form onSubmit={handleUpdate} className="space-y-6">
               {type === 'assign' ? (
                 <div className="space-y-4">
                   <label className="block text-sm font-bold text-gray-700">Select Specialist for {appointment.department}</label>
                   <div className="grid grid-cols-1 gap-3">
-                    {doctors.filter(d => d.department?.name === appointment.department).map(doc => (
+                    {doctors.filter(d => (d.department?.name === appointment.department) || (d.department === appointment.department)).map(doc => (
                       <button
-                        key={doc._id}
+                        key={doc._id || doc.id}
                         type="button"
-                        onClick={() => setSelectedDoctor(doc._id)}
+                        onClick={() => setSelectedDoctor(doc._id || doc.id)}
                         className={cn(
                           "flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all",
-                          selectedDoctor === doc._id ? "border-primary-500 bg-primary-50" : "border-gray-100 hover:border-gray-200"
+                          (selectedDoctor === doc._id || selectedDoctor === doc.id) ? "border-primary-500 bg-primary-50" : "border-gray-100 hover:border-gray-200"
                         )}
                       >
-                        <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
-                          <Stethoscope className="w-6 h-6 text-primary-600" />
+                        <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0 overflow-hidden">
+                           {(doc.profile_photo || doc.user?.profile_photo) ? (
+                            <img src={doc.profile_photo || doc.user?.profile_photo} className="w-full h-full object-cover" />
+                          ) : (
+                            <Stethoscope className="w-6 h-6 text-primary-600" />
+                          )}
                         </div>
                         <div>
-                          <p className="font-bold text-gray-900">Dr. {doc.user?.name}</p>
+                          <p className="font-bold text-gray-900">Dr. {doc.user?.name || doc.name}</p>
                           <p className="text-xs text-gray-500">{doc.qualifications || 'Expert Specialist'}</p>
                         </div>
-                        {selectedDoctor === doc._id && <CheckCircle2 className="w-5 h-5 text-primary-500 ml-auto" />}
+                        {(selectedDoctor === doc._id || selectedDoctor === doc.id) && <CheckCircle2 className="w-5 h-5 text-primary-500 ml-auto" />}
                       </button>
                     ))}
-                    {doctors.filter(d => d.department?.name === appointment.department).length === 0 && (
+                    {doctors.filter(d => (d.department?.name === appointment.department) || (d.department === appointment.department)).length === 0 && (
                       <div className="text-center py-8 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
                         <UserPlus className="w-8 h-8 text-gray-300 mx-auto mb-2" />
                         <p className="text-sm text-gray-500">No doctors found in {appointment.department}</p>
@@ -244,41 +328,40 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
           {type === 'view' ? (
             <>
               <div className="flex items-center gap-2">
-                <button 
-                  onClick={() => window.print()}
-                  className="btn-secondary"
-                >
-                  <Printer className="w-4 h-4" />
-                  Print Ticket
-                </button>
-                {appointment.appointmentStatus === 'Confirmed' && (user?.role === 'Admin' || (user?.role === 'Doctor' && (appointment.doctorAssigned?._id === user?.doctorProfileId || appointment.doctorAssigned?.id === user?.doctorProfileId))) && (
+                {!showCompleteForm && (
                   <button 
-                    onClick={async () => {
-                      setIsSubmitting(true);
-                      try {
-                        if (user?.role === 'Doctor') {
-                          await appointmentAPI.doctorComplete(appointment._id);
-                        } else {
-                          await appointmentAPI.updateStatus(appointment._id, 'Completed');
-                        }
-                        toast.success('Appointment completed');
-                        onRefresh();
-                        onClose();
-                      } catch (err) {
-                        toast.error('Failed to complete appointment');
-                      } finally {
-                        setIsSubmitting(false);
-                      }
-                    }}
-                    disabled={isSubmitting}
-                    className="btn-primary bg-emerald-600 hover:bg-emerald-700 border-emerald-600"
+                    onClick={() => window.print()}
+                    className="btn-secondary"
                   >
-                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                    Complete consultation
+                    <Printer className="w-4 h-4" />
+                    Print Ticket
                   </button>
                 )}
+                {appointment.appointmentStatus === 'Confirmed' && (user?.role === 'Admin' || (user?.role === 'Doctor' && (appointment.doctorAssigned?._id === user?.doctorProfileId || appointment.doctorAssigned?.id === user?.doctorProfileId || appointment.doctor_assigned_id === user?.doctorProfileId))) && (
+                  showCompleteForm ? (
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setShowCompleteForm(false)} className="btn-secondary">Cancel</button>
+                      <button 
+                        onClick={handleComplete}
+                        disabled={isSubmitting}
+                        className="btn-primary bg-emerald-600 hover:bg-emerald-700 border-emerald-600 shadow-xl shadow-emerald-500/20"
+                      >
+                        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                        Finalize & Close
+                      </button>
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={() => setShowCompleteForm(true)}
+                      className="btn-primary bg-emerald-600 hover:bg-emerald-700 border-emerald-600"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      Complete consultation
+                    </button>
+                  )
+                )}
               </div>
-              <button onClick={onClose} className="btn-primary min-w-[120px]">Done</button>
+              {!showCompleteForm && <button onClick={onClose} className="btn-primary min-w-[120px]">Done</button>}
             </>
           ) : (
             <>

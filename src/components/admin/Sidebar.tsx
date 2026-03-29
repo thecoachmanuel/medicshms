@@ -166,8 +166,12 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
             className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-all"
             onClick={() => setShowProfileMenu(!showProfileMenu)}
           >
-            <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-primary-600" />
+            <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center overflow-hidden">
+              {user?.profile_photo ? (
+                <img src={user.profile_photo} alt={user.name} className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-5 h-5 text-primary-600" />
+              )}
             </div>
             <div className="flex-1 overflow-hidden">
               <p className="text-sm font-medium text-gray-900 truncate">{user?.name || 'User'}</p>

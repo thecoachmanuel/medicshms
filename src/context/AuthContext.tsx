@@ -14,7 +14,8 @@ interface User {
   subscription_status?: string;
   trial_end_date?: string;
   phone?: string;
-  profilePhoto?: string;
+  profile_photo?: string;
+  doctorProfileId?: string;
   createdAt?: string;
 }
 
@@ -45,7 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           // Verify token and get latest profile
           const response: any = await authAPI.getProfile();
-          const latestUser = {
+          const latestUser: User = {
             id: response.id || response._id,
             name: response.name,
             email: response.email,
@@ -54,7 +55,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             hospital_slug: response.hospital_slug,
             subscription_status: response.subscription_status,
             trial_end_date: response.trial_end_date,
-            phone: response.phone
+            phone: response.phone,
+            profile_photo: response.profile_photo,
+            doctorProfileId: response.doctor_profile_id || response.doctorProfileId
           };
           localStorage.setItem('user', JSON.stringify(latestUser));
           setUser(latestUser);
@@ -78,7 +81,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setError(null);
       const response: any = await authAPI.login(credentials);
       
-      const userData = {
+      const userData: User = {
         id: response._id,
         name: response.name,
         email: response.email,
@@ -87,7 +90,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         hospital_slug: response.hospital_slug,
         subscription_status: response.subscription_status,
         trial_end_date: response.trial_end_date,
-        phone: response.phone
+        phone: response.phone,
+        profile_photo: response.profile_photo,
+        doctorProfileId: response.doctor_id || response.doctorProfileId
       };
 
       localStorage.setItem('token', response.token);

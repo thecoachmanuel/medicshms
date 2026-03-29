@@ -347,7 +347,27 @@ export default function PatientsList({ role }: Props) {
                             <p className="text-[10px] font-black text-primary-600 uppercase tracking-widest">{apt.visitType}</p>
                           </div>
                         </div>
-                        {apt.reasonForVisit && (
+                        {apt.appointmentStatus === 'Completed' && (apt.doctor_notes || apt.prescription) && (
+                          <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {apt.doctor_notes && (
+                              <div>
+                                <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Doctor's Notes</p>
+                                <p className="text-[11px] text-gray-600 leading-relaxed bg-emerald-50/50 p-2 rounded-lg border border-emerald-100/50">
+                                  {apt.doctor_notes}
+                                </p>
+                              </div>
+                            )}
+                            {apt.prescription && (
+                              <div>
+                                <p className="text-[9px] font-bold text-indigo-600 uppercase tracking-widest mb-1">Prescription</p>
+                                <p className="text-[11px] text-gray-600 italic bg-indigo-50/50 p-2 rounded-lg border border-indigo-100/50">
+                                  {apt.prescription}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {apt.reasonForVisit && !apt.doctor_notes && (
                           <div className="mt-4 pt-4 border-t border-gray-100">
                             <p className="text-xs text-gray-500 italic">" {apt.reasonForVisit} "</p>
                           </div>

@@ -47,6 +47,8 @@ export async function GET(
       appointmentStatus: apt.appointment_status,
       visitType: apt.visit_type,
       reasonForVisit: apt.reason_for_visit,
+      doctor_notes: apt.doctor_notes,
+      prescription: apt.prescription,
       doctorName: (apt as any).doctor?.profiles?.name
     }));
 

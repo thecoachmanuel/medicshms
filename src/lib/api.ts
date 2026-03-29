@@ -215,6 +215,13 @@ export const uploadAPI = {
   }),
 };
 
+export const profileAPI = {
+  uploadPhoto: (formData: FormData) => api.post('/profile/upload-photo', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  deletePhoto: () => api.delete('/profile/photo'),
+};
+
 export const platformAdminAPI = {
   getHospitals: () => api.get('/platform-admin/hospitals'),
   createHospital: (data: any) => api.post('/platform-admin/hospitals', data),

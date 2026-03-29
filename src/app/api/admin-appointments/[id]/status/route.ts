@@ -6,6 +6,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  try {
     const { status, reason } = await request.json();
     const { id } = await params;
     const { error: authError, profile } = await withAuth(request, ['Admin', 'Receptionist', 'Doctor']);
