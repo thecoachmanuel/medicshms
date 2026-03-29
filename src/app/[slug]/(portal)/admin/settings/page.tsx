@@ -129,7 +129,14 @@ export default function SettingsPage() {
   const handleSave = async () => {
     try {
       setSyncing(true);
-      await siteSettingsAPI.update(settings);
+      // Ensure both color fields are synced before sending to API
+      const updatedSettings = {
+        ...settings,
+        primary_color: settings.theme_color || settings.primary_color,
+        theme_color: settings.theme_color || settings.primary_color
+      };
+      
+      await siteSettingsAPI.update(updatedSettings);
       
       // Refresh global settings context
       await refreshSettings();

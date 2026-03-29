@@ -123,7 +123,7 @@ export function generatePalette(baseHex: string): ColorPalette {
   // to ensure exact match with user choice
   
   (Object.keys(shades) as unknown as (keyof ColorPalette)[]).forEach((shade) => {
-    if (shade === 500) {
+    if (Number(shade) === 500) {
       palette[shade] = baseHex;
     } else {
       const { r, g, b } = hslToRgb(hsl.h, hsl.s, shades[shade]);

@@ -24,9 +24,12 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   // Detect slug from URL consistently
   const slug = useMemo(() => {
     const parts = pathname.split('/');
-    const reservedWords = ['login', 'platform-admin', 'admin', 'register', 'api', '_next'];
-    return (parts.length > 1 && !reservedWords.includes(parts[1])) 
-      ? parts[1] 
+    // Reserved top-level paths that are NOT tenant slugs
+    const reservedWords = ['platform-admin', 'api', '_next', 'static', 'favicon.ico'];
+    const firstPart = parts[1];
+    
+    return (parts.length > 1 && firstPart && !reservedWords.includes(firstPart)) 
+      ? firstPart 
       : undefined;
   }, [pathname]);
 
@@ -47,14 +50,15 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       ) as any;
       
       if (res?.data) {
-        const primaryColor = res.data.primary_color || res.data.theme_color || '#2563eb';
+        // Prioritize theme_color as it's the one edited in the Settings UI
+        const primaryColor = res.data.theme_color || res.data.primary_color || '#2563eb';
         const secondaryColor = res.data.secondary_color || '#0f172a';
         
         setSettings({
           ...res.data,
           primary_color: primaryColor,
-          secondary_color: secondaryColor,
-          theme_color: primaryColor // Consistency alias
+          theme_color: primaryColor,
+          secondary_color: secondaryColor
         });
       }
     } catch (error) {
