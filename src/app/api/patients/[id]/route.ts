@@ -92,7 +92,7 @@ export async function PATCH(
     // Determine which ID type to use for the update
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
     
-    let query = supabase.from('patients').update({
+    let query = (supabaseAdmin || supabase).from('patients').update({
       full_name: body.fullName || body.full_name,
       email_address: body.emailAddress || body.email_address,
       mobile_number: body.mobileNumber || body.mobile_number,
@@ -118,6 +118,7 @@ export async function PATCH(
     const { data, error } = await query.select().single();
 
     if (error) return NextResponse.json({ message: error.message }, { status: 400 });
+    if (!data) return NextResponse.json({ message: 'Patient not found' }, { status: 404 });
 
     return NextResponse.json({ 
       message: 'Patient updated successfully',
