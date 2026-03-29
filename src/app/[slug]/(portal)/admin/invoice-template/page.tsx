@@ -126,7 +126,7 @@ export default function InvoiceTemplatePage() {
              <div className="bg-white rounded-xl p-8 min-h-[400px] flex flex-col shadow-inner">
                <div className="flex justify-between items-start mb-10">
                  <div>
-                   <h3 className="text-xl font-black text-indigo-600 tracking-tight uppercase">{template.hospitalName || 'HOSPITAL NAME'}</h3>
+                   <h3 className="text-xl font-black text-primary-600 tracking-tight uppercase">{template.hospitalName || 'HOSPITAL NAME'}</h3>
                    <p className="text-[10px] font-bold text-gray-400 mt-1 max-w-[200px] leading-relaxed uppercase">{template.address}</p>
                  </div>
                  <div className="text-right">

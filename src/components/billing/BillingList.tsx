@@ -123,7 +123,7 @@ export default function BillingList() {
         </div>
         <div className="flex items-center gap-3">
           <button onClick={() => fetchData()} className="p-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors group">
-            <RefreshCw className={cn("w-4 h-4 text-gray-400 group-hover:text-indigo-600", loading && "animate-spin")} />
+            <RefreshCw className={cn("w-4 h-4 text-gray-400 group-hover:text-primary-600", loading && "animate-spin")} />
           </button>
           <button onClick={handleDownloadCSV} className="btn-secondary">
             <Download className="w-4 h-4" />
@@ -140,7 +140,7 @@ export default function BillingList() {
             placeholder="Search invoice #, patient name or ID..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm focus:ring-4 focus:ring-indigo-500/10 outline-none shadow-sm transition-all shadow-indigo-100/10"
+            className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm focus:ring-4 focus:ring-primary-500/10 outline-none shadow-sm transition-all shadow-primary-100/10"
           />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 no-scrollbar">
@@ -204,8 +204,8 @@ export default function BillingList() {
                   </td>
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-2xl bg-indigo-50 border border-indigo-100/50 flex items-center justify-center">
-                        <span className="text-indigo-600 font-black text-xs">{item.fullName[0]}</span>
+                      <div className="w-9 h-9 rounded-2xl bg-primary-50 border border-primary-100/50 flex items-center justify-center">
+                        <span className="text-primary-600 font-black text-xs">{item.fullName[0]}</span>
                       </div>
                       <div>
                         <p className="text-sm font-bold text-gray-900 leading-none mb-1">{item.fullName}</p>
@@ -258,7 +258,7 @@ export default function BillingList() {
                         <button 
                           onClick={() => setGenerateModal(item)}
                           disabled={item.appointmentStatus === 'Cancelled'}
-                          className="btn-primary py-2 px-4 shadow-lg shadow-indigo-100 disabled:opacity-30 disabled:shadow-none"
+                          className="btn-primary py-2 px-4 shadow-lg shadow-primary-100 disabled:opacity-30 disabled:shadow-none"
                         >
                           <Plus className="w-3.5 h-3.5" />
                           Generate
@@ -267,7 +267,7 @@ export default function BillingList() {
                         <>
                           <button 
                             onClick={() => setViewModal({ billId: item.bill._id, appointment: item })}
-                            className="p-2.5 bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-indigo-600 hover:border-indigo-100 hover:bg-indigo-50 transition-all active:scale-90"
+                            className="p-2.5 bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-primary-600 hover:border-primary-100 hover:bg-primary-50 transition-all active:scale-90"
                           >
                             <Eye className="w-4 h-4" />
                           </button>

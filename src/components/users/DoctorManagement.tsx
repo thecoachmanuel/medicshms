@@ -168,7 +168,7 @@ export default function DoctorManagement() {
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setShowModal(true)}
-            className="btn-primary shadow-lg shadow-indigo-100"
+            className="btn-primary shadow-lg shadow-primary-100"
           >
             <Plus className="w-4 h-4" />
             Add Doctor
@@ -183,7 +183,7 @@ export default function DoctorManagement() {
           placeholder="Search by name, email, or phone..." 
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all shadow-sm"
+          className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm focus:ring-4 focus:ring-primary-500/10 outline-none transition-all shadow-sm"
         />
       </div>
 
@@ -219,11 +219,11 @@ export default function DoctorManagement() {
                       onClick={() => handleViewDetail(doctor)}
                       className="flex items-center gap-3 text-left group/name"
                     >
-                      <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100/50 flex items-center justify-center">
-                        <span className="text-indigo-600 font-black text-xs">{doctor.name[0]}</span>
+                      <div className="w-10 h-10 rounded-2xl bg-primary-50 border border-primary-100/50 flex items-center justify-center">
+                        <span className="text-primary-600 font-black text-xs">{doctor.name[0]}</span>
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-gray-900 group-hover/name:text-indigo-600 transition-colors">Dr. {doctor.name}</p>
+                        <p className="text-sm font-bold text-gray-900 group-hover/name:text-primary-600 transition-colors">Dr. {doctor.name}</p>
                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">UID: #{doctor._id.slice(-6)}</p>
                       </div>
                     </button>
@@ -242,7 +242,7 @@ export default function DoctorManagement() {
                   </td>
                   <td className="px-6 py-5">
                     {doctor.doctorInfo?.primaryDepartment ? (
-                      <span className="inline-flex items-center px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-[10px] font-black uppercase tracking-widest border border-indigo-100">
+                      <span className="inline-flex items-center px-3 py-1 bg-primary-50 text-primary-700 rounded-lg text-[10px] font-black uppercase tracking-widest border border-primary-100">
                         {doctor.doctorInfo.primaryDepartment.name}
                       </span>
                     ) : (
@@ -259,7 +259,7 @@ export default function DoctorManagement() {
                   </td>
                   <td className="px-6 py-5">
                     <div className="flex items-center justify-center gap-2">
-                      <button onClick={() => handleEdit(doctor)} className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+                      <button onClick={() => handleEdit(doctor)} className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all">
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button onClick={() => handleResetPassword(doctor._id)} className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all" title="Reset Password">
@@ -324,7 +324,7 @@ export default function DoctorManagement() {
                   onClick={() => setFormData({...formData, isActive: !formData.isActive})}
                   className={cn(
                     "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                    formData.isActive ? "bg-indigo-600" : "bg-gray-200"
+                    formData.isActive ? "bg-primary-600" : "bg-gray-200"
                   )}
                 >
                   <span className={cn(
@@ -334,8 +334,8 @@ export default function DoctorManagement() {
                 </button>
               </div>
               {!editingDoctor && (
-                <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl text-xs text-indigo-600 font-bold">
-                  System will assign default password: <span className="font-black text-indigo-900 ml-1">hms@doctor</span>
+                <div className="p-4 bg-primary-50 border border-primary-100 rounded-2xl text-xs text-primary-600 font-bold">
+                  System will assign default password: <span className="font-black text-primary-900 ml-1">hms@doctor</span>
                 </div>
               )}
               <div className="flex gap-4 pt-4">
@@ -392,7 +392,7 @@ export default function DoctorManagement() {
                       <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Specialty Areas</p>
                       <div className="flex flex-wrap gap-2">
                         {detailData.doctorProfile?.specialInterests?.map((item: string, i: number) => (
-                          <span key={i} className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-widest border border-indigo-100">{item}</span>
+                          <span key={i} className="px-3 py-1 bg-primary-50 text-primary-600 rounded-lg text-[10px] font-black uppercase tracking-widest border border-primary-100">{item}</span>
                         ))}
                       </div>
                     </div>

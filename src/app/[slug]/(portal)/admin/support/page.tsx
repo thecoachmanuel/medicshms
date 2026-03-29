@@ -146,7 +146,7 @@ export default function SupportTicketsPage() {
           onClick={() => setActiveTab('platform')}
           className={cn(
             "px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all",
-            activeTab === 'platform' ? "bg-indigo-600 text-white shadow-lg" : "text-gray-400 hover:bg-gray-50"
+            activeTab === 'platform' ? "bg-primary-600 text-white shadow-lg" : "text-gray-400 hover:bg-gray-50"
           )}
         >
           Platform Support
@@ -175,7 +175,7 @@ export default function SupportTicketsPage() {
             {activeTab === 'patient' ? (
               <MessageSquare className="w-12 h-12 text-gray-200 mx-auto mb-4" />
             ) : (
-              <ShieldCheck className="w-12 h-12 text-indigo-200 mx-auto mb-4" />
+              <ShieldCheck className="w-12 h-12 text-primary-200 mx-auto mb-4" />
             )}
             <p className="text-gray-400 font-bold uppercase tracking-widest text-sm">
               {activeTab === 'patient' ? 'No patient tickets found' : 'No platform requests found'}

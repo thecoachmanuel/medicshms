@@ -129,8 +129,8 @@ export default function GenerateInvoiceModal({ appointment, onClose, onGenerated
       <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
         <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
-              <FileText className="w-5 h-5 text-indigo-600" />
+            <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center">
+              <FileText className="w-5 h-5 text-primary-600" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">Generate Invoice</h2>
@@ -165,7 +165,7 @@ export default function GenerateInvoiceModal({ appointment, onClose, onGenerated
               <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Billable Items</h3>
               <button 
                 onClick={() => setShowServicePicker(!showServicePicker)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-200"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl text-xs font-bold hover:bg-primary-700 transition-all active:scale-95 shadow-lg shadow-primary-200"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Add Service
@@ -179,18 +179,18 @@ export default function GenerateInvoiceModal({ appointment, onClose, onGenerated
                     <button
                       key={idx}
                       onClick={() => addDepartmentService(ds)}
-                      className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-all text-left"
+                      className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-xl hover:border-primary-200 hover:bg-primary-50 transition-all text-left"
                     >
                       <div>
                         <p className="text-xs font-bold text-gray-900">{ds.serviceName}</p>
                         <p className="text-[10px] text-gray-400 font-medium">Standard Fee</p>
                       </div>
-                      <span className="text-xs font-black text-indigo-600">₦{ds.fee}</span>
+                      <span className="text-xs font-black text-primary-600">₦{ds.fee}</span>
                     </button>
                   ))}
                   <button
                     onClick={addCustomService}
-                    className="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-gray-200 rounded-xl hover:border-indigo-400 hover:bg-white text-gray-400 hover:text-indigo-600 transition-all"
+                    className="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-gray-200 rounded-xl hover:border-primary-400 hover:bg-white text-gray-400 hover:text-primary-600 transition-all"
                   >
                     <Plus className="w-4 h-4" />
                     <span className="text-xs font-bold">Custom Line Item</span>
@@ -203,7 +203,7 @@ export default function GenerateInvoiceModal({ appointment, onClose, onGenerated
               {services.map((service, index) => (
                 <div key={index} className={cn(
                   "flex items-start gap-4 p-5 rounded-2xl border transition-all",
-                  service.isDefault ? "bg-indigo-50/30 border-indigo-100" : "bg-white border-gray-100 hover:border-gray-200 shadow-sm"
+                  service.isDefault ? "bg-primary-50/30 border-primary-100" : "bg-white border-gray-100 hover:border-gray-200 shadow-sm"
                 )}>
                   <div className="flex-1 space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -214,7 +214,7 @@ export default function GenerateInvoiceModal({ appointment, onClose, onGenerated
                           value={service.name}
                           onChange={e => updateService(index, 'name', e.target.value)}
                           placeholder="e.g. Lab Tests, X-Ray"
-                          className="w-full bg-white/50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all"
+                          className="w-full bg-white/50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
                         />
                       </div>
                       <div className="space-y-1.5">
@@ -223,7 +223,7 @@ export default function GenerateInvoiceModal({ appointment, onClose, onGenerated
                           type="number"
                           value={service.amount || ''}
                           onChange={e => updateService(index, 'amount', e.target.value)}
-                          className="w-full bg-white/50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-black text-indigo-600 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all"
+                          className="w-full bg-white/50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-black text-primary-600 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
                         />
                       </div>
                     </div>
@@ -255,7 +255,7 @@ export default function GenerateInvoiceModal({ appointment, onClose, onGenerated
                     type="number"
                     value={roundOff || ''}
                     onChange={e => setRoundOff(Number(e.target.value) || 0)}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all"
+                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-300 uppercase">+ / -</span>
                 </div>
@@ -276,11 +276,11 @@ export default function GenerateInvoiceModal({ appointment, onClose, onGenerated
               <div className="h-px bg-white/10 my-4"></div>
               <div className="flex justify-between items-center">
                 <div className="space-y-1">
-                  <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em]">Total Payable</span>
+                  <span className="text-[10px] font-black text-primary-400 uppercase tracking-[0.3em]">Total Payable</span>
                   <p className="text-3xl font-black tracking-tight">₦{total.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</p>
                 </div>
                 <div className="text-right">
-                  <CheckCircle2 className="w-8 h-8 text-indigo-500 opacity-50 ml-auto" />
+                  <CheckCircle2 className="w-8 h-8 text-primary-500 opacity-50 ml-auto" />
                 </div>
               </div>
             </div>

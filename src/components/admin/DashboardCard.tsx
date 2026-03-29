@@ -34,8 +34,8 @@ export function DashboardCard({
 }: DashboardCardProps) {
   const colorMap = {
     primary: { glow: 'bg-primary-500', icon: 'group-hover:bg-primary-50 group-hover:text-primary-600' },
-    blue: { glow: 'bg-blue-500', icon: 'group-hover:bg-blue-50 group-hover:text-blue-600' },
-    indigo: { glow: 'bg-indigo-500', icon: 'group-hover:bg-indigo-50 group-hover:text-indigo-600' },
+    blue: { glow: 'bg-primary-500', icon: 'group-hover:bg-primary-50 group-hover:text-primary-600' },
+    primary: { glow: 'bg-primary-500', icon: 'group-hover:bg-primary-50 group-hover:text-primary-600' },
     emerald: { glow: 'bg-emerald-500', icon: 'group-hover:bg-emerald-50 group-hover:text-emerald-600' },
     purple: { glow: 'bg-purple-500', icon: 'group-hover:bg-purple-50 group-hover:text-purple-600' },
     amber: { glow: 'bg-amber-500', icon: 'group-hover:bg-amber-50 group-hover:text-amber-600' },

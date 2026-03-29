@@ -71,7 +71,7 @@ export default function DemoRequestsPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'pending': return <Clock4 className="w-4 h-4 text-amber-500" />;
-      case 'scheduled': return <Calendar className="w-4 h-4 text-blue-500" />;
+      case 'scheduled': return <Calendar className="w-4 h-4 text-primary-500" />;
       case 'completed': return <CheckCircle2 className="w-4 h-4 text-emerald-500" />;
       case 'cancelled': return <XCircle className="w-4 h-4 text-rose-500" />;
       default: return null;
@@ -133,7 +133,7 @@ export default function DemoRequestsPage() {
                         <span className={cn(
                           "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5",
                           req.status === 'pending' && "bg-amber-50 text-amber-600",
-                          req.status === 'scheduled' && "bg-blue-50 text-blue-600",
+                          req.status === 'scheduled' && "bg-primary-50 text-primary-600",
                           req.status === 'completed' && "bg-emerald-50 text-emerald-600",
                           req.status === 'cancelled' && "bg-rose-50 text-rose-600",
                         )}>

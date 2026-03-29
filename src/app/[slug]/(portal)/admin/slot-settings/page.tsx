@@ -107,8 +107,8 @@ export default function SlotSettingsPage() {
 
         <div className="card p-8 space-y-6">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-indigo-600" />
+            <div className="w-10 h-10 rounded-2xl bg-primary-50 flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-primary-600" />
             </div>
             <h2 className="text-lg font-bold text-gray-900">Operation Timing</h2>
           </div>

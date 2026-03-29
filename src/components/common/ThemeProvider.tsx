@@ -19,39 +19,58 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const isPlatformAdmin = pathname.startsWith('/platform-admin');
     
-    // If it's platform admin, we should NOT apply any tenant-specific theme
-    if (isPlatformAdmin) {
-      const root = document.documentElement;
+    const root = document.documentElement;
+    const clearTheme = () => {
+      [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950].forEach(v => {
+        root.style.removeProperty(`--primary-${v}`);
+        root.style.removeProperty(`--secondary-${v}`);
+      });
       root.style.removeProperty('--primary-color');
-      root.style.removeProperty('--primary-50');
-      root.style.removeProperty('--primary-100');
-      root.style.removeProperty('--primary-500');
-      root.style.removeProperty('--primary-600');
-      root.style.removeProperty('--primary-700');
+      root.style.removeProperty('--secondary-color');
+    };
+
+    if (isPlatformAdmin) {
+      clearTheme();
       return;
     }
 
-    if (settings?.theme_color || settings?.primary_color) {
+    if (settings?.primary_color || settings?.theme_color) {
       const color = settings.primary_color || settings.theme_color;
-      document.documentElement.style.setProperty('--primary-color', color);
+      const secondary = settings.secondary_color || '#0f172a';
       
-      const root = document.documentElement;
       const isHex = /^#[0-9A-F]{6}$/i.test(color);
       
-      root.style.setProperty('--primary-50', isHex ? `${color}10` : color);
-      root.style.setProperty('--primary-100', isHex ? `${color}20` : color);
-      root.style.setProperty('--primary-500', color);
-      root.style.setProperty('--primary-600', color);
-      root.style.setProperty('--primary-700', color);
+      if (isHex) {
+        // Helper to adjust brightness
+        const adjust = (hex: string, amt: number) => {
+          const col = parseInt(hex.slice(1), 16);
+          const r = Math.max(0, Math.min(255, (col >> 16) + amt));
+          const g = Math.max(0, Math.min(255, ((col >> 8) & 0x00FF) + amt));
+          const b = Math.max(0, Math.min(255, (col & 0x0000FF) + amt));
+          return "#" + (g | (b << 8) | (r << 16)).toString(16).padStart(6, '0');
+        };
+
+        root.style.setProperty('--primary-50', `${color}10`);
+        root.style.setProperty('--primary-100', `${color}20`);
+        root.style.setProperty('--primary-500', color);
+        root.style.setProperty('--primary-600', adjust(color, -20));
+        root.style.setProperty('--primary-700', adjust(color, -40));
+        
+        root.style.setProperty('--secondary-50', '#f8fafc');
+        root.style.setProperty('--secondary-500', secondary);
+        root.style.setProperty('--secondary-600', adjust(secondary, -20));
+        root.style.setProperty('--secondary-700', adjust(secondary, -40));
+      } else {
+        root.style.setProperty('--primary-500', color);
+        root.style.setProperty('--primary-600', color);
+        root.style.setProperty('--primary-700', color);
+        root.style.setProperty('--secondary-500', secondary);
+      }
+      
+      root.style.setProperty('--primary-color', color);
+      root.style.setProperty('--secondary-color', secondary);
     } else if (!loading) {
-      // Clear properties to use defaults from CSS only if we're done loading and no theme was found
-      const root = document.documentElement;
-      root.style.removeProperty('--primary-color');
-      root.style.removeProperty('--primary-50');
-      root.style.removeProperty('--primary-100');
-      root.style.removeProperty('--primary-500');
-      root.style.removeProperty('--primary-600');
-      root.style.removeProperty('--primary-700');
+      clearTheme();
     }
   }, [settings, pathname, loading]);
 

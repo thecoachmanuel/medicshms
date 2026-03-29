@@ -109,11 +109,11 @@ export default function ProfilePage() {
                   accept="image/*" 
                   onChange={handlePhotoUpload} 
                 />
-                <div className="w-32 h-32 rounded-[2.5rem] bg-indigo-50 border-4 border-white shadow-xl flex items-center justify-center overflow-hidden">
+                <div className="w-32 h-32 rounded-[2.5rem] bg-primary-50 border-4 border-white shadow-xl flex items-center justify-center overflow-hidden">
                    {user?.profile_photo ? (
                      <img src={user.profile_photo} className="w-full h-full object-cover" />
                    ) : (
-                     <User className="w-12 h-12 text-indigo-200" />
+                     <User className="w-12 h-12 text-primary-200" />
                    )}
                 </div>
                 <div className="absolute bottom-1 right-1 flex gap-1">

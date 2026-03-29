@@ -286,7 +286,7 @@ export default function AdminManagement() {
                   onClick={() => setFormData({...formData, isActive: !formData.isActive})}
                   className={cn(
                     "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                    formData.isActive ? "bg-indigo-600" : "bg-gray-200"
+                    formData.isActive ? "bg-primary-600" : "bg-gray-200"
                   )}
                 >
                   <span className={cn(

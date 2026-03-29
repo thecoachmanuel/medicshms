@@ -342,7 +342,7 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
                       onClick={() => setPaymentStatus(s)}
                       className={cn(
                         "py-2 px-3 rounded-xl text-[10px] font-bold border transition-all uppercase",
-                        paymentStatus === s ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-gray-400 border-gray-100 hover:border-gray-300"
+                        paymentStatus === s ? "bg-primary-600 text-white border-primary-600" : "bg-white text-gray-400 border-gray-100 hover:border-gray-300"
                       )}
                     >
                       {s}
@@ -357,12 +357,12 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
                     type="number" 
                     value={paidAmount}
                     onChange={e => setPaidAmount(Number(e.target.value))}
-                    className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm font-black text-indigo-600 outline-none"
+                    className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm font-black text-primary-600 outline-none"
                   />
                   <button 
                     onClick={handleUpdatePayment}
                     disabled={saving}
-                    className="px-6 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 whitespace-nowrap"
+                    className="px-6 bg-primary-600 text-white rounded-xl text-xs font-bold hover:bg-primary-700 whitespace-nowrap"
                   >
                     {saving ? '...' : 'Update Invoice'}
                   </button>

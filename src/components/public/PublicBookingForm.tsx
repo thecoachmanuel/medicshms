@@ -254,7 +254,7 @@ export default function PublicBookingForm({ hospitalId, slug }: Props) {
                       type="button"
                       onClick={handlePatientLookup}
                       disabled={lookupLoading || !formData.emailAddress || !formData.dateOfBirth}
-                      className="w-full py-4 bg-indigo-50 text-indigo-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-100 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="w-full py-4 bg-primary-50 text-primary-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-primary-100 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {lookupLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                       {formData.visitType === 'Returning Patient' ? 'Update Details' : 'I am a Returning Patient (Auto-fill)'}

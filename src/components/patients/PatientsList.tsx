@@ -217,8 +217,8 @@ export default function PatientsList({ role }: Props) {
                   </td>
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100/50">
-                        <span className="text-indigo-600 font-black text-sm">{patient.fullName[0]}</span>
+                      <div className="w-10 h-10 rounded-2xl bg-primary-50 flex items-center justify-center border border-primary-100/50">
+                        <span className="text-primary-600 font-black text-sm">{patient.fullName[0]}</span>
                       </div>
                       <div>
                         <p className="text-sm font-bold text-gray-900 leading-none mb-1">{patient.fullName}</p>
@@ -362,8 +362,8 @@ export default function PatientsList({ role }: Props) {
                             )}
                             {apt.prescription && (
                               <div>
-                                <p className="text-[9px] font-bold text-indigo-600 uppercase tracking-widest mb-1">Prescription</p>
-                                <p className="text-[11px] text-gray-600 italic bg-indigo-50/50 p-2 rounded-lg border border-indigo-100/50">
+                                <p className="text-[9px] font-bold text-primary-600 uppercase tracking-widest mb-1">Prescription</p>
+                                <p className="text-[11px] text-gray-600 italic bg-primary-50/50 p-2 rounded-lg border border-primary-100/50">
                                   {apt.prescription}
                                 </p>
                               </div>

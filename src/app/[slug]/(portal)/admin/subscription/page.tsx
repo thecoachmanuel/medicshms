@@ -193,7 +193,7 @@ export default function SubscriptionPage() {
                   </div>
                   
                   <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-white/10 transition-all">
-                    <CreditCard className="w-6 h-6 text-indigo-400" />
+                    <CreditCard className="w-6 h-6 text-primary-400" />
                     <div>
                       <p className="text-xs font-bold text-white uppercase tracking-widest leading-none mb-1">Flexible Payment</p>
                       <p className="text-[10px] text-slate-500 font-medium tracking-tight">Pay via Card, USSD, Transfer or QR Code.</p>

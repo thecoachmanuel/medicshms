@@ -150,7 +150,7 @@ export default function PlatformAdminDashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         {[
-          { icon: Building2, label: "Total Hospitals", value: stats.total, color: "bg-blue-600" },
+          { icon: Building2, label: "Total Hospitals", value: stats.total, color: "bg-primary-600" },
           { check: CheckCircle2, label: "Active Subscriptions", value: stats.active, color: "bg-emerald-600" },
           { clock: Clock, label: "Free Trials", value: stats.trial, color: "bg-amber-600" },
           { alert: AlertCircle, label: "Expired Plans", value: stats.expired, color: "bg-rose-600" },

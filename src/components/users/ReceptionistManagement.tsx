@@ -155,7 +155,7 @@ export default function ReceptionistManagement() {
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setShowModal(true)}
-            className="btn-primary shadow-lg shadow-indigo-100"
+            className="btn-primary shadow-lg shadow-primary-100"
           >
             <Plus className="w-4 h-4" />
             Add Receptionist
@@ -170,7 +170,7 @@ export default function ReceptionistManagement() {
           placeholder="Search by name, email, or phone..." 
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all shadow-sm"
+          className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm focus:ring-4 focus:ring-primary-500/10 outline-none transition-all shadow-sm"
         />
       </div>
 
@@ -206,11 +206,11 @@ export default function ReceptionistManagement() {
                       onClick={() => handleViewDetail(staff)}
                       className="flex items-center gap-3 text-left group/name"
                     >
-                      <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100/50 flex items-center justify-center">
-                        <span className="text-indigo-600 font-black text-xs">{staff.name[0]}</span>
+                      <div className="w-10 h-10 rounded-2xl bg-primary-50 border border-primary-100/50 flex items-center justify-center">
+                        <span className="text-primary-600 font-black text-xs">{staff.name[0]}</span>
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-gray-900 group-hover/name:text-indigo-600 transition-colors">{staff.name}</p>
+                        <p className="text-sm font-bold text-gray-900 group-hover/name:text-primary-600 transition-colors">{staff.name}</p>
                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">UID: #{staff._id.slice(-6)}</p>
                       </div>
                     </button>
@@ -246,7 +246,7 @@ export default function ReceptionistManagement() {
                   </td>
                   <td className="px-6 py-5">
                     <div className="flex items-center justify-center gap-2">
-                       <button onClick={() => handleEdit(staff)} className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+                       <button onClick={() => handleEdit(staff)} className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all">
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button onClick={() => handleResetPassword(staff._id)} className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all" title="Reset Password">
@@ -297,7 +297,7 @@ export default function ReceptionistManagement() {
                   onClick={() => setFormData({...formData, isActive: !formData.isActive})}
                   className={cn(
                     "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                    formData.isActive ? "bg-indigo-600" : "bg-gray-200"
+                    formData.isActive ? "bg-primary-600" : "bg-gray-200"
                   )}
                 >
                   <span className={cn(
@@ -365,7 +365,7 @@ export default function ReceptionistManagement() {
                        <div className="space-y-4">
                          <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
                            <div className="flex items-center gap-3">
-                             <Shield className="w-5 h-5 text-indigo-500" />
+                             <Shield className="w-5 h-5 text-primary-500" />
                              <div>
                                <p className="text-[10px] font-black text-gray-400 uppercase">{detailData.receptionistProfile?.idProofType || 'Identity Proof'}</p>
                                <p className="text-xs font-bold text-gray-900">{detailData.receptionistProfile?.idProofNumber || 'VERIFIED_USER_01'}</p>

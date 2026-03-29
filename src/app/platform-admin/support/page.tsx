@@ -141,7 +141,7 @@ export default function PlatformSupportManagement() {
 
                    <div className={cn(
                      "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.1em] shadow-sm flex items-center gap-2",
-                     ticket.ticket_type === 'tenant' ? "bg-indigo-50 text-indigo-600" : "bg-slate-50 text-slate-500 border border-slate-100"
+                     ticket.ticket_type === 'tenant' ? "bg-primary-50 text-primary-600" : "bg-slate-50 text-slate-500 border border-slate-100"
                    )}>
                      {ticket.ticket_type === 'tenant' ? 'Hospital Support' : 'Patient Inquiry'}
                    </div>
@@ -228,7 +228,7 @@ export default function PlatformSupportManagement() {
                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">#{selectedTicket._id.toUpperCase()}</span>
                       <span className={cn(
                         "px-2 py-0.5 rounded-md text-[8px] font-black uppercase",
-                        selectedTicket.ticket_type === 'tenant' ? "bg-indigo-50 text-indigo-600" : "bg-slate-100 text-slate-500"
+                        selectedTicket.ticket_type === 'tenant' ? "bg-primary-50 text-primary-600" : "bg-slate-100 text-slate-500"
                       )}>
                         {selectedTicket.ticket_type === 'tenant' ? 'Hospital Support' : 'Patient Inquiry'}
                       </span>
@@ -249,7 +249,7 @@ export default function PlatformSupportManagement() {
                   <p className="text-xs text-slate-500 font-medium">{selectedTicket.email}</p>
                   {selectedTicket.hospital_name && (
                     <div className="flex items-center gap-2 mt-2 px-3 py-1 bg-white border border-slate-100 rounded-lg w-fit">
-                      <Building2 className="w-3 h-3 text-indigo-400" />
+                      <Building2 className="w-3 h-3 text-primary-400" />
                       <span className="text-[9px] font-bold text-slate-600 uppercase">{selectedTicket.hospital_name}</span>
                     </div>
                   )}

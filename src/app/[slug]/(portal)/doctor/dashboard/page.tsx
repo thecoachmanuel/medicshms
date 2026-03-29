@@ -78,7 +78,7 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
   }
 
   const statCards = stats ? [
-    { label: "Today's Queue", value: stats.cards.todayAppointments, icon: Clock, color: 'indigo', description: 'Patients waiting for consultation' },
+    { label: "Today's Queue", value: stats.cards.todayAppointments, icon: Clock, color: 'primary', description: 'Patients waiting for consultation' },
     { label: 'Completed', value: stats.cards.totalCompleted, icon: CheckCircle, color: 'emerald', description: 'Total successful consultations' },
     { label: 'My Patients', value: stats.cards.uniquePatients, icon: UsersIcon, color: 'purple', description: 'Unique patients treated overall' },
     { label: 'Consultations', value: stats.cards.monthConsultations, icon: Activity, color: 'amber', description: 'Consultations this month' },
@@ -136,7 +136,7 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
                 </div>
                 <span className={cn(
                   "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase",
-                  apt.status === 'Confirmed' ? "text-blue-600" : "text-emerald-600"
+                  apt.status === 'Confirmed' ? "text-primary-600" : "text-emerald-600"
                 )}>
                   {apt.status}
                 </span>

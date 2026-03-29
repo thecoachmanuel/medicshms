@@ -87,7 +87,7 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
 
   const statusColors = {
     'Pending': 'bg-amber-50 text-amber-700 border-amber-200',
-    'Confirmed': 'bg-blue-50 text-blue-700 border-blue-200',
+    'Confirmed': 'bg-primary-50 text-primary-700 border-blue-200',
     'Completed': 'bg-emerald-50 text-emerald-700 border-emerald-200',
     'Cancelled': 'bg-rose-50 text-rose-700 border-rose-200',
   };
@@ -229,10 +229,10 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
                         </div>
                       </section>
                       <section className="space-y-3">
-                        <h4 className="flex items-center gap-2 text-[10px] font-bold text-indigo-600 uppercase tracking-widest border-b border-indigo-100 pb-2">
+                        <h4 className="flex items-center gap-2 text-[10px] font-bold text-primary-600 uppercase tracking-widest border-b border-primary-100 pb-2">
                           <Stethoscope className="w-3 h-3" /> Prescription
                         </h4>
-                        <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100/50">
+                        <div className="p-4 bg-primary-50/50 rounded-2xl border border-primary-100/50">
                           <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap italic font-medium">
                             {appointment.prescription || 'No medicines prescribed.'}
                           </p>

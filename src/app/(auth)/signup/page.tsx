@@ -83,7 +83,7 @@ export default function SignupPage() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans overflow-hidden">
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary-600/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2"></div>
-        <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-indigo-600/10 rounded-full blur-[120px] translate-y-1/2 -translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-primary-600/10 rounded-full blur-[120px] translate-y-1/2 -translate-x-1/2"></div>
 
         <div className="w-full max-w-4xl bg-white rounded-[4rem] p-12 md:p-20 shadow-2xl shadow-slate-200/60 border border-slate-100 relative z-10 text-center space-y-12 animate-in zoom-in-95 duration-700">
           <div className="w-24 h-24 bg-emerald-100 rounded-[2rem] flex items-center justify-center mx-auto text-emerald-600 shadow-xl shadow-emerald-500/20 rotate-12 scale-110">
@@ -177,7 +177,7 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans">
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-600/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2"></div>
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2"></div>
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary-600/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2"></div>
 
       <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
         {/* Left Side: Branding & Info */}
