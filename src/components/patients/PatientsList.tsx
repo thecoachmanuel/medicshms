@@ -68,7 +68,7 @@ export default function PatientsList({ role }: Props) {
     setShowAppointmentsModal(true);
     setAppointmentsLoading(true);
     try {
-      const res = await patientsAPI.getById(patient.patientId || patient._id);
+      const res = await patientsAPI.getById(patient.patient_id || patient.patientId || patient._id);
       setAppointments(res.data?.appointments || []);
     } catch (err) {
       toast.error('Failed to load patient history');
@@ -238,7 +238,7 @@ export default function PatientsList({ role }: Props) {
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-3">
                       <div className="bg-gray-100 px-3 py-1 rounded-lg text-[10px] font-black text-gray-600 uppercase tracking-wider">{patient.gender}</div>
-                      <span className="text-sm font-bold text-gray-700">{patient.age} Yrs</span>
+                      {patient.age && <span className="text-sm font-bold text-gray-700">{patient.age} Yrs</span>}
                     </div>
                   </td>
                   <td className="px-6 py-5 text-center">

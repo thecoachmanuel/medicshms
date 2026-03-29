@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Plus, Eye, Edit2, ChevronLeft, ChevronRight, Loader2, 
-  AlertCircle, CheckCircle2, XCircle, ArrowUpRight, RefreshCw, Search
+  AlertCircle, CheckCircle2, XCircle, ArrowUpRight, RefreshCw, Search,
+  Download
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { billingAPI, departmentsAPI } from '@/lib/api';
@@ -58,6 +59,61 @@ export default function BillingList() {
     { key: 'Partial', label: 'Partial' }
   ];
 
+  const handleDownloadCSV = async () => {
+    try {
+      toast.loading('Preparing download...');
+      const params = {
+        status: statusFilter !== 'all' ? statusFilter : undefined,
+        search: searchTerm || undefined
+      };
+      const res = await billingAPI.download(params) as any;
+      const records = res.data || [];
+      
+      if (!records.length) {
+        toast.dismiss();
+        toast.error('No records to download');
+        return;
+      }
+
+      const headers = [
+        'Appointment ID', 'Patient Name', 'Patient ID', 'Date', 'Department', 
+        'Doctor', 'Bill Number', 'Total Amount', 'Paid Amount', 'Due Amount', 
+        'Payment Status', 'Method', 'Transaction ID'
+      ];
+      
+      const csvData = [
+        headers.join(','),
+        ...records.map((item: any) => [
+          item.appointmentId,
+          `"${item.fullName}"`,
+          item.patientId,
+          item.appointmentDate,
+          item.department,
+          `"${item.doctorName}"`,
+          item.billNumber,
+          item.totalAmount,
+          item.paidAmount,
+          item.dueAmount,
+          item.paymentStatus,
+          item.paymentMethod,
+          item.transactionId
+        ].join(','))
+      ].join('\n');
+
+      const blob = new Blob([csvData], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `billing_records_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      toast.dismiss();
+      toast.success('Download started');
+    } catch (err) {
+      toast.dismiss();
+      toast.error('Download failed');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -68,6 +124,10 @@ export default function BillingList() {
         <div className="flex items-center gap-3">
           <button onClick={() => fetchData()} className="p-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors group">
             <RefreshCw className={cn("w-4 h-4 text-gray-400 group-hover:text-indigo-600", loading && "animate-spin")} />
+          </button>
+          <button onClick={handleDownloadCSV} className="btn-secondary">
+            <Download className="w-4 h-4" />
+            Export CSV
           </button>
         </div>
       </div>

@@ -90,6 +90,7 @@ export const appointmentsAPI = {
   doctorRemove: (id: string, reason: string) => 
     api.patch(`/admin-appointments/${id}/doctor-remove`, { reason }),
   getStats: () => api.get('/admin-appointments/stats'),
+  download: (params?: any) => api.get('/admin-appointments/download', { params }),
 };
 
 export const patientsAPI = {
@@ -132,6 +133,7 @@ export const billingAPI = {
   getById: (id: string) => api.get(`/bills/${id}`),
   update: (id: string, data: any) => api.put(`/bills/${id}`, data),
   getInsights: (params: any) => api.get('/bills/insights', { params }),
+  download: (params?: any) => api.get('/bills/download', { params }),
 };
 
 export const dashboardAPI = {

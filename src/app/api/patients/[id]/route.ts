@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
 import { calculateAge } from '@/lib/utils';
 
@@ -15,10 +15,8 @@ export async function GET(
 
   try {
     // Fetch patient info
-    let query = supabase.from('patients').select('*, profiles!user_id(*)');
-    
-    // Check if id is UUID (very basic check)
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    let query = (supabaseAdmin || supabase).from('patients').select('*, profiles!user_id(*)');
     
     if (isUUID) {
       query = query.eq('id', id);
@@ -28,16 +26,22 @@ export async function GET(
 
     const { data: patient, error: pError } = await query.single();
 
-    if (pError) return NextResponse.json({ message: pError.message }, { status: 404 });
+    if (pError) {
+      console.error('Patient fetch error:', pError);
+      return NextResponse.json({ message: 'Patient not found' }, { status: 404 });
+    }
 
-    // Fetch appointment history with doctor names
-    const { data: appointments, error: aError } = await supabase
+    // Fetch appointment history with doctor names using patient_id
+    const { data: appointments, error: aError } = await (supabaseAdmin || supabase)
       .from('public_appointments')
-      .select('*, doctor:doctors!doctor_assigned_id(profiles!user_id(name))')
+      .select('*, doctors!doctor_assigned_id(profiles!user_id(name))')
       .eq('patient_id', patient.patient_id)
       .order('appointment_date', { ascending: false });
 
-    if (aError) return NextResponse.json({ message: aError.message }, { status: 500 });
+    if (aError) {
+      console.error('Appointments fetch error:', aError);
+      return NextResponse.json({ message: aError.message }, { status: 500 });
+    }
 
     const formattedAppointments = (appointments || []).map(apt => ({
       ...apt,
@@ -49,7 +53,7 @@ export async function GET(
       reasonForVisit: apt.reason_for_visit,
       doctor_notes: apt.doctor_notes,
       prescription: apt.prescription,
-      doctorName: (apt as any).doctor?.profiles?.name
+      doctorName: (apt as any).doctors?.profiles?.name
     }));
 
     const formattedPatient = {

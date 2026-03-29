@@ -120,6 +120,53 @@ export default function AppointmentsList({ role }: Props) {
     return styles[status] || 'bg-gray-100 text-gray-700';
   };
 
+  const handleDownloadCSV = async () => {
+    try {
+      toast.loading('Preparing download...');
+      const params = {
+        status: filter !== 'all' ? filter : undefined,
+        search: debouncedSearch || undefined,
+        date: dateFilter || undefined
+      };
+      const res = await appointmentAPI.download(params) as any;
+      const records = res.data || [];
+      
+      if (!records.length) {
+        toast.dismiss();
+        toast.error('No records to download');
+        return;
+      }
+
+      const headers = ['Appointment ID', 'Patient Name', 'Mobile', 'Date', 'Time', 'Department', 'Doctor', 'Status', 'Visit Type'];
+      const csvData = [
+        headers.join(','),
+        ...records.map((apt: any) => [
+          apt.appointmentId,
+          `"${apt.fullName}"`,
+          apt.mobileNumber,
+          apt.appointmentDate,
+          apt.appointmentTime,
+          apt.department,
+          `"${apt.doctorName}"`,
+          apt.appointmentStatus,
+          apt.visitType
+        ].join(','))
+      ].join('\n');
+
+      const blob = new Blob([csvData], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `appointments_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      toast.dismiss();
+      toast.success('Download started');
+    } catch (err) {
+      toast.dismiss();
+      toast.error('Download failed');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -135,6 +182,12 @@ export default function AppointmentsList({ role }: Props) {
           <button onClick={() => fetchAppointments()} className="p-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
             <RefreshCw className={cn("w-4 h-4 text-gray-400", loading && "animate-spin")} />
           </button>
+          {!isDoctor && (
+            <button onClick={handleDownloadCSV} className="btn-secondary">
+              <Download className="w-4 h-4" />
+              Export CSV
+            </button>
+          )}
           {isAdminOrReceptionist && (
             <button onClick={() => setShowBookModal(true)} className="btn-primary">
               <Plus className="w-4 h-4" />

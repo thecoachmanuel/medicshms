@@ -63,11 +63,11 @@ export default function HomePage({ params }: { params: Promise<{ slug: string }>
         <div className="max-w-7xl mx-auto px-4 md:px-8 relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8 mt-12 animate-in fade-in slide-in-from-left-8 duration-1000">
             
-            <h1 className="text-6xl md:text-7xl font-black text-gray-900 leading-[1.1] tracking-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 leading-[1.1] tracking-tight">
               {hero.title || "Compassionate Care, Advanced Technology."}
             </h1>
             
-            <p className="text-xl text-gray-500 max-w-4xl leading-relaxed font-medium">
+            <p className="text-lg md:text-xl text-gray-500 max-w-4xl leading-relaxed font-medium">
               {hero.description || "We provide world-class medical services with a touch of humanity. Manage your health journey seamlessly with our integrated hospital ecosystem."}
             </p>
 

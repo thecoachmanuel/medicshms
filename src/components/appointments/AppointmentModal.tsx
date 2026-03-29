@@ -174,7 +174,9 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
                     <div className="space-y-3">
                       <div>
                         <p className="text-sm font-bold text-gray-900">{appointment.fullName}</p>
-                        <p className="text-xs text-gray-500">{appointment.gender}, {appointment.age} Years</p>
+                        <p className="text-xs text-gray-500">
+                          {appointment.gender}{appointment.age ? `, ${appointment.age} Years` : ''}
+                        </p>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Mail className="w-4 h-4 text-gray-400" />

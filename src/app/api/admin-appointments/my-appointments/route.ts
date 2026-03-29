@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
+import { calculateAge } from '@/lib/utils';
 
 // Get doctor's assigned appointments (Doctor only)
 // GET /api/admin-appointments/my-appointments
@@ -30,7 +31,7 @@ export async function GET(request: Request) {
 
     let query = (supabaseAdmin || supabase)
       .from('public_appointments')
-      .select('id, appointment_id, full_name, mobile_number, email_address, appointment_date, appointment_time, department, appointment_status, age, gender, primary_concern, known_allergies, allergies_details, patient_id', { count: 'exact' })
+      .select('id, appointment_id, full_name, mobile_number, email_address, appointment_date, appointment_time, department, appointment_status, age, gender, date_of_birth, primary_concern, known_allergies, allergies_details, patient_id', { count: 'exact' })
       .eq('doctor_assigned_id', doctor.id)
       .eq('hospital_id', userProfile?.hospital_id);
 
@@ -56,7 +57,7 @@ export async function GET(request: Request) {
       appointmentTime: apt.appointment_time,
       department: apt.department,
       appointmentStatus: apt.appointment_status,
-      age: apt.age,
+      age: apt.age || (apt.date_of_birth ? calculateAge(apt.date_of_birth) : null),
       gender: apt.gender,
       primaryConcern: apt.primary_concern,
       knownAllergies: apt.known_allergies ? 'Yes' : 'No',
