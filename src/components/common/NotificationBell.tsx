@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, Check, Trash2, ExternalLink, X, Info, AlertTriangle, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { notificationsAPI } from '@/lib/api';
+import { formatDate } from '@/lib/utils';
 import { toast } from 'react-hot-toast';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -138,7 +139,7 @@ export const NotificationBell = () => {
                             {n.title}
                           </h4>
                           <span className="text-[9px] font-bold text-slate-400 uppercase whitespace-nowrap">
-                            {new Date(n.created_at).toLocaleDateString()}
+                            {formatDate(n.created_at)}
                           </span>
                         </div>
                         <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">

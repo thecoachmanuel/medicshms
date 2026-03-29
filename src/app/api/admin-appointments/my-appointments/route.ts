@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
 
 // Get doctor's assigned appointments (Doctor only)
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
-    const { data: doctor } = await supabase
+    const { data: doctor } = await (supabaseAdmin || supabase)
       .from('doctors')
       .select('id')
       .eq('user_id', userProfile?.id)
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: false, message: 'Doctor profile not found' }, { status: 404 });
     }
 
-    let query = supabase
+    let query = (supabaseAdmin || supabase)
       .from('public_appointments')
       .select('id, appointment_id, full_name, mobile_number, email_address, appointment_date, appointment_time, department, appointment_status', { count: 'exact' })
       .eq('doctor_assigned_id', doctor.id)

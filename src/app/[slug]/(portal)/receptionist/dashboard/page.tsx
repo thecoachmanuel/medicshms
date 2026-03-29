@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, use } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { dashboardAPI } from '@/lib/api';
+import { formatDate, getLagosDate, formatCurrency } from '@/lib/utils';
 import {
   Calendar, Users, Stethoscope, IndianRupee, UserPlus,
   FileWarning, RefreshCw, CalendarDays, Activity,
@@ -19,12 +20,6 @@ import { twMerge } from 'tailwind-merge';
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-
-const formatCurrency = (val: number) => {
-  if (val >= 1000000) return `₦${(val / 1000000).toFixed(1)}M`;
-  if (val >= 1000) return `₦${(val / 1000).toFixed(1)}K`;
-  return `₦${val?.toLocaleString('en-NG') || 0}`;
-};
 
 export default function ReceptionistDashboard({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -90,7 +85,7 @@ export default function ReceptionistDashboard({ params }: { params: Promise<{ sl
         <div className="flex items-center gap-3">
           <span className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-600">
             <CalendarDays className="w-4 h-4" />
-            {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' })}
+            {formatDate(getLagosDate())}
           </span>
           <button onClick={() => { setRefreshing(true); fetchAll(); }} className="btn-secondary" disabled={refreshing}>
             <RefreshCw className={cn("w-4 h-4", refreshing && "animate-spin")} />

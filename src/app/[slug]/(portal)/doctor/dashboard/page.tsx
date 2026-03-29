@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, use } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { doctorDashboardAPI } from '@/lib/api';
+import { getLagosDate } from '@/lib/utils';
 import {
   Calendar, Users, Stethoscope, TrendingUp,
   CheckCircle, Clock, RefreshCw, Activity, Heart,
@@ -21,7 +22,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 const timeAgo = (date: string) => {
-  const diff = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+  const diff = Math.floor((getLagosDate().getTime() - new Date(date).getTime()) / 1000);
   if (diff < 60) return 'just now';
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   return `${Math.floor(diff / 3600)}h ago`;

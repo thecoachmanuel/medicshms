@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
 
 const getDoctorDoc = async (userId: string) => {
-    const { data, error } = await supabase
+    const { data, error } = await (supabaseAdmin || supabase)
         .from('doctors')
         .select('*')
         .eq('user_id', userId)
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
     const doctor = await getDoctorDoc(profile?.id || '');
     if (!doctor) return NextResponse.json({ message: 'Doctor profile not found' }, { status: 404 });
 
-    const { data: appointments, error } = await supabase
+    const { data: appointments, error } = await (supabaseAdmin || supabase)
       .from('public_appointments')
       .select('*')
       .eq('doctor_assigned_id', doctor.id)

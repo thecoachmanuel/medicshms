@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { appointmentAPI, departmentAPI, doctorAPI } from '@/lib/api';
+import { formatDate } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 import BookAppointmentModal from './BookAppointmentModal';
 import AppointmentModal from './AppointmentModal';
@@ -228,7 +229,7 @@ export default function AppointmentsList({ role }: Props) {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 mb-1">
                       <Calendar className="w-3.5 h-3.5 text-primary-500" />
-                      <span className="text-xs font-bold text-gray-700">{new Date(apt.appointmentDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
+                      <span className="text-xs font-bold text-gray-700">{formatDate(apt.appointmentDate)}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="w-3.5 h-3.5 text-gray-400" />

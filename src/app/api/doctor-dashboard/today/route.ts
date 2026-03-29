@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
+import { getLagosDate } from '@/lib/utils';
 
 const getDoctorDoc = async (userId: string) => {
-    const { data, error } = await supabase
+    const { data, error } = await (supabaseAdmin || supabase)
         .from('doctors')
         .select('*')
         .eq('user_id', userId)
@@ -22,10 +23,10 @@ export async function GET(request: Request) {
     const doctor = await getDoctorDoc(profile?.id || '');
     if (!doctor) return NextResponse.json({ message: 'Doctor profile not found' }, { status: 404 });
 
-    const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString().split('T')[0];
+    const now = getLagosDate();
+    const startOfToday = now.toISOString().split('T')[0];
 
-    const { data: appointments, error } = await supabase
+    const { data: appointments, error } = await (supabaseAdmin || supabase)
       .from('public_appointments')
       .select('*')
       .eq('doctor_assigned_id', doctor.id)

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
+import { getLagosDate } from '@/lib/utils';
 
 // Helper: get Doctor document for logged-in user
 const getDoctorDoc = async (userId: string, hospitalId?: string) => {
@@ -17,8 +18,6 @@ const getDoctorDoc = async (userId: string, hospitalId?: string) => {
     if (error) return null;
     return data;
 };
-
-// Get doctor dashboard stats (Doctor only)
 // GET /api/doctor-dashboard/stats
 export async function GET(request: Request) {
   const { error: authError, profile } = await withAuth(request, ['Doctor']);
@@ -29,14 +28,27 @@ export async function GET(request: Request) {
     if (!doctor) return NextResponse.json({ message: 'Doctor profile not found' }, { status: 404 });
 
     const doctorId = doctor.id;
-    const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const now = getLagosDate();
+    
+    // Start of Today (00:00:00 Lagos Time)
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfToday = today.toISOString();
+    
+    // End of Today (23:59:59 Lagos Time)
     const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).toISOString();
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    
+    // Start of Week (Sunday 00:00:00 Lagos Time)
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
     const startOfWeekISO = startOfWeek.toISOString();
+    
+    // Start of Month (1st 00:00:00 Lagos Time)
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    
+    // Start of Last Month
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+    
+    // End of Last Month
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999).toISOString();
 
     const [

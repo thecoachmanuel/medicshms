@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { dashboardAPI } from '@/lib/api';
+import { getLagosDate, formatDate, formatCurrency } from '@/lib/utils';
 import {
   RefreshCw, Calendar, Building2, AlertCircle,
   Wallet, UserCheck, Activity, Users as UsersIcon,
@@ -26,18 +27,12 @@ const PIE_COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444'];
 const BAR_COLORS = { total: '#6366f1', completed: '#22c55e', cancelled: '#f87171' };
 
 const timeAgo = (date: string) => {
-  const now = new Date();
+  const now = getLagosDate();
   const diff = Math.floor((now.getTime() - new Date(date).getTime()) / 1000);
   if (diff < 60) return 'just now';
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-};
-
-const formatCurrency = (val: number) => {
-  if (val >= 100000) return `₦${(val / 100000).toFixed(1)}L`;
-  if (val >= 1000) return `₦${(val / 1000).toFixed(1)}K`;
-  return `₦${val?.toLocaleString('en-NG') || 0}`;
+  return formatDate(date);
 };
 
 export default function AdminDashboard({ params }: { params: Promise<{ slug: string }> }) {
@@ -208,7 +203,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                   </td>
                   <td className="px-6 py-4">
                     <p className="text-sm text-gray-600 font-medium">{apt.appointmentTime}</p>
-                    <p className="text-[10px] text-gray-400 font-bold">{new Date(apt.appointmentDate).toLocaleDateString()}</p>
+                    <p className="text-[10px] text-gray-400 font-bold">{formatDate(apt.appointmentDate)}</p>
                   </td>
                 </tr>
               ))}
