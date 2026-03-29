@@ -8,7 +8,7 @@ import {
   Stethoscope as DoctorIcon, UserPlus, FileText,
   Edit3, Zap, Mail, Phone, MapPin, Globe, Share2
 } from 'lucide-react';
-import { useSettings } from '@/hooks/useSettings';
+import { useSiteSettings } from '@/context/SettingsContext';
 import { useAuth } from '@/context/AuthContext';
 import { useContent } from '@/hooks/useContent';
 import SectionEditorModal from '@/components/cms/SectionEditorModal';
@@ -23,7 +23,7 @@ const ICON_MAP: Record<string, any> = {
 export default function HomePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const { user } = useAuth();
-  const { settings } = useSettings(slug);
+  const { settings } = useSiteSettings();
   const { getContent, refresh, loading: contentLoading } = useContent('home', slug);
   const [editingSection, setEditingSection] = useState<string | null>(null);
 
@@ -79,12 +79,12 @@ export default function HomePage({ params }: { params: Promise<{ slug: string }>
               {user ? (
                 <Link 
                   href={user.role === 'platform_admin' ? '/platform-admin/dashboard' : `/${slug}/${user.role.toLowerCase()}/dashboard`} 
-                  className="btn-secondary py-4 px-10 rounded-2xl text-lg border-none hover:bg-gray-100 w-full sm:w-auto text-center"
+                  className="btn-secondary py-4 px-10 rounded-2xl text-lg border-none hover:bg-secondary-50 hover:text-secondary-600 w-full sm:w-auto text-center"
                 >
                   Go to Dashboard
                 </Link>
               ) : (
-                <Link href={`/${slug}/login`} className="btn-secondary py-4 px-10 rounded-2xl text-lg border-none hover:bg-gray-100 w-full sm:w-auto text-center">
+                <Link href={`/${slug}/login`} className="btn-secondary py-4 px-10 rounded-2xl text-lg border-none hover:bg-secondary-50 hover:text-secondary-600 w-full sm:w-auto text-center">
                   {hero.button_secondary || "Portal Login"}
                 </Link>
               )}
@@ -160,8 +160,8 @@ export default function HomePage({ params }: { params: Promise<{ slug: string }>
                     const Icon = ICON_MAP[dept.icon_name] || Activity;
                     return (
                       <div key={i} className="p-8 rounded-3xl bg-white border border-gray-100 hover:border-primary-500 transition-all hover:shadow-2xl hover:shadow-primary-600/10 group">
-                        <div className="w-14 h-14 rounded-2xl bg-primary-50 flex items-center justify-center mb-6 group-hover:bg-primary-600 transition-colors">
-                          <Icon className="w-7 h-7 text-primary-600 group-hover:text-white transition-colors" />
+                        <div className="w-14 h-14 rounded-2xl bg-secondary-50 flex items-center justify-center mb-6 group-hover:bg-secondary-600 transition-colors">
+                          <Icon className="w-7 h-7 text-secondary-600 group-hover:text-white transition-colors" />
                         </div>
                         <h4 className="text-xl font-black text-gray-900 mb-3">{dept.name}</h4>
                         <p className="text-sm text-gray-500 leading-relaxed mb-6">{dept.desc}</p>
@@ -193,7 +193,7 @@ export default function HomePage({ params }: { params: Promise<{ slug: string }>
                   <h2 className="text-[10px] font-black uppercase text-primary-600 tracking-[0.3em]">{intro.tagline || "Our Specialists"}</h2>
                   <h3 className="text-4xl font-black text-gray-900 leading-tight">{intro.title || "Learn from Our Renowned Medical Professionals"}</h3>
                 </div>
-                <Link href={`/${slug}/services`} className="btn-secondary rounded-2xl font-bold border-none hover:bg-gray-100">
+                <Link href={`/${slug}/services`} className="btn-secondary rounded-2xl font-bold border-none hover:bg-secondary-50 hover:text-secondary-600">
                   {intro.button_text || "View All Doctors"}
                 </Link>
               </div>
@@ -230,9 +230,9 @@ export default function HomePage({ params }: { params: Promise<{ slug: string }>
         {(() => {
           const cta = getContent('cta');
           return (
-            <div className="rounded-[3rem] bg-gray-900 py-20 px-8 relative overflow-hidden text-center">
+            <div className="rounded-[3rem] bg-secondary-950 py-20 px-8 relative overflow-hidden text-center">
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary-600 rounded-full blur-[120px] opacity-20 -translate-y-1/2 translate-x-1/2"></div>
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary-400 rounded-full blur-[120px] opacity-10 translate-y-1/2 -translate-x-1/2"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary-400 rounded-full blur-[120px] opacity-10 translate-y-1/2 -translate-x-1/2"></div>
               
               <div className="max-w-3xl mx-auto space-y-10 relative z-10">
                 <h3 className="text-4xl md:text-5xl font-black text-white leading-tight">

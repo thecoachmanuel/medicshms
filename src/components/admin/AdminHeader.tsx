@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Menu, User, ChevronDown, LogOut, Headphones } from 'lucide-react';
 import Link from 'next/link';
-import { useSettings } from '@/hooks/useSettings';
+import { useSiteSettings } from '@/context/SettingsContext';
 import HospitalLogo from '@/components/common/HospitalLogo';
 import { NotificationBell } from '@/components/common/NotificationBell';
 
@@ -15,8 +15,7 @@ interface AdminHeaderProps {
 import { useParams } from 'next/navigation';
 
 export const AdminHeader = ({ toggleSidebar }: AdminHeaderProps) => {
-  const { slug } = useParams();
-  const { settings, loading } = useSettings(slug as string);
+  const { settings, loading, slug } = useSiteSettings();
   const { user, logout } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
 

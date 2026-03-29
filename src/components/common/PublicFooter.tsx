@@ -5,14 +5,14 @@ import Link from 'next/link';
 import { Heart, Mail, Phone, MapPin, Globe, Share2, Edit3 } from 'lucide-react';
 import { useContent } from '@/hooks/useContent';
 import { useAuth } from '@/context/AuthContext';
-import { useSettings } from '@/hooks/useSettings';
+import { useSiteSettings } from '@/context/SettingsContext';
 import SectionEditorModal from '@/components/cms/SectionEditorModal';
 import HospitalLogo from './HospitalLogo';
 
-export default function PublicFooter({ slug, settings: initialSettings }: { slug?: string, settings?: any }) {
+export default function PublicFooter({ slug: propSlug, settings: initialSettings }: { slug?: string, settings?: any }) {
   const { user } = useAuth();
-  const { settings: hookSettings } = useSettings(initialSettings ? undefined : slug);
-  const settings = initialSettings || hookSettings;
+  const { settings: contextSettings, loading, slug } = useSiteSettings();
+  const settings = initialSettings || contextSettings;
   const { getContent, refresh } = useContent('common', slug);
   const [isEditing, setIsEditing] = useState(false);
   const isEditor = user?.role === 'Admin' || (user?.role === 'platform_admin' && !slug);
@@ -20,7 +20,7 @@ export default function PublicFooter({ slug, settings: initialSettings }: { slug
   const footer = getContent('footer');
 
   return (
-    <footer className="bg-gray-900 border-t border-gray-800 pt-20 pb-10 relative">
+    <footer className="bg-secondary-950 border-t border-white/5 pt-20 pb-10 relative">
       {isEditor && (
         <button 
           onClick={() => setIsEditing(true)}
@@ -41,7 +41,7 @@ export default function PublicFooter({ slug, settings: initialSettings }: { slug
             {footer.description || "Revolutionizing healthcare management with cutting-edge technology and compassionate care. Our platform ensures seamless coordination between patients and doctors."}
           </p>
           <div className="flex items-center gap-4">
-            <a href="#" className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary-600 hover:text-white transition-all">
+            <a href="#" className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-gray-400 hover:bg-primary-600 hover:text-white transition-all">
               <Globe className="w-5 h-5" />
             </a>
             <a href="#" className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary-600 hover:text-white transition-all">
@@ -95,7 +95,7 @@ export default function PublicFooter({ slug, settings: initialSettings }: { slug
           <h4 className="text-white font-bold mb-6">Get in Touch</h4>
           <ul className="space-y-4">
             <li className="flex gap-4">
-              <div className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
                 <MapPin className="w-5 h-5 text-primary-500" />
               </div>
               <div>
@@ -104,7 +104,7 @@ export default function PublicFooter({ slug, settings: initialSettings }: { slug
               </div>
             </li>
             <li className="flex gap-4">
-              <div className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
                 <Phone className="w-5 h-5 text-primary-500" />
               </div>
               <div>
@@ -113,7 +113,7 @@ export default function PublicFooter({ slug, settings: initialSettings }: { slug
               </div>
             </li>
             <li className="flex gap-4">
-              <div className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
                 <Mail className="w-5 h-5 text-primary-500" />
               </div>
               <div>
@@ -126,7 +126,7 @@ export default function PublicFooter({ slug, settings: initialSettings }: { slug
       </div>
 
       {/* Copyright */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 pt-8 border-t border-gray-800">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 pt-8 border-t border-white/5">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-gray-500 text-xs font-medium">
             © {new Date().getFullYear()} {settings?.hospital_name || getContent('footer').hospital_name || 'MedicsHMS'}. All rights reserved.

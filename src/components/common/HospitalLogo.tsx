@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Hospital } from 'lucide-react';
-import { useSettings } from '@/hooks/useSettings';
+import { useSiteSettings } from '@/context/SettingsContext';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -32,7 +32,7 @@ export default function HospitalLogo({
   slug: propSlug
 }: HospitalLogoProps) {
   const { user } = useAuth();
-  const { settings, loading } = useSettings(propSlug);
+  const { settings, loading } = useSiteSettings();
 
   const formatHospitalName = (name?: string, slug?: string) => {
     if (settings?.hospital_short_name) return settings.hospital_short_name;
@@ -103,7 +103,9 @@ export default function HospitalLogo({
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
       <div className={cn(
-        "flex items-center justify-center rounded-xl text-primary-600 transition-transform duration-300",
+        "flex items-center justify-center rounded-xl transition-transform duration-300",
+        // Default to primary for icon, but secondary for some accents if needed
+        "text-primary-600",
         iconClassName || sizeClasses[size]
       )}>
         {logoUrl ? (

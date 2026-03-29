@@ -3,16 +3,16 @@
 import React from 'react';
 import Link from 'next/link';
 import { Settings, Hammer, Clock, Phone, Mail } from 'lucide-react';
-import { useSettings } from '@/hooks/useSettings';
+import { useSiteSettings } from '@/context/SettingsContext';
 import HospitalLogo from '@/components/common/HospitalLogo';
 
 export default function MaintenancePage() {
-  const { settings } = useSettings();
+  const { settings, loading } = useSiteSettings();
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full bg-white rounded-[3rem] shadow-2xl shadow-primary-600/5 overflow-hidden border border-gray-100 p-8 md:p-16 text-center space-y-10 relative">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary-600 rounded-full blur-[120px] opacity-10 -translate-y-1/2 translate-x-1/2"></div>
+      <div className="max-w-2xl w-full bg-white rounded-[3rem] shadow-2xl shadow-secondary-600/5 overflow-hidden border border-gray-100 p-8 md:p-16 text-center space-y-10 relative">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-secondary-600 rounded-full blur-[120px] opacity-10 -translate-y-1/2 translate-x-1/2"></div>
         
         <div className="flex justify-center">
           <HospitalLogo size="lg" className="h-20" hideName />
@@ -33,12 +33,12 @@ export default function MaintenancePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
           <div className="p-6 rounded-3xl bg-gray-50 border border-gray-100 flex flex-col items-center gap-3">
-            <Clock className="w-6 h-6 text-primary-600" />
+            <Clock className="w-6 h-6 text-secondary-600" />
             <h3 className="font-bold text-gray-900">Estimated Downtime</h3>
             <p className="text-sm text-gray-500">Usually back within 2-4 hours</p>
           </div>
           <div className="p-6 rounded-3xl bg-gray-50 border border-gray-100 flex flex-col items-center gap-3">
-            <Hammer className="w-6 h-6 text-primary-600" />
+            <Hammer className="w-6 h-6 text-secondary-600" />
             <h3 className="font-bold text-gray-900">What's Changing?</h3>
             <p className="text-sm text-gray-500">Security updates & Performance tweaks</p>
           </div>

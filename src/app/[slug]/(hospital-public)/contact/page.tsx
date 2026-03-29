@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useContent } from '@/hooks/useContent';
-import { useSettings } from '@/hooks/useSettings';
+import { useSiteSettings } from '@/context/SettingsContext';
 import { useAuth } from '@/context/AuthContext';
 import SectionEditorModal from '@/components/cms/SectionEditorModal';
 import { use } from 'react';
@@ -20,7 +20,7 @@ const ICON_MAP: Record<string, any> = {
 export default function ContactPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const { user } = useAuth();
-  const { settings } = useSettings(slug);
+  const { settings } = useSiteSettings();
   const { getContent, refresh } = useContent('contact', slug);
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const isAdmin = user?.role === 'Admin';
@@ -85,7 +85,7 @@ export default function ContactPage({ params }: { params: Promise<{ slug: string
       <section className="max-w-7xl mx-auto px-4 md:px-8 relative">
         <EditButton section="contact_header" />
         <div className="max-w-3xl space-y-6">
-          <h2 className="text-[10px] font-black uppercase text-primary-600 tracking-[0.3em]">{header.tagline || "Contact Us"}</h2>
+          <h2 className="text-[10px] font-black uppercase text-secondary-600 tracking-[0.3em]">{header.tagline || "Contact Us"}</h2>
           <h1 className="text-5xl md:text-6xl font-black text-gray-900 leading-tight">
             {header.title_part1 || "We're Here to"} <span className="text-primary-600">{header.title_part2 || "Listen and Care."}</span>
           </h1>
@@ -159,7 +159,7 @@ export default function ContactPage({ params }: { params: Promise<{ slug: string
                       required
                       type="text" 
                       placeholder="John Doe"
-                      className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-primary-600/10 transition-all font-medium"
+                      className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-secondary-600/10 transition-all font-medium"
                       value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
                     />
@@ -170,7 +170,7 @@ export default function ContactPage({ params }: { params: Promise<{ slug: string
                       required
                       type="email" 
                       placeholder="john@example.com"
-                      className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-primary-600/10 transition-all font-medium"
+                      className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-secondary-600/10 transition-all font-medium"
                       value={formData.email}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
                     />
@@ -183,7 +183,7 @@ export default function ContactPage({ params }: { params: Promise<{ slug: string
                     <input 
                       type="tel" 
                       placeholder="+1 (000) 000-0000"
-                      className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-primary-600/10 transition-all font-medium"
+                      className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-secondary-600/10 transition-all font-medium"
                       value={formData.phone}
                       onChange={(e) => setFormData({...formData, phone: e.target.value})}
                     />
@@ -249,12 +249,12 @@ export default function ContactPage({ params }: { params: Promise<{ slug: string
           ]).map((item, i) => {
             const Icon = ICON_MAP[item.icon_name] || Send;
             return (
-              <div key={i} className="flex items-center gap-6 p-8 rounded-3xl bg-gray-50 border border-gray-100 group hover:bg-white hover:shadow-xl hover:border-primary-100 transition-all">
-                <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center group-hover:bg-primary-600 transition-colors">
-                  <Icon className="w-7 h-7 text-primary-600 group-hover:text-white transition-colors" />
+              <div key={i} className="flex items-center gap-6 p-8 rounded-3xl bg-gray-50 border border-gray-100 group hover:bg-white hover:shadow-xl hover:border-secondary-100 transition-all">
+                <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center group-hover:bg-secondary-600 transition-colors">
+                  <Icon className="w-7 h-7 text-secondary-600 group-hover:text-white transition-colors" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-primary-600 uppercase tracking-widest mb-1">{item.meta}</p>
+                  <p className="text-[10px] font-black text-secondary-600 uppercase tracking-widest mb-1">{item.meta}</p>
                   <h5 className="text-xl font-black text-gray-900 mb-1">{item.title}</h5>
                   <p className="text-sm text-gray-500 font-bold">{item.contact}</p>
                 </div>

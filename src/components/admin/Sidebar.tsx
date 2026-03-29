@@ -150,8 +150,8 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
                 className={cn(
                   "flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors cursor-pointer",
                   isActive 
-                    ? "bg-gray-900 text-white" 
-                    : "text-gray-700 hover:bg-gray-100"
+                    ? "bg-secondary-900 text-white shadow-lg shadow-secondary-900/10" 
+                    : "text-gray-700 hover:bg-secondary-50 hover:text-secondary-600"
                 )}
               >
                 <Icon className="w-5 h-5" />
@@ -166,11 +166,11 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
             className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-all"
             onClick={() => setShowProfileMenu(!showProfileMenu)}
           >
-            <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center overflow-hidden">
+            <div className="w-10 h-10 bg-secondary-100 rounded-full flex items-center justify-center overflow-hidden">
               {user?.profile_photo ? (
                 <img src={user.profile_photo} alt={user.name} className="w-full h-full object-cover" />
               ) : (
-                <User className="w-5 h-5 text-primary-600" />
+                <User className="w-5 h-5 text-secondary-600" />
               )}
             </div>
             <div className="flex-1 overflow-hidden">

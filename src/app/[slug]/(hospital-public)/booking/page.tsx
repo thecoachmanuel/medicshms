@@ -2,12 +2,12 @@
 
 import React, { use } from 'react';
 import PublicBookingForm from '@/components/public/PublicBookingForm';
-import { useSettings } from '@/hooks/useSettings';
+import { useSiteSettings } from '@/context/SettingsContext';
 import { Loader2, Calendar, ShieldCheck, Heart } from 'lucide-react';
 
 export default function BookingPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
-  const { settings, loading } = useSettings(slug);
+  const { settings, loading } = useSiteSettings();
 
   if (loading) {
     return (
@@ -42,8 +42,8 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
                 { icon: Heart, title: "Specialist Matching", desc: "Choose the department that fits your specific needs." }
               ].map((item, i) => (
                 <div key={i} className="flex gap-4 group">
-                  <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0 group-hover:bg-primary-600 transition-colors">
-                    <item.icon className="w-6 h-6 text-primary-600 group-hover:text-white transition-colors" />
+                  <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0 group-hover:bg-secondary-600 transition-colors">
+                    <item.icon className="w-6 h-6 text-secondary-600 group-hover:text-white transition-colors" />
                   </div>
                   <div className="space-y-1">
                     <h4 className="font-black text-gray-900">{item.title}</h4>
@@ -53,11 +53,11 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
               ))}
             </div>
 
-            <div className="p-8 rounded-[2rem] bg-gray-900 text-white relative overflow-hidden">
+            <div className="p-8 rounded-[2rem] bg-secondary-950 text-white relative overflow-hidden">
                <div className="absolute top-0 right-0 w-32 h-32 bg-primary-600 rounded-full blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2"></div>
                <h4 className="text-xl font-black mb-2">Need Help?</h4>
                <p className="text-gray-400 text-sm font-medium mb-4">Our support team is available 24/7 for urgent inquiries.</p>
-               <p className="text-2xl font-black text-primary-400">0800-MEDICS-HMS</p>
+               <p className="text-2xl font-black text-secondary-400">0800-MEDICS-HMS</p>
             </div>
           </div>
 

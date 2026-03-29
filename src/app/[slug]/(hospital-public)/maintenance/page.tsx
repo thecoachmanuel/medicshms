@@ -3,11 +3,13 @@
 import React, { use } from 'react';
 import { Settings, Hammer, Clock, Phone, Mail, ArrowLeft, Globe } from 'lucide-react';
 import Link from 'next/link';
-import { useSettings } from '@/hooks/useSettings';
+import { useSiteSettings } from '@/context/SettingsContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function MaintenancePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
-  const { settings } = useSettings(slug);
+  const { user } = useAuth();
+  const { settings, loading: settingsLoading } = useSiteSettings();
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 relative overflow-hidden">

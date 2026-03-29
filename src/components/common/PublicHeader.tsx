@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Heart, Menu, X, Phone, Calendar, Edit3 } from 'lucide-react';
-import { useSettings } from '@/hooks/useSettings';
+import { useSiteSettings } from '@/context/SettingsContext';
 import { useAuth } from '@/context/AuthContext';
 import { useContent } from '@/hooks/useContent';
 import SectionEditorModal from '@/components/cms/SectionEditorModal';
@@ -19,11 +19,11 @@ const getNavLinks = (slug?: string) => [
 
 import HospitalLogo from './HospitalLogo';
 
-export default function PublicHeader({ slug, settings: initialSettings }: { slug?: string, settings?: any }) {
+export default function PublicHeader({ slug: propSlug, settings: initialSettings }: { slug?: string, settings?: any }) {
   const pathname = usePathname();
   const { user } = useAuth();
-  const { settings: hookSettings } = useSettings(initialSettings ? undefined : slug);
-  const settings = initialSettings || hookSettings;
+  const { settings: contextSettings, loading, slug } = useSiteSettings();
+  const settings = initialSettings || contextSettings;
   const { getContent, refresh } = useContent('common', slug);
   const NAV_LINKS = getNavLinks(slug);
   const [isOpen, setIsOpen] = useState(false);
@@ -75,12 +75,12 @@ export default function PublicHeader({ slug, settings: initialSettings }: { slug
           {user ? (
             <Link 
               href={user.role === 'platform_admin' ? '/platform-admin/dashboard' : `/${slug || user.hospital_slug || ''}/${user.role.toLowerCase()}/dashboard`} 
-              className="btn-primary py-2.5 px-6 rounded-xl shadow-lg shadow-primary-600/20"
+              className="bg-secondary-900 text-white py-2.5 px-6 rounded-xl shadow-lg shadow-secondary-900/20 hover:bg-secondary-800 transition-all font-bold text-sm"
             >
               Go to Dashboard
             </Link>
           ) : (
-            <Link href={slug ? `/${slug}/login` : "/login"} className="btn-primary py-2.5 px-6 rounded-xl shadow-lg shadow-primary-600/20">
+            <Link href={slug ? `/${slug}/login` : "/login"} className="bg-secondary-900 text-white py-2.5 px-6 rounded-xl shadow-lg shadow-secondary-900/20 hover:bg-secondary-800 transition-all font-bold text-sm">
               Portal Login
             </Link>
           )}
