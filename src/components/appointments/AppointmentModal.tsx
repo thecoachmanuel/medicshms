@@ -27,9 +27,20 @@ interface Props {
 
 export default function AppointmentModal({ appointment, type, doctors, departments, onClose, onRefresh }: Props) {
   const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedDoctor, setSelectedDoctor] = useState(appointment?.doctorAssigned?._id || appointment?.doctorAssigned?.id || '');
   const [showCompleteForm, setShowCompleteForm] = useState(false);
   const [completeNotes, setCompleteNotes] = useState('');
   const [completePrescription, setCompletePrescription] = useState('');
+  const [editData, setEditData] = useState({
+    fullName: appointment?.fullName || appointment?.patientName || '',
+    mobileNumber: appointment?.mobileNumber || '',
+    emailAddress: appointment?.emailAddress || '',
+    appointmentDate: appointment?.appointmentDate ? 
+      (typeof appointment.appointmentDate === 'string' ? appointment.appointmentDate.split('T')[0] : '') : '',
+    appointmentTime: appointment?.appointmentTime || '',
+    appointmentStatus: appointment?.appointmentStatus || appointment?.status || 'Pending',
+  });
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
