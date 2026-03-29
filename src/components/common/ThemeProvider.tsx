@@ -11,7 +11,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const parts = pathname.split('/');
   // Detect slug from path: /slug/...
-  const slug = (parts.length > 1 && parts[1] !== 'login' && parts[1] !== 'platform-admin' && parts[1] !== 'admin') 
+  // Usually the slug is the first part after the domain, unless it's a platform-level page
+  const reservedWords = ['login', 'platform-admin', 'admin', 'register', 'api', '_next'];
+  const slug = (parts.length > 1 && !reservedWords.includes(parts[1])) 
     ? parts[1] 
     : undefined;
 

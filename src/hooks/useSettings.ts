@@ -8,10 +8,20 @@ import { useAuth } from '@/context/AuthContext';
 export function useSettings(slug?: string) {
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
     async function fetchSettings() {
+      // If we are still loading auth and don't have a slug, wait
+      if (!slug && authLoading) return;
+
+      // If we don't have a slug and we finished loading auth but still no hospital_id, 
+      // then we are likely on a platform page or not logged in.
+      if (!slug && !user?.hospital_id && !authLoading) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const { data } = await siteSettingsAPI.get(
           slug ? { slug } : (user?.hospital_id ? { hospital_id: user.hospital_id } : {})
@@ -42,7 +52,7 @@ export function useSettings(slug?: string) {
 
     window.addEventListener('medics-settings-updated', handleRefresh);
     return () => window.removeEventListener('medics-settings-updated', handleRefresh);
-  }, [slug, user?.hospital_id, user?.role]);
+  }, [slug, user?.hospital_id, user?.role, authLoading]);
 
   return { settings, loading };
 }

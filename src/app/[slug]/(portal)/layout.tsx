@@ -108,7 +108,7 @@ export default function PortalLayout({
   }
 
   return (
-    <div className="flex h-screen bg-slate-50/50 overflow-hidden" style={{ '--primary-600': themeColor } as any}>
+    <div className="flex h-screen bg-slate-50/50 overflow-hidden">
       <Sidebar isOpen={sidebarOpen} toggleSidebar={() => setSidebarOpen(false)} />
       
       <div className="flex-1 flex flex-col min-w-0 lg:ml-64 relative">
