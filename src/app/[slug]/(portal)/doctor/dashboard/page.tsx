@@ -10,7 +10,6 @@ import {
   ClipboardList, Users as UsersIcon, LayoutDashboard
 } from 'lucide-react';
 import { DashboardCard } from '@/components/admin/DashboardCard';
-import { useTheme } from '@/components/common/ThemeProvider';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
@@ -37,8 +36,6 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
   const [activity, setActivity] = useState<any[]>([]);
   const [monthlyTrend, setMonthlyTrend] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const { settings } = useTheme();
-  const primaryColor = settings?.primary_color || settings?.theme_color || '#2563eb';
 
   const fetchAll = useCallback(async () => {
     try {
@@ -80,10 +77,10 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
   }
 
   const statCards = stats ? [
-    { label: "Today's Queue", value: stats.cards.todayAppointments, icon: Clock, color: 'primary', description: 'Patients waiting for consultation' },
-    { label: 'Completed', value: stats.cards.totalCompleted, icon: CheckCircle, color: 'primary', description: 'Total successful consultations' },
-    { label: 'My Patients', value: stats.cards.uniquePatients, icon: UsersIcon, color: 'primary', description: 'Unique patients treated overall' },
-    { label: 'Consultations', value: stats.cards.monthConsultations, icon: Activity, color: 'primary', description: 'Consultations this month' },
+    { label: "Today's Queue", value: stats.cards.todayAppointments, icon: Clock, color: 'indigo', description: 'Patients waiting for consultation' },
+    { label: 'Completed', value: stats.cards.totalCompleted, icon: CheckCircle, color: 'emerald', description: 'Total successful consultations' },
+    { label: 'My Patients', value: stats.cards.uniquePatients, icon: UsersIcon, color: 'purple', description: 'Unique patients treated overall' },
+    { label: 'Consultations', value: stats.cards.monthConsultations, icon: Activity, color: 'amber', description: 'Consultations this month' },
   ] : [];
 
   return (
@@ -113,15 +110,15 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
               <AreaChart data={monthlyTrend}>
                 <defs>
                   <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={primaryColor} stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor={primaryColor} stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                 <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
                 <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
-                <Area type="monotone" dataKey="total" stroke={primaryColor} fillOpacity={1} fill="url(#colorTotal)" strokeWidth={3} />
+                <Area type="monotone" dataKey="total" stroke="#6366f1" fillOpacity={1} fill="url(#colorTotal)" strokeWidth={3} />
               </AreaChart>
             </ResponsiveContainer>
           </div>

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
-import { getLocalDateString } from '@/lib/utils';
 
 const getDoctorDoc = async (userId: string, hospitalId?: string) => {
     let query = (supabaseAdmin || supabase)
@@ -37,7 +36,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ type
       const chartData = [];
       for (let i = 6; i >= 0; i--) {
         const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
-        const dateISO = getLocalDateString(d);
+        const dateISO = d.toISOString().split('T')[0];
         const label = d.toLocaleDateString('en', { weekday: 'short' });
         const dateLabel = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 
@@ -59,11 +58,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ type
     if (type === 'monthly-trend') {
       const chartData = [];
       for (let i = 5; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const start = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
-        const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
-        const end = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${lastDay}`;
-        const label = d.toLocaleString('en', { month: 'short' });
+        const start = new Date(now.getFullYear(), now.getMonth() - i, 1).toISOString();
+        const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59, 999).toISOString();
+        const label = new Date(now.getFullYear(), now.getMonth() - i, 1).toLocaleString('en', { month: 'short' });
 
         const [
           { count: total },

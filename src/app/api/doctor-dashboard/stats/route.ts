@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
-import { getLocalDateString } from '@/lib/utils';
 
 // Helper: get Doctor document for logged-in user
 const getDoctorDoc = async (userId: string, hospitalId?: string) => {
@@ -28,16 +27,14 @@ export async function GET(request: Request) {
   try {
     const doctor = await getDoctorDoc(profile?.id || '', profile?.hospital_id);
     if (!doctor) return NextResponse.json({ message: 'Doctor profile not found' }, { status: 404 });
+
     const doctorId = doctor.id;
     const now = new Date();
-    const startOfToday = getLocalDateString();
-    
-    console.log('[DEBUG] Stats API - Profile:', profile?.id, 'Hospital:', profile?.hospital_id);
-    console.log('[DEBUG] Stats API - Doctor Found:', doctorId, 'Target Date:', startOfToday);
-    const endOfToday = startOfToday; // For DATE column, start and end are the same
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).toISOString();
     const startOfWeek = new Date(now);
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-    const startOfWeekISO = getLocalDateString(startOfWeek);
+    const startOfWeekISO = startOfWeek.toISOString();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999).toISOString();
