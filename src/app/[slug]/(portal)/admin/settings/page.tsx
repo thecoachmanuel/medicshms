@@ -73,6 +73,39 @@ export default function SettingsPage() {
     fetchSettings();
   }, []);
 
+  useEffect(() => {
+    if (settings.theme_color || settings.secondary_color) {
+      const root = document.documentElement;
+      const color = settings.theme_color || '#2563eb';
+      const secondary = settings.secondary_color || '#0f172a';
+      const isHex = /^#[0-9A-F]{6}$/i.test(color);
+
+      if (isHex) {
+        const adjust = (hex: string, amt: number) => {
+          const col = parseInt(hex.slice(1), 16);
+          const r = Math.max(0, Math.min(255, (col >> 16) + amt));
+          const g = Math.max(0, Math.min(255, ((col >> 8) & 0x00FF) + amt));
+          const b = Math.max(0, Math.min(255, (col & 0x0000FF) + amt));
+          return "#" + (g | (b << 8) | (r << 16)).toString(16).padStart(6, '0');
+        };
+
+        root.style.setProperty('--primary-50', `${color}10`);
+        root.style.setProperty('--primary-100', `${color}20`);
+        root.style.setProperty('--primary-500', color);
+        root.style.setProperty('--primary-600', adjust(color, -20));
+        root.style.setProperty('--primary-700', adjust(color, -40));
+        
+        root.style.setProperty('--secondary-50', '#f8fafc');
+        root.style.setProperty('--secondary-500', secondary);
+        root.style.setProperty('--secondary-600', adjust(secondary, -20));
+        root.style.setProperty('--secondary-700', adjust(secondary, -40));
+      }
+      
+      root.style.setProperty('--primary-color', color);
+      root.style.setProperty('--secondary-color', secondary);
+    }
+  }, [settings.theme_color, settings.secondary_color]);
+
   const fetchSettings = async () => {
     try {
       setLoading(true);
