@@ -25,12 +25,6 @@ export function useSettings(slug?: string) {
           primary_color: primaryColor,
           secondary_color: secondaryColor
         });
-        
-        // Apply branding colors to CSS variables
-        if (typeof document !== 'undefined') {
-          document.documentElement.style.setProperty('--primary-color', primaryColor);
-          document.documentElement.style.setProperty('--secondary-color', secondaryColor);
-        }
       } catch (error) {
         console.error('Settings hook error:', error);
       } finally {

@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { siteSettingsAPI, uploadAPI } from '@/lib/api';
+import { generatePalette } from '@/lib/colors';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -22,6 +23,7 @@ interface SiteSettings {
   hospital_short_name: string;
   logo_url: string;
   theme_color: string;
+  secondary_color: string;
   contact_email: string;
   contact_phone: string;
   emergency_phone: string;
@@ -51,6 +53,7 @@ export default function SettingsPage() {
     hospital_short_name: 'ML Hospital',
     logo_url: '',
     theme_color: '#2563eb',
+    secondary_color: '#0f172a',
     contact_email: 'contact@medicshms.com',
     contact_phone: '+1 (800) 123-4567',
     emergency_phone: '+1 (800) 123-4567',
@@ -76,35 +79,28 @@ export default function SettingsPage() {
   useEffect(() => {
     if (settings.theme_color || settings.secondary_color) {
       const root = document.documentElement;
-      const color = settings.theme_color || '#2563eb';
+      const primary = settings.theme_color || '#2563eb';
       const secondary = settings.secondary_color || '#0f172a';
-      const isHex = /^#[0-9A-F]{6}$/i.test(color);
 
-      if (isHex) {
-        const adjust = (hex: string, amt: number) => {
-          const col = parseInt(hex.slice(1), 16);
-          const r = Math.max(0, Math.min(255, (col >> 16) + amt));
-          const g = Math.max(0, Math.min(255, ((col >> 8) & 0x00FF) + amt));
-          const b = Math.max(0, Math.min(255, (col & 0x0000FF) + amt));
-          return "#" + (g | (b << 8) | (r << 16)).toString(16).padStart(6, '0');
-        };
+      // Generate full palettes using the same utility as ThemeProvider
+      const primaryPalette = generatePalette(primary);
+      const secondaryPalette = generatePalette(secondary);
 
-        root.style.setProperty('--primary-50', `${color}10`);
-        root.style.setProperty('--primary-100', `${color}20`);
-        root.style.setProperty('--primary-500', color);
-        root.style.setProperty('--primary-600', adjust(color, -20));
-        root.style.setProperty('--primary-700', adjust(color, -40));
-        
-        root.style.setProperty('--secondary-50', '#f8fafc');
-        root.style.setProperty('--secondary-500', secondary);
-        root.style.setProperty('--secondary-600', adjust(secondary, -20));
-        root.style.setProperty('--secondary-700', adjust(secondary, -40));
-      }
+      // Apply primary shades
+      Object.entries(primaryPalette).forEach(([shade, color]) => {
+        root.style.setProperty(`--primary-${shade}`, color as string);
+      });
+
+      // Apply secondary shades
+      Object.entries(secondaryPalette).forEach(([shade, color]) => {
+        root.style.setProperty(`--secondary-${shade}`, color as string);
+      });
       
-      root.style.setProperty('--primary-color', color);
+      root.style.setProperty('--primary-color', primary);
       root.style.setProperty('--secondary-color', secondary);
     }
   }, [settings.theme_color, settings.secondary_color]);
+
 
   const fetchSettings = async () => {
     try {
@@ -294,7 +290,7 @@ export default function SettingsPage() {
                                 />
                              </div>
                              <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Brand Theme Color</label>
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Brand Theme Color (Primary)</label>
                                 <div className="flex items-center gap-3">
                                    <input 
                                       type="color" 
@@ -306,6 +302,23 @@ export default function SettingsPage() {
                                       type="text" 
                                       value={settings.theme_color || '#2563eb'} 
                                       onChange={e => setSettings({...settings, theme_color: e.target.value})}
+                                      className="flex-1 input py-2.5 font-mono text-xs uppercase" 
+                                   />
+                                </div>
+                             </div>
+                             <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Secondary Brand Color</label>
+                                <div className="flex items-center gap-3">
+                                   <input 
+                                      type="color" 
+                                      value={settings.secondary_color || '#0f172a'} 
+                                      onChange={e => setSettings({...settings, secondary_color: e.target.value})}
+                                      className="w-10 h-10 rounded-xl border-none cursor-pointer" 
+                                   />
+                                   <input 
+                                      type="text" 
+                                      value={settings.secondary_color || '#0f172a'} 
+                                      onChange={e => setSettings({...settings, secondary_color: e.target.value})}
                                       className="flex-1 input py-2.5 font-mono text-xs uppercase" 
                                    />
                                 </div>
