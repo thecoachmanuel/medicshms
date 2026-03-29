@@ -59,6 +59,14 @@ export async function GET(
     const formattedPatient = {
       ...patient,
       _id: patient.id,
+      patientId: patient.patient_id,
+      fullName: patient.full_name,
+      mobileNumber: patient.mobile_number,
+      emailAddress: patient.email_address,
+      dateOfBirth: patient.date_of_birth,
+      bloodGroup: patient.blood_group,
+      emergencyContactName: patient.emergency_contact_name,
+      emergencyContactNumber: patient.emergency_contact_number,
       age: patient.age || calculateAge(patient.date_of_birth),
       appointments: formattedAppointments
     };

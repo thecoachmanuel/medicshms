@@ -37,7 +37,11 @@ export async function GET(request: Request) {
       fullName: p.full_name,
       mobileNumber: p.mobile_number,
       emailAddress: p.email_address,
+      dateOfBirth: p.date_of_birth,
       age: p.age || calculateAge(p.date_of_birth),
+      bloodGroup: p.blood_group,
+      emergencyContactName: p.emergency_contact_name,
+      emergencyContactNumber: p.emergency_contact_number,
       totalAppointments: 0 
     }));
 

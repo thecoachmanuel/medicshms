@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
 
 // Get all patients from public appointments with filters for download (Admin, Receptionist)
 // GET /api/patients/public-appointments/download
 export async function GET(request: Request) {
-  const { error: authError } = await withAuth(request, ['Admin', 'Receptionist']);
+  const { profile: userProfile, error: authError } = await withAuth(request, ['Admin', 'Receptionist']);
   if (authError) return authError;
 
   try {
@@ -15,7 +15,14 @@ export async function GET(request: Request) {
     const ageMax = searchParams.get('ageMax');
     const visitType = searchParams.get('visitType');
 
-    let query = supabase.from('public_appointments').select('*, doctors:doctor_assigned_id(*, profiles:user_id(name))');
+    let query = (supabaseAdmin || supabase)
+      .from('public_appointments')
+      .select(`
+        *, 
+        doctors:doctor_assigned_id(*, profiles:user_id(name)),
+        patient_details:patient_id(blood_group, emergency_contact_name, emergency_contact_number)
+      `)
+      .eq('hospital_id', userProfile?.hospital_id);
 
     if (gender) query = query.eq('gender', gender);
     if (ageMin) query = query.gte('age', Number(ageMin));
@@ -26,7 +33,7 @@ export async function GET(request: Request) {
     if (error) throw error;
 
     const patientMap: Record<string, any> = {};
-    (rawAppointments || []).forEach(apt => {
+    (rawAppointments || []).forEach((apt: any) => {
         if (!patientMap[apt.patient_id]) {
             patientMap[apt.patient_id] = {
                 _id: apt.patient_id,
@@ -36,6 +43,9 @@ export async function GET(request: Request) {
                 mobileNumber: apt.mobile_number,
                 gender: apt.gender,
                 age: apt.age,
+                bloodGroup: (apt.patient_details as any)?.blood_group || 'N/A',
+                emergencyContactName: (apt.patient_details as any)?.emergency_contact_name || 'N/A',
+                emergencyContactNumber: (apt.patient_details as any)?.emergency_contact_number || 'N/A',
                 totalAppointments: 0,
                 appointments: []
             };

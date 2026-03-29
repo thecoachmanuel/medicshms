@@ -89,7 +89,7 @@ export default function PatientsList({ role }: Props) {
         return;
       }
 
-      const headers = ['Patient ID', 'Full Name', 'Mobile', 'Email', 'Gender', 'Age', 'Total Appointments'];
+      const headers = ['Patient ID', 'Full Name', 'Mobile', 'Email', 'Gender', 'Age', 'Blood Group', 'Emergency Contact', 'Emergency Phone', 'Total Appointments'];
       const csvData = [
         headers.join(','),
         ...records.map((p: any) => [
@@ -99,6 +99,9 @@ export default function PatientsList({ role }: Props) {
           p.emailAddress,
           p.gender,
           p.age,
+          p.bloodGroup || 'N/A',
+          `"${p.emergencyContactName || 'N/A'}"`,
+          p.emergencyContactNumber || 'N/A',
           p.totalAppointments
         ].join(','))
       ].join('\n');
