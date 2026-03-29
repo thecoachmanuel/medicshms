@@ -53,6 +53,10 @@ export const authAPI = {
   register: (userData: any) => api.post('/auth/register', userData),
   getProfile: () => api.get('/auth/profile'),
   updateProfile: (userData: any) => api.put('/auth/profile', userData),
+  uploadPhoto: (formData: FormData) => api.post('/profile/upload-photo', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  deletePhoto: () => api.delete('/profile/photo'),
 };
 
 export const usersAPI = {
@@ -74,15 +78,15 @@ export const appointmentsAPI = {
   book: (data: any) => api.post('/admin-appointments/book', data),
   update: (id: string, data: any) => api.put(`/admin-appointments/${id}`, data),
   delete: (id: string) => api.delete(`/admin-appointments/${id}`),
-  updateStatus: (id: string, status: string, reason?: string) => 
-    api.patch(`/admin-appointments/${id}/status`, { status, reason }),
+  updateStatus: (id: string, status: string, reason?: string, data?: any) => 
+    api.patch(`/admin-appointments/${id}/status`, { status, reason, ...data }),
   assignDoctor: (id: string, doctorId: string) => 
     api.patch(`/admin-appointments/${id}/assign-doctor`, { doctorId }),
   getTimeSlots: (date: string, department?: string) => 
     api.get('/admin-appointments/slots', { params: { date, department } }),
   lookupPatient: (mobile: string) => 
     api.get(`/admin-appointments/lookup/${mobile}`),
-  doctorComplete: (id: string) => api.patch(`/admin-appointments/${id}/doctor-complete`),
+  doctorComplete: (id: string, data?: any) => api.patch(`/admin-appointments/${id}/doctor-complete`, data),
   doctorRemove: (id: string, reason: string) => 
     api.patch(`/admin-appointments/${id}/doctor-remove`, { reason }),
   getStats: () => api.get('/admin-appointments/stats'),

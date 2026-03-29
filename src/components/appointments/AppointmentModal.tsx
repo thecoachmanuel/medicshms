@@ -71,7 +71,7 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
       };
 
       if (user?.role === 'Doctor') {
-        await (appointmentAPI as any).doctorComplete(appointment._id, data);
+        await appointmentAPI.doctorComplete(appointment._id, data);
       } else {
         await appointmentAPI.updateStatus(appointment._id, 'Completed', '', data);
       }
