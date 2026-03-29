@@ -37,7 +37,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ type
       const chartData = [];
       for (let i = 6; i >= 0; i--) {
         const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
-        const dateISO = d.toISOString().split('T')[0];
+        const dateISO = getLocalDateString(d);
         const label = d.toLocaleDateString('en', { weekday: 'short' });
         const dateLabel = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 

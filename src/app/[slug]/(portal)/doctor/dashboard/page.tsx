@@ -38,7 +38,7 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
   const [monthlyTrend, setMonthlyTrend] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const { settings } = useTheme();
-  const primaryColor = settings?.primary_color || '#6366f1';
+  const primaryColor = settings?.primary_color || settings?.theme_color || '#2563eb';
 
   const fetchAll = useCallback(async () => {
     try {
@@ -81,8 +81,8 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
 
   const statCards = stats ? [
     { label: "Today's Queue", value: stats.cards.todayAppointments, icon: Clock, color: 'primary', description: 'Patients waiting for consultation' },
-    { label: 'Completed', value: stats.cards.totalCompleted, icon: CheckCircle, color: 'emerald', description: 'Total successful consultations' },
-    { label: 'My Patients', value: stats.cards.uniquePatients, icon: UsersIcon, color: 'purple', description: 'Unique patients treated overall' },
+    { label: 'Completed', value: stats.cards.totalCompleted, icon: CheckCircle, color: 'primary', description: 'Total successful consultations' },
+    { label: 'My Patients', value: stats.cards.uniquePatients, icon: UsersIcon, color: 'primary', description: 'Unique patients treated overall' },
     { label: 'Consultations', value: stats.cards.monthConsultations, icon: Activity, color: 'primary', description: 'Consultations this month' },
   ] : [];
 

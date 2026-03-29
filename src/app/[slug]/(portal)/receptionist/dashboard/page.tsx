@@ -36,7 +36,7 @@ export default function ReceptionistDashboard({ params }: { params: Promise<{ sl
   const [dailyAppointments, setDailyAppointments] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const { settings } = useTheme();
-  const primaryColor = settings?.primary_color || '#6366f1';
+  const primaryColor = settings?.primary_color || settings?.theme_color || '#2563eb';
 
   const fetchAll = useCallback(async () => {
     try {
@@ -76,11 +76,11 @@ export default function ReceptionistDashboard({ params }: { params: Promise<{ sl
 
   const statCards = stats ? [
     { label: "Today's Appointments", value: stats.cards.todayAppointments.value, icon: Calendar, color: 'primary', description: 'Appointments scheduled for today' },
-    { label: 'Total Patients', value: stats.cards.totalPatients.value, icon: Users, color: 'blue', description: 'Total patients in system' },
-    { label: 'Active Doctors', value: stats.cards.totalDoctors.value, icon: Stethoscope, color: 'emerald', description: 'Doctors currently on duty' },
-    { label: 'New Patients', value: stats.cards.newPatients.value, icon: UserPlus, color: 'cyan', description: 'New registrations this month' },
+    { label: 'Total Patients', value: stats.cards.totalPatients.value, icon: Users, color: 'primary', description: 'Total patients in system' },
+    { label: 'Active Doctors', value: stats.cards.totalDoctors.value, icon: Stethoscope, color: 'primary', description: 'Doctors currently on duty' },
+    { label: 'New Patients', value: stats.cards.newPatients.value, icon: UserPlus, color: 'primary', description: 'New registrations this month' },
     { label: 'Monthly Revenue', value: formatCurrency(stats.cards.monthRevenue.value), icon: Wallet, color: 'primary', description: 'Total revenue this month' },
-    { label: 'Pending Bills', value: stats.cards.pendingBills.value, icon: FileWarning, color: 'rose', description: 'Unpaid or partial bills' },
+    { label: 'Pending Bills', value: stats.cards.pendingBills.value, icon: FileWarning, color: 'primary', description: 'Unpaid or partial bills' },
   ] : [];
 
   return (
@@ -149,7 +149,7 @@ export default function ReceptionistDashboard({ params }: { params: Promise<{ sl
                     <td className="px-6 py-3">
                       <span className={cn(
                         "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase",
-                        apt.status === 'Confirmed' ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                        apt.status === 'Confirmed' ? "bg-primary-50 text-primary-700" : "bg-primary-50 text-primary-600/70"
                       )}>
                         {apt.status}
                       </span>
