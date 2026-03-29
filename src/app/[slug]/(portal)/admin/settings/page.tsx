@@ -286,14 +286,14 @@ export default function SettingsPage() {
                                 <div className="flex items-center gap-3">
                                    <input 
                                       type="color" 
-                                      value={settings.theme_color || '#2563eb'} 
-                                      onChange={e => setSettings({...settings, theme_color: e.target.value})}
+                                      value={settings.theme_color || settings.primary_color || '#2563eb'} 
+                                      onChange={e => setSettings({...settings, theme_color: e.target.value, primary_color: e.target.value})}
                                       className="w-10 h-10 rounded-xl border-none cursor-pointer" 
                                    />
                                    <input 
                                       type="text" 
-                                      value={settings.theme_color || '#2563eb'} 
-                                      onChange={e => setSettings({...settings, theme_color: e.target.value})}
+                                      value={settings.theme_color || settings.primary_color || '#2563eb'} 
+                                      onChange={e => setSettings({...settings, theme_color: e.target.value, primary_color: e.target.value})}
                                       className="flex-1 input py-2.5 font-mono text-xs uppercase" 
                                    />
                                 </div>
