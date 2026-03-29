@@ -15,7 +15,7 @@ export async function GET(
 
   try {
     // Fetch patient info
-    let query = supabase.from('patients').select('*, profiles(*)');
+    let query = supabase.from('patients').select('*, profiles!user_id(*)');
     
     // Check if id is UUID (very basic check)
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
@@ -33,17 +33,28 @@ export async function GET(
     // Fetch appointment history with doctor names
     const { data: appointments, error: aError } = await supabase
       .from('public_appointments')
-      .select('*, doctor:doctors(profiles(name))')
+      .select('*, doctor:doctors!doctor_assigned_id(profiles!user_id(name))')
       .eq('patient_id', patient.patient_id)
       .order('appointment_date', { ascending: false });
 
     if (aError) return NextResponse.json({ message: aError.message }, { status: 500 });
 
+    const formattedAppointments = (appointments || []).map(apt => ({
+      ...apt,
+      _id: apt.id,
+      appointmentDate: apt.appointment_date,
+      appointmentTime: apt.appointment_time,
+      appointmentStatus: apt.appointment_status,
+      visitType: apt.visit_type,
+      reasonForVisit: apt.reason_for_visit,
+      doctorName: (apt as any).doctor?.profiles?.name
+    }));
+
     const formattedPatient = {
       ...patient,
       _id: patient.id,
       age: patient.age || calculateAge(patient.date_of_birth),
-      appointments: appointments || []
+      appointments: formattedAppointments
     };
 
     return NextResponse.json({ data: formattedPatient });

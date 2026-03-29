@@ -15,7 +15,7 @@ export async function GET(
   try {
     const { data: bill, error } = await supabase
       .from('bills')
-      .select('*, public_appointments(*, doctors:doctor_assigned_id(*, profiles:user_id(name, email)))')
+      .select('*, public_appointments!public_appointment_id(*, doctors!doctor_assigned_id(*, profiles!user_id(name, email), department:departments!department_id(name)))')
       .eq('id', id)
       .single();
 

@@ -31,7 +31,8 @@ export async function GET(request: Request) {
     let query = supabase
       .from('public_appointments')
       .select('id, appointment_id, full_name, mobile_number, email_address, appointment_date, appointment_time, department, appointment_status', { count: 'exact' })
-      .eq('doctor_assigned_id', doctor.id);
+      .eq('doctor_assigned_id', doctor.id)
+      .eq('hospital_id', userProfile?.hospital_id);
 
     if (status && status !== 'All' && status !== 'all') query = query.eq('appointment_status', status);
     if (date) query = query.eq('appointment_date', date);

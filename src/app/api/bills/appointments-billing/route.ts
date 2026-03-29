@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     // Fetch all appointments with doctor info for this hospital
     const { data: appointments, error: aptError } = await (supabaseAdmin || supabase)
       .from('public_appointments')
-      .select('*, doctors:doctor_assigned_id(*, profiles:user_id(name))')
+      .select('*, doctors!doctor_assigned_id(*, profiles!user_id(name))')
       .eq('hospital_id', userProfile?.hospital_id)
       .order('created_at', { ascending: false });
 
