@@ -6,22 +6,19 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Sidebar } from '@/components/admin/Sidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
-import { useSettings } from '@/hooks/useSettings';
+import { useSiteSettings } from '@/context/SettingsContext';
 
 export default function PortalLayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ slug: string }>;
 }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const { slug } = React.use(params);
-  const { settings, loading: settingsLoading } = useSettings(slug);
+  const { settings, loading: settingsLoading, slug } = useSiteSettings();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, loading: authLoading, logout } = useAuth();
   const router = useRouter();
@@ -37,9 +34,6 @@ export default function PortalLayout({
       }
     }
   }, [user, authLoading, router, slug]);
-
-  // Compute theme color: Use settings color or fallback to standard primary
-  const themeColor = settings?.theme_color || '#2563eb';
 
   const loading = authLoading || settingsLoading;
  

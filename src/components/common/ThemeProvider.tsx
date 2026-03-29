@@ -1,25 +1,16 @@
 'use client';
 
 import React, { createContext, useContext, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
-import { useSettings } from '@/hooks/useSettings';
+import { useSiteSettings } from '@/context/SettingsContext';
 import { generatePalette } from '@/lib/colors';
 
 const ThemeContext = createContext({});
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const parts = pathname.split('/');
-  // Detect slug from path: /slug/...
-  // Usually the slug is the first part after the domain, unless it's a platform-level page
-  const reservedWords = ['login', 'platform-admin', 'admin', 'register', 'api', '_next'];
-  const slug = (parts.length > 1 && !reservedWords.includes(parts[1])) 
-    ? parts[1] 
-    : undefined;
-
-  const { settings, loading } = useSettings(slug);
+  const { settings, loading, slug, pathname } = useSiteSettings();
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const isPlatformAdmin = pathname.startsWith('/platform-admin');
     
     const root = document.documentElement;
@@ -60,7 +51,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } else if (!loading) {
       clearTheme();
     }
-  }, [settings, pathname, loading]);
+  }, [settings, pathname, loading, slug]);
+
 
 
   // If we're loading settings for a specific tenant, block render to prevent flicker

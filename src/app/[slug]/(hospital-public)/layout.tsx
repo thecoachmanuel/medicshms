@@ -1,9 +1,9 @@
 'use client';
 
-import { useSettings } from '@/hooks/useSettings';
+import { useSiteSettings } from '@/context/SettingsContext';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
-import { useEffect, use } from 'react';
+import { useEffect } from 'react';
 import PublicHeader from '@/components/common/PublicHeader';
 import PublicFooter from '@/components/common/PublicFooter';
 import CMSOverlay from '@/components/cms/CMSOverlay';
@@ -16,8 +16,7 @@ export default function PublicLayout({
   children: React.ReactNode;
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = use(params);
-  const { settings, loading: settingsLoading } = useSettings(slug);
+  const { settings, loading: settingsLoading, slug } = useSiteSettings();
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();

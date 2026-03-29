@@ -11,6 +11,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { siteSettingsAPI, uploadAPI } from '@/lib/api';
 import { generatePalette } from '@/lib/colors';
+import { useSiteSettings } from '@/context/SettingsContext';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -44,20 +45,20 @@ interface SiteSettings {
 }
 
 export default function SettingsPage() {
-  const [loading, setLoading] = useState(false);
+  const { settings: globalSettings, loading: globalLoading, refreshSettings } = useSiteSettings();
   const [syncing, setSyncing] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [settings, setSettings] = useState<SiteSettings>({
-    hospital_name: 'MedicsHMS',
-    hospital_short_name: 'ML Hospital',
+    hospital_name: '',
+    hospital_short_name: '',
     logo_url: '',
     theme_color: '#2563eb',
     secondary_color: '#0f172a',
-    contact_email: 'contact@medicshms.com',
-    contact_phone: '+1 (800) 123-4567',
-    emergency_phone: '+1 (800) 123-4567',
-    address: '123 Health Ave, Medical District, NY 10001',
+    contact_email: '',
+    contact_phone: '',
+    emergency_phone: '',
+    address: '',
     maintenance_mode: false,
     sms_notifications: true,
     allow_public_registration: true,
@@ -73,8 +74,14 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
-    fetchSettings();
-  }, []);
+    if (globalSettings) {
+      const sanitized = { ...globalSettings };
+      Object.keys(sanitized).forEach(key => {
+        if (sanitized[key] === null) sanitized[key] = '';
+      });
+      setSettings(prev => ({ ...prev, ...sanitized }));
+    }
+  }, [globalSettings]);
 
   useEffect(() => {
     if (settings.theme_color || settings.secondary_color) {
@@ -101,25 +108,6 @@ export default function SettingsPage() {
     }
   }, [settings.theme_color, settings.secondary_color]);
 
-
-  const fetchSettings = async () => {
-    try {
-      setLoading(true);
-      const res = await siteSettingsAPI.get() as any;
-      if (res?.data) {
-        const sanitized = { ...res.data };
-        Object.keys(sanitized).forEach(key => {
-          if (sanitized[key] === null) sanitized[key] = '';
-        });
-        setSettings(prev => ({ ...prev, ...sanitized }));
-      }
-    } catch (error) {
-      console.error('Failed to fetch settings:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleLogoUpload = async (file: File) => {
     try {
       setUploading(true);
@@ -143,7 +131,10 @@ export default function SettingsPage() {
       setSyncing(true);
       await siteSettingsAPI.update(settings);
       
-      // Dispatch global event for other components to refresh
+      // Refresh global settings context
+      await refreshSettings();
+      
+      // Dispatch global event for other components (legacy support)
       window.dispatchEvent(new CustomEvent('medics-settings-updated'));
       
       toast.success('Settings synchronized successfully');
@@ -154,6 +145,7 @@ export default function SettingsPage() {
     }
   };
 
+
   const tabs = [
     { id: 'general', icon: Settings, label: 'General System' },
     { id: 'security', icon: Lock, label: 'Access & Auth' },
@@ -161,7 +153,7 @@ export default function SettingsPage() {
     { id: 'database', icon: Database, label: 'Data Management' },
   ];
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 animate-spin text-primary-600" /></div>;
+  if (globalLoading && !settings.hospital_name) return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 animate-spin text-primary-600" /></div>;
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
