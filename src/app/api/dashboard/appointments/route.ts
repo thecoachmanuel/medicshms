@@ -37,6 +37,7 @@ export async function GET(request: Request) {
         } : null,
         appointmentDate: apt.appointment_date,
         appointmentTime: apt.appointment_time,
+        age: apt.age,
         visitType: apt.visit_type,
         source: apt.source || 'Website',
         createdAt: apt.created_at,

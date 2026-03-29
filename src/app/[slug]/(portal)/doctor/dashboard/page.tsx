@@ -131,7 +131,7 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
             {todayAppointments.length > 0 ? todayAppointments.map((apt, i) => (
               <div key={i} className="p-4 bg-gray-50 rounded-xl flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-sm font-bold text-gray-900 truncate">{apt.patientName}</p>
+                  <p className="text-sm font-bold text-gray-900 truncate">{apt.patientName}{apt.age ? ` (${apt.age}y)` : ''}</p>
                   <p className="text-[10px] text-gray-500 font-bold uppercase">{apt.appointmentTime}</p>
                 </div>
                 <span className={cn(

@@ -189,7 +189,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
               {recentAppointments.slice(0, 5).map((apt, i) => (
                 <tr key={i} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4">
-                    <p className="text-sm font-bold text-gray-900">{apt.patientName}</p>
+                    <p className="text-sm font-bold text-gray-900">{apt.patientName}{apt.age ? ` (${apt.age}y)` : ''}</p>
                     <p className="text-xs text-gray-500">{apt.patientId}</p>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600 font-medium">{apt.department}</td>

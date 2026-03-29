@@ -6,16 +6,35 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { error: authError } = await withAuth(request, ['Admin', 'Receptionist', 'Doctor']);
-  if (authError) return authError;
-
-  try {
     const { status, reason } = await request.json();
     const { id } = await params;
+    const { error: authError, profile } = await withAuth(request, ['Admin', 'Receptionist', 'Doctor']);
+    if (authError) return authError;
 
     const updateData: any = { appointment_status: status };
     if (status === 'Cancelled' && reason) {
       updateData.cancel_reason = reason;
+    }
+
+    // Auto-assign doctor on approval if not assigned
+    if (status === 'Confirmed' && profile?.role === 'Doctor') {
+      const { data: current } = await (supabaseAdmin || supabase)
+        .from('public_appointments')
+        .select('doctor_assigned_id')
+        .eq('id', id)
+        .single();
+      
+      if (current && !current.doctor_assigned_id) {
+        const { data: doctor } = await (supabaseAdmin || supabase)
+          .from('doctors')
+          .select('id')
+          .eq('user_id', profile.id)
+          .single();
+        
+        if (doctor) {
+          updateData.doctor_assigned_id = doctor.id;
+        }
+      }
     }
 
     const { data: appointment, error } = await (supabaseAdmin || supabase)

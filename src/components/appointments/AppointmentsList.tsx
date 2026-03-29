@@ -222,7 +222,9 @@ export default function AppointmentsList({ role }: Props) {
                       </div>
                       <div>
                         <p className="text-sm font-bold text-gray-900 leading-none mb-1">{apt.fullName}</p>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{apt.mobileNumber}</p>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                          {apt.mobileNumber} {apt.age ? `• ${apt.age}y` : ''}
+                        </p>
                       </div>
                     </div>
                   </td>
