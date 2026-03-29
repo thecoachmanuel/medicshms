@@ -30,7 +30,7 @@ export async function GET(request: Request) {
 
     let query = (supabaseAdmin || supabase)
       .from('public_appointments')
-      .select('id, appointment_id, full_name, mobile_number, email_address, appointment_date, appointment_time, department, appointment_status', { count: 'exact' })
+      .select('id, appointment_id, full_name, mobile_number, email_address, appointment_date, appointment_time, department, appointment_status, age, gender, primary_concern, known_allergies, allergies_details, patient_id', { count: 'exact' })
       .eq('doctor_assigned_id', doctor.id)
       .eq('hospital_id', userProfile?.hospital_id);
 
@@ -55,7 +55,13 @@ export async function GET(request: Request) {
       appointmentDate: apt.appointment_date,
       appointmentTime: apt.appointment_time,
       department: apt.department,
-      appointmentStatus: apt.appointment_status
+      appointmentStatus: apt.appointment_status,
+      age: apt.age,
+      gender: apt.gender,
+      primaryConcern: apt.primary_concern,
+      knownAllergies: apt.known_allergies ? 'Yes' : 'No',
+      allergiesDetails: apt.allergies_details,
+      patientId: apt.patient_id
     }));
 
     return NextResponse.json({ 

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
 
 export async function PATCH(
@@ -18,7 +18,7 @@ export async function PATCH(
       updateData.cancel_reason = reason;
     }
 
-    const { data: appointment, error } = await supabase
+    const { data: appointment, error } = await (supabaseAdmin || supabase)
       .from('public_appointments')
       .update(updateData)
       .eq('id', id)
