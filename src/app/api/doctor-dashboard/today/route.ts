@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     if (!doctor) return NextResponse.json({ message: 'Doctor profile not found' }, { status: 404 });
 
     const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString().split('T')[0];
+    const startOfToday = now.toISOString().split('T')[0];
 
     const { data: appointments, error } = await supabase
       .from('public_appointments')

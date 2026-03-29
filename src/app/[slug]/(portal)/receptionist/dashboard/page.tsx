@@ -10,6 +10,7 @@ import {
   Wallet, ListChecks, UserCog
 } from 'lucide-react';
 import { DashboardCard } from '@/components/admin/DashboardCard';
+import { useSettings } from '@/hooks/useSettings';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
@@ -34,6 +35,8 @@ export default function ReceptionistDashboard({ params }: { params: Promise<{ sl
   const [recentAppointments, setRecentAppointments] = useState<any[]>([]);
   const [dailyAppointments, setDailyAppointments] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const { settings } = useSettings(slug);
+  const primaryColor = settings?.primary_color || '#6366f1';
 
   const fetchAll = useCallback(async () => {
     try {
@@ -72,11 +75,11 @@ export default function ReceptionistDashboard({ params }: { params: Promise<{ sl
   }
 
   const statCards = stats ? [
-    { label: "Today's Appointments", value: stats.cards.todayAppointments.value, icon: Calendar, color: 'purple', description: 'Appointments scheduled for today' },
+    { label: "Today's Appointments", value: stats.cards.todayAppointments.value, icon: Calendar, color: 'primary', description: 'Appointments scheduled for today' },
     { label: 'Total Patients', value: stats.cards.totalPatients.value, icon: Users, color: 'blue', description: 'Total patients in system' },
     { label: 'Active Doctors', value: stats.cards.totalDoctors.value, icon: Stethoscope, color: 'emerald', description: 'Doctors currently on duty' },
     { label: 'New Patients', value: stats.cards.newPatients.value, icon: UserPlus, color: 'cyan', description: 'New registrations this month' },
-    { label: 'Monthly Revenue', value: formatCurrency(stats.cards.monthRevenue.value), icon: Wallet, color: 'amber', description: 'Total revenue this month' },
+    { label: 'Monthly Revenue', value: formatCurrency(stats.cards.monthRevenue.value), icon: Wallet, color: 'primary', description: 'Total revenue this month' },
     { label: 'Pending Bills', value: stats.cards.pendingBills.value, icon: FileWarning, color: 'rose', description: 'Unpaid or partial bills' },
   ] : [];
 
@@ -115,7 +118,7 @@ export default function ReceptionistDashboard({ params }: { params: Promise<{ sl
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
                 <Tooltip cursor={{ fill: '#f9fafb' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
-                <Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="value" fill={primaryColor} radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

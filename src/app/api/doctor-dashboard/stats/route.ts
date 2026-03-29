@@ -30,11 +30,11 @@ export async function GET(request: Request) {
 
     const doctorId = doctor.id;
     const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).toISOString();
+    const startOfToday = now.toISOString().split('T')[0];
+    const endOfToday = startOfToday; // For DATE column, start and end are the same
     const startOfWeek = new Date(now);
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-    const startOfWeekISO = startOfWeek.toISOString();
+    const startOfWeekISO = startOfWeek.toISOString().split('T')[0];
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999).toISOString();
