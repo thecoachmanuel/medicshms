@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   User, Mail, Phone, Shield, Calendar, 
   Edit2, Save, Upload, Loader2, Key,
-  CheckCircle2, AlertCircle, Camera
+  CheckCircle2, AlertCircle, Camera, X
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { authAPI } from '@/lib/api';
