@@ -299,10 +299,16 @@ export default function AppointmentsList({ role }: Props) {
                           <XCircle className="w-4 h-4" />
                         </button>
                       )}
-                      {isDoctor && apt.appointmentStatus === 'Confirmed' && (
+                      {(isDoctor || role === 'Admin') && apt.appointmentStatus === 'Confirmed' && (
                         <button 
                           onClick={() => handleStatusUpdate(apt._id, 'Completed')}
-                          className="p-2 bg-emerald-50 rounded-lg shadow-sm text-emerald-600 hover:bg-emerald-100 transition-all border border-emerald-100"
+                          className={cn(
+                            "p-2 rounded-lg shadow-sm transition-all border",
+                            isDoctor 
+                              ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border-emerald-100" 
+                              : "bg-primary-50 text-primary-600 hover:bg-primary-100 border-primary-100"
+                          )}
+                          title="Complete Appointment"
                         >
                           <CheckCircle className="w-4 h-4" />
                         </button>

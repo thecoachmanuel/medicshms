@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { appointmentAPI } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export default function AppointmentModal({ appointment, type, doctors, departments, onClose, onRefresh }: Props) {
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(appointment?.doctorAssigned?._id || appointment?.doctorAssigned?.id || '');
   const [editData, setEditData] = useState({
@@ -241,13 +243,41 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
         <div className="px-8 py-6 border-t border-gray-100 flex items-center justify-between bg-gray-50/30">
           {type === 'view' ? (
             <>
-              <button 
-                onClick={() => window.print()}
-                className="btn-secondary"
-              >
-                <Printer className="w-4 h-4" />
-                Print Ticket
-              </button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => window.print()}
+                  className="btn-secondary"
+                >
+                  <Printer className="w-4 h-4" />
+                  Print Ticket
+                </button>
+                {appointment.appointmentStatus === 'Confirmed' && (user?.role === 'Admin' || (user?.role === 'Doctor' && (appointment.doctorAssigned?._id === user?.doctorProfileId || appointment.doctorAssigned?.id === user?.doctorProfileId))) && (
+                  <button 
+                    onClick={async () => {
+                      setIsSubmitting(true);
+                      try {
+                        if (user?.role === 'Doctor') {
+                          await appointmentAPI.doctorComplete(appointment._id);
+                        } else {
+                          await appointmentAPI.updateStatus(appointment._id, 'Completed');
+                        }
+                        toast.success('Appointment completed');
+                        onRefresh();
+                        onClose();
+                      } catch (err) {
+                        toast.error('Failed to complete appointment');
+                      } finally {
+                        setIsSubmitting(false);
+                      }
+                    }}
+                    disabled={isSubmitting}
+                    className="btn-primary bg-emerald-600 hover:bg-emerald-700 border-emerald-600"
+                  >
+                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                    Complete consultation
+                  </button>
+                )}
+              </div>
               <button onClick={onClose} className="btn-primary min-w-[120px]">Done</button>
             </>
           ) : (

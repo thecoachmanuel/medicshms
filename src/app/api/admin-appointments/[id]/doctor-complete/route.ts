@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
 
 // Doctor complete appointment (Doctor only)
@@ -12,7 +12,7 @@ export async function PATCH(
   if (authError) return authError;
 
   try {
-    const { data: doctor } = await supabase
+    const { data: doctor } = await (supabaseAdmin || supabase)
       .from('doctors')
       .select('id')
       .eq('user_id', userProfile?.id)
@@ -23,7 +23,7 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    const { data: appointment, error } = await supabase
+    const { data: appointment, error } = await (supabaseAdmin || supabase)
       .from('public_appointments')
       .update({ appointment_status: 'Completed' })
       .eq('id', id)
