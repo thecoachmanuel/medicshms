@@ -1,3 +1,5 @@
+'use client';
+
 import BillingList from '@/components/billing/BillingList';
 import Link from 'next/link';
 import { CreditCard, Zap, ArrowRight, ShieldCheck } from 'lucide-react';
