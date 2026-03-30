@@ -6,6 +6,7 @@ import { withAuth, getAuthUser } from '@/lib/auth';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const slug = searchParams.get('slug');
+  const domain = searchParams.get('domain');
   const hospitalId = searchParams.get('hospital_id');
 
   try {
@@ -18,9 +19,14 @@ export async function GET(request: Request) {
     // of platform settings (hospital_id is NULL) from tenant settings.
     let targetHospitalId = hospitalId;
     
-    if (!targetHospitalId && slug) {
-      const { data: hosp } = await client.from('hospitals').select('id').eq('slug', slug).maybeSingle();
-      if (hosp) targetHospitalId = hosp.id;
+    if (!targetHospitalId) {
+      if (domain) {
+        const { data: hosp } = await client.from('hospitals').select('id').eq('custom_domain', domain).maybeSingle();
+        if (hosp) targetHospitalId = hosp.id;
+      } else if (slug) {
+        const { data: hosp } = await client.from('hospitals').select('id').eq('slug', slug).maybeSingle();
+        if (hosp) targetHospitalId = hosp.id;
+      }
     }
     
     // 2. Fetch Global Settings (fallback source)
@@ -44,13 +50,14 @@ export async function GET(request: Request) {
     // 4. Resolve Hospital Defaults from hospitals table (branding only)
     let hospitalDefaults: any = {};
     if (targetHospitalId) {
-      const { data: hData } = await client.from('hospitals').select('name, logo_url, slug').eq('id', targetHospitalId).maybeSingle();
+      const { data: hData } = await client.from('hospitals').select('name, logo_url, slug, custom_domain').eq('id', targetHospitalId).maybeSingle();
       if (hData) {
         hospitalDefaults = {
           hospital_name: hData.name,
           logo_url: hData.logo_url,
           hospital_id: targetHospitalId,
-          slug: hData.slug
+          slug: hData.slug,
+          custom_domain: hData.custom_domain
         };
       }
     }
@@ -173,6 +180,35 @@ export async function PUT(request: Request) {
       
       // Update result data to include new slug if needed for frontend
       result.data.slug = newSlug;
+    }
+
+    // 3. Handle Custom Domain update if provided (Sanitize and update hospitals table)
+    if (targetHospitalId && body.custom_domain !== undefined) {
+      const newDomain = body.custom_domain?.toLowerCase().trim() || null;
+
+      if (newDomain) {
+        // Check if domain is unique
+        const { data: existingHosp } = await client
+          .from('hospitals')
+          .select('id')
+          .eq('custom_domain', newDomain)
+          .neq('id', targetHospitalId)
+          .maybeSingle();
+
+        if (existingHosp) {
+          return NextResponse.json({ message: 'This custom domain is already in use by another hospital' }, { status: 400 });
+        }
+      }
+
+      const { error: domainError } = await client
+        .from('hospitals')
+        .update({ custom_domain: newDomain })
+        .eq('id', targetHospitalId);
+
+      if (domainError) throw domainError;
+      
+      // Update result data to include new domain
+      result.data.custom_domain = newDomain;
     }
 
     return NextResponse.json({ data: result.data });

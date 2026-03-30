@@ -15,12 +15,13 @@ export async function PATCH(
     const client = supabaseAdmin;
     if (!client) throw new Error('Supabase Admin client not initialized');
 
-    const { status, subscription_status, trial_end_date } = body;
+    const { status, subscription_status, trial_end_date, custom_domain } = body;
 
     const updateData: any = {};
     if (status) updateData.status = status;
     if (subscription_status) updateData.subscription_status = subscription_status;
     if (trial_end_date) updateData.trial_end_date = trial_end_date;
+    if (custom_domain !== undefined) updateData.custom_domain = custom_domain || null;
     
     updateData.updated_at = new Date().toISOString();
 

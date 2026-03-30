@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     const client = supabaseAdmin;
     if (!client) throw new Error('Supabase Admin client not initialized');
 
-    const { name, slug, email, subscription_status } = body;
+    const { name, slug, email, custom_domain, subscription_status } = body;
     const finalSlug = slug || name.toLowerCase().replace(/ /g, '-');
 
     // 1. Check for duplicates manually for better error message
@@ -65,6 +65,7 @@ export async function POST(request: Request) {
           name, 
           slug: finalSlug, 
           email, 
+          custom_domain: custom_domain || null,
           subscription_status: subscription_status || 'trial',
           trial_start_date: new Date().toISOString(),
           trial_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()

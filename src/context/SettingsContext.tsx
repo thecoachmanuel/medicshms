@@ -34,11 +34,21 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   }, [pathname]);
 
   const fetchSettings = async () => {
-    // If still loading auth and no slug (platform page), we can proceed to fetch platform settings
-    // If it's a tenant page (slug exists), we wait for auth if needed (though usually we don't need auth for public settings)
-
     try {
-      const res = await siteSettingsAPI.get({ slug }) as any;
+      let params: any = { slug };
+      
+      // Domain-based resolution for custom domains
+      if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        const platformDomains = ['medicshms.com', 'localhost', 'www.medicshms.com', 'medicshms.vercel.app'];
+        
+        // If it's not a platform domain, try to resolve by domain
+        if (!platformDomains.some(d => hostname.includes(d))) {
+          params = { domain: hostname };
+        }
+      }
+
+      const res = await siteSettingsAPI.get(params) as any;
       
       if (res?.data) {
         // Prioritize theme_color as it's the one edited in the Settings UI

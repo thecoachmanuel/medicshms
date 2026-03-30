@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Hospital } from 'lucide-react';
+import { Hospital, ShieldCheck } from 'lucide-react';
 import { useSiteSettings } from '@/context/SettingsContext';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';

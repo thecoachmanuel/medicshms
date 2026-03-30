@@ -18,6 +18,7 @@ interface Hospital {
   name: string;
   slug: string;
   email: string;
+  custom_domain?: string;
   status: 'active' | 'inactive' | 'onboarding';
   subscription_status: 'trial' | 'active' | 'expired' | 'paused';
   trial_end_date: string;
@@ -42,6 +43,7 @@ export default function PlatformAdminDashboard() {
     name: '',
     slug: '',
     email: '',
+    custom_domain: '',
     subscription_status: 'trial' as const
   });
 
@@ -50,7 +52,8 @@ export default function PlatformAdminDashboard() {
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [subscriptionForm, setSubscriptionForm] = useState({
     subscription_status: 'trial' as Hospital['subscription_status'],
-    trial_end_date: ''
+    trial_end_date: '',
+    custom_domain: ''
   });
 
   useEffect(() => {
@@ -88,7 +91,7 @@ export default function PlatformAdminDashboard() {
       
       toast.success('Hospital created successfully');
       setIsModalOpen(false);
-      setFormData({ name: '', slug: '', email: '', subscription_status: 'trial' });
+      setFormData({ name: '', slug: '', email: '', custom_domain: '', subscription_status: 'trial' });
       fetchHospitals();
     } catch (error: any) {
       toast.error(error.response?.data?.message || error.message);
@@ -117,7 +120,8 @@ export default function PlatformAdminDashboard() {
     setSelectedHospital(hospital);
     setSubscriptionForm({
       subscription_status: hospital.subscription_status,
-      trial_end_date: new Date(hospital.trial_end_date).toISOString().split('T')[0]
+      trial_end_date: new Date(hospital.trial_end_date).toISOString().split('T')[0],
+      custom_domain: hospital.custom_domain || ''
     });
     setIsSubscriptionModalOpen(true);
   };
@@ -210,7 +214,17 @@ export default function PlatformAdminDashboard() {
                       </div>
                       <div>
                         <p className="font-bold text-slate-900">{h.name}</p>
-                        <p className="text-xs text-slate-500 font-medium">{h.email}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs text-slate-500 font-medium">{h.email}</p>
+                          {h.custom_domain && (
+                            <>
+                              <span className="text-slate-200">|</span>
+                              <p className="text-[10px] text-primary-600 font-bold flex items-center gap-1">
+                                <Globe className="w-3 h-3" /> {h.custom_domain}
+                              </p>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </td>
@@ -325,6 +339,17 @@ export default function PlatformAdminDashboard() {
                 </div>
 
                 <div>
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Custom Domain (Optional)</label>
+                  <input 
+                    type="text" 
+                    value={formData.custom_domain}
+                    onChange={(e) => setFormData({ ...formData, custom_domain: e.target.value })}
+                    className="w-full bg-slate-50 border-slate-100 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-4 focus:ring-primary-600/5 focus:border-primary-600 transition-all outline-none"
+                    placeholder="e.g. hospital-a.com"
+                  />
+                </div>
+
+                <div>
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Initial Plan</label>
                   <select
                     value={formData.subscription_status}
@@ -401,6 +426,17 @@ export default function PlatformAdminDashboard() {
                     value={subscriptionForm.trial_end_date}
                     onChange={(e) => setSubscriptionForm({ ...subscriptionForm, trial_end_date: e.target.value })}
                     className="w-full bg-slate-50 border-slate-100 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-4 focus:ring-primary-600/5 focus:border-primary-600 transition-all outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Custom Domain (Optional)</label>
+                  <input 
+                    type="text" 
+                    value={subscriptionForm.custom_domain}
+                    onChange={(e) => setSubscriptionForm({ ...subscriptionForm, custom_domain: e.target.value })}
+                    className="w-full bg-slate-50 border-slate-100 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-4 focus:ring-primary-600/5 focus:border-primary-600 transition-all outline-none"
+                    placeholder="e.g. hospital-a.com"
                   />
                 </div>
               </div>
