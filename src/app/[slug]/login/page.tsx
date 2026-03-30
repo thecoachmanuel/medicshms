@@ -9,6 +9,7 @@ import { Mail, Lock, Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 import { use } from 'react';
+import GlobalBanner from '@/components/common/GlobalBanner';
 
 export default function HospitalLoginPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -74,7 +75,8 @@ export default function HospitalLoginPage({ params }: { params: Promise<{ slug: 
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md mb-8">
+      <GlobalBanner slug={slug} settings={settings} />
+      <div className="w-full max-w-md mb-8 mt-12">
         <Link href={`/${slug}`} className="inline-flex items-center text-sm font-bold text-slate-400 hover:text-secondary-600 transition-colors group">
           <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
           Back to Hospital Site

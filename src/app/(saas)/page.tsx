@@ -1,5 +1,20 @@
 'use client';
 
+import React from 'react';
+import Link from 'next/link';
+import { 
+  Shield, Globe, Zap, CheckCircle2, 
+  ArrowRight, Activity, Users, Heart,
+  BarChart3, CloudUpload, Lock, Smartphone,
+  Loader2, Edit3
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { subscriptionPlansAPI, uploadAPI } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
+import DemoBookingModal from '@/components/modals/DemoBookingModal';
+import { useRouter } from 'next/navigation';
+import HospitalLogo from '@/components/common/HospitalLogo';
+import GlobalBanner from '@/components/common/GlobalBanner';
 import PlatformInlineEditor, { EditableSection, InlineText, InlineImage } from '@/components/common/PlatformInlineEditor';
 
 interface Plan {
@@ -105,8 +120,7 @@ export default function SaaSLandingPage() {
 
       {/* Navigation */}
       <nav className={cn(
-        "fixed w-full z-50 bg-white/70 backdrop-blur-xl border-b border-slate-200/50 transition-all duration-300",
-        "top-0" 
+        "sticky top-0 w-full z-50 bg-white/70 backdrop-blur-xl border-b border-slate-200/50 transition-all duration-300"
       )}>
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <Link href="/">

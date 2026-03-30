@@ -28,12 +28,14 @@ export async function PUT(request: Request) {
 
   try {
     const body = await request.json();
-    const { email, phone, qualifications, experience, fees, gender, dateOfBirth, medicalCouncilId } = body;
+    const { name, email, phone, qualifications, experience, fees, gender, dateOfBirth, medicalCouncilId } = body;
 
     // 1. Update base profile in profiles table
     const profileUpdate: any = {};
+    if (name) profileUpdate.name = name;
     if (email) profileUpdate.email = email;
     if (phone) profileUpdate.phone = phone;
+    profileUpdate.updated_at = new Date().toISOString();
 
     if (Object.keys(profileUpdate).length > 0) {
       const { error: upError } = await (supabaseAdmin || supabase)

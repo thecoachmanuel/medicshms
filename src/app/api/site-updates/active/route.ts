@@ -13,8 +13,10 @@ export async function GET(request: Request) {
       .from('site_updates')
       .select('*, profiles:created_by(name, email)')
       .eq('is_active', true)
-      .lte('start_date', now)
-      .or(`end_date.is.null,end_date.gte.${now}`);
+      .lte('start_date', now);
+    
+    // Proper OR filter for dates (Supabase/PostgREST syntax)
+    query = query.or(`end_date.is.null,end_date.gte.${now}`);
 
     if (slug) {
       // Find hospital by slug
@@ -25,18 +27,22 @@ export async function GET(request: Request) {
         .single();
       
       if (hospital) {
-        query = query.eq('hospital_id', hospital.id);
+        // Show hospital specific OR global banners
+        query = query.or(`hospital_id.eq.${hospital.id},hospital_id.is.null`);
       } else {
         return NextResponse.json({ success: true, banners: [], banner: null });
       }
     } else {
-      // Global banners only
+      // Global banners only (landing page)
       query = query.is('hospital_id', null);
     }
 
-    const { data: banners, error } = await query.order('created_at', { ascending: false });
+    const { data: banners, error } = await query.order('hospital_id', { ascending: false }).order('created_at', { ascending: false });
 
     if (error) throw error;
+
+    // hospital_id order (desc) means non-null comes first, then null.
+    // So hospital specific banners take priority over global ones.
 
     return NextResponse.json({
       success: true,
