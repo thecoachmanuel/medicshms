@@ -35,7 +35,7 @@ export default function HospitalLogo({
   const { settings, loading, slug: settingsSlug } = useSiteSettings();
 
   const formatHospitalName = (name?: string, slug?: string) => {
-    if (settings?.hospital_short_name) return settings.hospital_short_name;
+    if (settings?.hospital_short_name && (slug || settingsSlug)) return settings.hospital_short_name;
     
     if (name) {
       // Remove common suffixes to keep it concise for the logo
@@ -67,7 +67,7 @@ export default function HospitalLogo({
   // Only use platform name fallback if NO tenant context is present
   // We use the slug from URL context to determine if we are in a tenant page
   const hasTenantContext = !!(propSlug || settingsSlug);
-  const fallbackName = hasTenantContext ? '' : 'MedicsHMS';
+  const fallbackName = hasTenantContext ? '' : (settings?.hospital_name || 'MedicsHMS');
   const hospitalName = formatHospitalName(settings?.hospital_name, propSlug) || fallbackName;
   
   const displayText = showText && !hideName;
@@ -113,7 +113,7 @@ export default function HospitalLogo({
         {logoUrl ? (
           <img src={logoUrl} alt={hospitalName} className="w-full h-full object-contain" />
         ) : (
-          <Hospital className={cn(iconSizes[size], !iconClassName && iconSizes[size])} />
+          !hasTenantContext ? <ShieldCheck className={cn(iconSizes[size], !iconClassName && iconSizes[size])} /> : <Hospital className={cn(iconSizes[size], !iconClassName && iconSizes[size])} />
         )}
       </div>
       {displayText && (

@@ -1,0 +1,174 @@
+
+> hms-next@0.1.0 build
+> next build
+
+▲ Next.js 16.2.1 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 2.6min
+  Running TypeScript ...
+  Finished TypeScript in 58s ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/84) ...
+  Generating static pages using 3 workers (21/84) 
+  Generating static pages using 3 workers (42/84) 
+  Generating static pages using 3 workers (63/84) 
+✓ Generating static pages using 3 workers (84/84) in 2.2s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /[slug]
+├ ƒ /[slug]/about
+├ ƒ /[slug]/admin/announcements
+├ ƒ /[slug]/admin/appointments
+├ ƒ /[slug]/admin/billing
+├ ƒ /[slug]/admin/dashboard
+├ ƒ /[slug]/admin/departments
+├ ƒ /[slug]/admin/doctors
+├ ƒ /[slug]/admin/invoice-template
+├ ƒ /[slug]/admin/messages
+├ ƒ /[slug]/admin/patients
+├ ƒ /[slug]/admin/profile
+├ ƒ /[slug]/admin/receptionists
+├ ƒ /[slug]/admin/settings
+├ ƒ /[slug]/admin/site-editor
+├ ƒ /[slug]/admin/site-updates
+├ ƒ /[slug]/admin/slot-settings
+├ ƒ /[slug]/admin/subscription
+├ ƒ /[slug]/admin/support
+├ ƒ /[slug]/admin/users
+├ ƒ /[slug]/booking
+├ ƒ /[slug]/contact
+├ ƒ /[slug]/doctor/appointments
+├ ƒ /[slug]/doctor/dashboard
+├ ƒ /[slug]/doctor/patients
+├ ƒ /[slug]/doctor/profile
+├ ƒ /[slug]/login
+├ ƒ /[slug]/maintenance
+├ ƒ /[slug]/receptionist/appointments
+├ ƒ /[slug]/receptionist/billing
+├ ƒ /[slug]/receptionist/dashboard
+├ ƒ /[slug]/receptionist/patients
+├ ƒ /[slug]/receptionist/profile
+├ ƒ /[slug]/receptionist/settings
+├ ƒ /[slug]/receptionist/slot-management
+├ ƒ /[slug]/services
+├ ƒ /api/admin-appointments
+├ ƒ /api/admin-appointments/[id]
+├ ƒ /api/admin-appointments/[id]/assign-doctor
+├ ƒ /api/admin-appointments/[id]/doctor-complete
+├ ƒ /api/admin-appointments/[id]/doctor-remove
+├ ƒ /api/admin-appointments/[id]/status
+├ ƒ /api/admin-appointments/book
+├ ƒ /api/admin-appointments/download
+├ ƒ /api/admin-appointments/lookup/[mobile]
+├ ƒ /api/admin-appointments/my-appointments
+├ ƒ /api/admin-appointments/slots
+├ ƒ /api/admin-appointments/stats
+├ ƒ /api/announcements
+├ ƒ /api/announcements/[id]
+├ ƒ /api/announcements/[id]/toggle
+├ ƒ /api/announcements/active
+├ ƒ /api/auth/login
+├ ƒ /api/auth/profile
+├ ƒ /api/auth/register
+├ ƒ /api/auth/signup-hospital
+├ ƒ /api/bills/[id]
+├ ƒ /api/bills/appointments-billing
+├ ƒ /api/bills/doctor-fee/[appointmentId]
+├ ƒ /api/bills/download
+├ ƒ /api/bills/generate/[appointmentId]
+├ ƒ /api/bills/insights
+├ ƒ /api/contact
+├ ƒ /api/dashboard/activity
+├ ƒ /api/dashboard/appointments
+├ ƒ /api/dashboard/charts/[type]
+├ ƒ /api/dashboard/stats
+├ ƒ /api/demo-requests
+├ ƒ /api/departments
+├ ƒ /api/departments/[id]
+├ ƒ /api/departments/[id]/toggle-status
+├ ƒ /api/departments/admin/all
+├ ƒ /api/doctor-dashboard/activity
+├ ƒ /api/doctor-dashboard/appointments
+├ ƒ /api/doctor-dashboard/charts/[type]
+├ ƒ /api/doctor-dashboard/profile
+├ ƒ /api/doctor-dashboard/stats
+├ ƒ /api/doctor-dashboard/today
+├ ƒ /api/doctors
+├ ƒ /api/doctors/[id]
+├ ƒ /api/hospitals/subscription
+├ ƒ /api/invoice-template
+├ ƒ /api/invoice-template/logo
+├ ƒ /api/invoice-template/upload-logo
+├ ƒ /api/patients
+├ ƒ /api/patients/[id]
+├ ƒ /api/patients/me
+├ ƒ /api/patients/public-appointments/[patientId]
+├ ƒ /api/patients/public-appointments/download
+├ ƒ /api/patients/public-appointments/list
+├ ƒ /api/payments/paystack/initialize
+├ ƒ /api/payments/paystack/webhook
+├ ƒ /api/platform-admin/demo-requests
+├ ƒ /api/platform-admin/hospitals
+├ ƒ /api/platform-admin/hospitals/[id]
+├ ƒ /api/profile/change-password
+├ ƒ /api/profile/id-document
+├ ƒ /api/profile/me
+├ ƒ /api/profile/photo
+├ ƒ /api/profile/public-website
+├ ƒ /api/profile/signature
+├ ƒ /api/profile/upload-id-document
+├ ƒ /api/profile/upload-photo
+├ ƒ /api/profile/upload-signature
+├ ƒ /api/public-appointments
+├ ƒ /api/public-appointments/lookup
+├ ƒ /api/public-appointments/lookup-patient
+├ ƒ /api/public-appointments/time-slots
+├ ƒ /api/services
+├ ƒ /api/services/[id]
+├ ƒ /api/site-content
+├ ƒ /api/site-settings
+├ ƒ /api/site-updates
+├ ƒ /api/site-updates/[id]
+├ ƒ /api/site-updates/[id]/toggle
+├ ƒ /api/site-updates/active
+├ ƒ /api/slot-config/[id]
+├ ƒ /api/slot-config/all
+├ ƒ /api/slot-config/booking-rules
+├ ƒ /api/slot-config/date-override
+├ ƒ /api/slot-config/date-override/[overrideId]
+├ ƒ /api/slot-config/defaults
+├ ƒ /api/slot-config/my-config
+├ ƒ /api/slot-config/working-days
+├ ƒ /api/subscription-plans
+├ ƒ /api/subscription-plans/[id]
+├ ƒ /api/subscription-plans/public
+├ ƒ /api/support
+├ ƒ /api/support/[id]
+├ ƒ /api/support/stats
+├ ƒ /api/upload
+├ ƒ /api/user-management
+├ ƒ /api/user-management/[id]
+├ ƒ /api/user-management/[id]/reset-password
+├ ƒ /api/user-management/[id]/toggle-status
+├ ƒ /api/user-management/profile/[id]
+├ ƒ /api/user-management/role/[role]
+├ ○ /login
+├ ○ /maintenance
+├ ○ /platform-admin/dashboard
+├ ○ /platform-admin/demo-requests
+├ ○ /platform-admin/plans
+├ ○ /platform-admin/settings
+├ ○ /platform-admin/site-editor
+├ ○ /platform-admin/site-updates
+├ ○ /platform-admin/support
+└ ○ /signup
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
