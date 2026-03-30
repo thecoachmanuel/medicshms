@@ -25,7 +25,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const slug = useMemo(() => {
     const parts = pathname.split('/');
     // Reserved top-level paths that are NOT tenant slugs
-    const reservedWords = ['platform-admin', 'api', '_next', 'static', 'favicon.ico'];
+    const reservedWords = ['platform-admin', 'api', '_next', 'static', 'favicon.ico', 'login', 'maintenance'];
     const firstPart = parts[1];
     
     return (parts.length > 1 && firstPart && !reservedWords.includes(firstPart)) 
@@ -34,20 +34,11 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   }, [pathname]);
 
   const fetchSettings = async () => {
-    // If still loading auth and no slug, wait
-    if (!slug && authLoading) return;
-
-    // Handle platform/non-tenant pages
-    if (!slug && !user?.hospital_id && !authLoading) {
-      setSettings(null);
-      setLoading(false);
-      return;
-    }
+    // If still loading auth and no slug (platform page), we can proceed to fetch platform settings
+    // If it's a tenant page (slug exists), we wait for auth if needed (though usually we don't need auth for public settings)
 
     try {
-      const res = await siteSettingsAPI.get(
-        slug ? { slug } : (user?.hospital_id ? { hospital_id: user.hospital_id } : {})
-      ) as any;
+      const res = await siteSettingsAPI.get({ slug }) as any;
       
       if (res?.data) {
         // Prioritize theme_color as it's the one edited in the Settings UI

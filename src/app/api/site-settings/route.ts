@@ -13,7 +13,10 @@ export async function GET(request: Request) {
     const client = supabaseAdmin || supabase;
     
     // 1. Resolve target hospital ID
-    let targetHospitalId = hospitalId || profile?.hospital_id;
+    // We only use explicitly provided hospitalId or slug.
+    // Fallback to profile?.hospital_id is removed to ensure strict isolation
+    // of platform settings (hospital_id is NULL) from tenant settings.
+    let targetHospitalId = hospitalId;
     
     if (!targetHospitalId && slug) {
       const { data: hosp } = await client.from('hospitals').select('id').eq('slug', slug).maybeSingle();

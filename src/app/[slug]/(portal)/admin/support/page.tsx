@@ -53,7 +53,7 @@ export default function SupportTicketsPage() {
     setIsSubmitting(true);
     try {
       // Get hospital settings for metadata
-      const settingsRes = await siteSettingsAPI.get();
+      const settingsRes = await siteSettingsAPI.get({ slug });
       const hospitalName = settingsRes.data?.hospital_name || 'Hospital Tenant';
 
       await supportAPI.create({

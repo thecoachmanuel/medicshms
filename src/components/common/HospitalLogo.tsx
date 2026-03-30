@@ -32,7 +32,7 @@ export default function HospitalLogo({
   slug: propSlug
 }: HospitalLogoProps) {
   const { user } = useAuth();
-  const { settings, loading } = useSiteSettings();
+  const { settings, loading, slug: settingsSlug } = useSiteSettings();
 
   const formatHospitalName = (name?: string, slug?: string) => {
     if (settings?.hospital_short_name) return settings.hospital_short_name;
@@ -53,9 +53,10 @@ export default function HospitalLogo({
       return formatted.split(/\s+/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     }
     
-    if (slug) {
+    const displaySlug = slug || settingsSlug;
+    if (displaySlug) {
       // Format slug: "faithcity" -> "Faithcity" or "faith-city" -> "Faith City"
-      return slug.split(/[-_]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+      return displaySlug.split(/[-_]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     }
     
     return '';
@@ -64,7 +65,8 @@ export default function HospitalLogo({
   const logoUrl = settings?.logo_url;
   
   // Only use platform name fallback if NO tenant context is present
-  const hasTenantContext = !!(propSlug || (!user?.role?.includes('platform_admin') && user?.hospital_id));
+  // We use the slug from URL context to determine if we are in a tenant page
+  const hasTenantContext = !!(propSlug || settingsSlug);
   const fallbackName = hasTenantContext ? '' : 'MedicsHMS';
   const hospitalName = formatHospitalName(settings?.hospital_name, propSlug) || fallbackName;
   
