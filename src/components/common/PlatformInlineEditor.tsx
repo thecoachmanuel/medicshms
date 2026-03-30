@@ -80,7 +80,7 @@ export default function PlatformInlineEditor({
       formData.append('file', file);
       formData.append('folder', 'platform-landing');
 
-      const res = await uploadAPI.upload(formData);
+      const res: any = await uploadAPI.upload(formData);
       handleUpdate(sectionKey, field, res.url);
       toast.success('Image uploaded successfully');
     } catch (error) {
