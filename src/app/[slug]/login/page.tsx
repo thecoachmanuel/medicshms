@@ -27,7 +27,8 @@ export default function HospitalLoginPage({ params }: { params: Promise<{ slug: 
       if (role === 'platform_admin') {
         router.push('/platform-admin/dashboard');
       } else {
-        router.push(`/${slug}/${role}/dashboard`);
+        const authorizedSlug = user.hospital_slug || slug;
+        router.push(`/${authorizedSlug}/${role}/dashboard`);
       }
     }
   }, [user, authLoading, router, slug]);

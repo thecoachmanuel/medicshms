@@ -7,6 +7,7 @@ ALTER TABLE public.site_settings ALTER COLUMN hospital_id DROP NOT NULL;
 -- 2. Update RLS for site_settings to allow public read of platform settings
 -- Platform settings are those where hospital_id is NULL
 DROP POLICY IF EXISTS "public_read_isolation" ON public.site_settings;
+DROP POLICY IF EXISTS "public_read_site_settings" ON public.site_settings;
 CREATE POLICY "public_read_site_settings" ON public.site_settings
 FOR SELECT TO public
 USING (true); -- We filter by slug/id in the application code

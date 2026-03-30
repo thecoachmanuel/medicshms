@@ -35,20 +35,46 @@ export default function SaaSLandingPage() {
   const [plans, setPlans] = React.useState<Plan[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [demoModalOpen, setDemoModalOpen] = React.useState(false);
+  const [siteContent, setSiteContent] = React.useState<any[]>([]);
 
   React.useEffect(() => {
-    const fetchPlans = async () => {
+    const fetchData = async () => {
       try {
-        const res = await subscriptionPlansAPI.getPublic();
-        setPlans(res.data || []);
+        setLoading(true);
+        const [plansRes, contentRes] = await Promise.all([
+          subscriptionPlansAPI.getPublic(),
+          fetch('/api/site-content?page=home').then(res => res.json())
+        ]);
+        setPlans(plansRes.data || []);
+        setSiteContent(Array.isArray(contentRes) ? contentRes : []);
       } catch (error) {
-        console.error('Failed to fetch plans:', error);
+        console.error('Failed to fetch data:', error);
       } finally {
         setLoading(false);
       }
     };
-    fetchPlans();
+    fetchData();
   }, []);
+
+  const getSection = (key: string) => siteContent.find(s => s.section_key === key)?.content;
+
+  const heroContent = getSection('hero') || {
+    title: "One Platform. Infinite Hospitals.",
+    description: "Empower your healthcare institution with our enterprise-grade SaaS platform. Isolated data, unified management, and seamless patient care—all in one place.",
+    button_primary: "Launch Your Hospital",
+    button_secondary: "Book a demo"
+  };
+
+  const featuresContent = getSection('features') || [
+    { icon: Shield, title: "Data Isolation", desc: "Strict multi-tenant architecture ensures each hospital's data is completely isolated and secure." },
+    { icon: Zap, title: "Instant Deployment", desc: "Launch new hospital branches or independent clinics in seconds with one-click cloning." },
+    { icon: Globe, title: "Global Scale", desc: "Optimized for speed and accessibility across the globe with Cloudinary and Supabase edge." },
+    { icon: BarChart3, title: "Advanced Analytics", desc: "Deep insights into patient flow, staff performance, and financial metrics." },
+    { icon: Lock, title: "Role-Based Access", desc: "Fine-grained permissions for admins, doctors, receptionists, and patients." },
+    { icon: Smartphone, title: "Patient Portal", desc: "Dedicated mobile-first interface for patients to book and view records." }
+  ];
+
+  const iconMap: any = { Shield, Zap, Globe, BarChart3, Lock, Smartphone };
 
   return (
     <div className="min-h-screen bg-slate-50 overflow-hidden font-sans">
@@ -84,26 +110,25 @@ export default function SaaSLandingPage() {
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-700">The Future of Hospital Management</span>
           </div>
           
-          <h1 className="text-6xl md:text-8xl font-black text-slate-900 leading-[1] tracking-tighter">
-            One Platform. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-primary-800">Infinite Hospitals.</span>
+          <h1 className="text-6xl md:text-8xl font-black text-slate-900 leading-[1] tracking-tighter" 
+            dangerouslySetInnerHTML={{ __html: (heroContent?.title || "One Platform. Infinite Hospitals.").replace('\n', '<br />') }}
+          >
           </h1>
           
           <p className="max-w-3xl mx-auto text-xl text-slate-500 font-medium leading-relaxed">
-            Empower your healthcare institution with our enterprise-grade SaaS platform. 
-            Isolated data, unified management, and seamless patient care—all in one place.
+            {heroContent.description}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
             <Link href="/signup" className="btn-primary py-5 px-12 rounded-2xl text-lg font-bold shadow-2xl shadow-primary-600/30">
-              Launch Your Hospital
+              {heroContent.button_primary}
               <ArrowRight className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform" />
             </Link>
             <button 
               onClick={() => setDemoModalOpen(true)}
               className="btn-secondary py-5 px-12 rounded-2xl text-lg font-bold bg-white shadow-xl shadow-slate-200/50 border-slate-100 hover:bg-slate-50"
             >
-              Book a demo
+              {heroContent.button_secondary}
             </button>
           </div>
 
@@ -125,22 +150,18 @@ export default function SaaSLandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { icon: Shield, title: "Data Isolation", desc: "Strict multi-tenant architecture ensures each hospital's data is completely isolated and secure." },
-              { icon: Zap, title: "Instant Deployment", desc: "Launch new hospital branches or independent clinics in seconds with one-click cloning." },
-              { icon: Globe, title: "Global Scale", desc: "Optimized for speed and accessibility across the globe with Cloudinary and Supabase edge." },
-              { icon: BarChart3, title: "Advanced Analytics", desc: "Deep insights into patient flow, staff performance, and financial metrics." },
-              { icon: Lock, title: "Role-Based Access", desc: "Fine-grained permissions for admins, doctors, receptionists, and patients." },
-              { icon: Smartphone, title: "Patient Portal", desc: "Dedicated mobile-first interface for patients to book and view records." }
-            ].map((f, i) => (
-              <div key={i} className="p-10 rounded-[2.5rem] bg-slate-50 border border-slate-100 hover:border-primary-500 transition-all hover:shadow-2xl hover:shadow-primary-600/5 group">
-                <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
-                  <f.icon className="w-8 h-8 text-primary-600" />
+            {featuresContent.map((f: any, i: number) => {
+              const Icon = typeof f.icon === 'string' ? (iconMap[f.icon] || Shield) : (f.icon || Shield);
+              return (
+                <div key={i} className="p-10 rounded-[2.5rem] bg-slate-50 border border-slate-100 hover:border-primary-500 transition-all hover:shadow-2xl hover:shadow-primary-600/5 group">
+                  <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                    <Icon className="w-8 h-8 text-primary-600" />
+                  </div>
+                  <h4 className="text-xl font-black text-slate-900 mb-4">{f.title}</h4>
+                  <p className="text-slate-500 leading-relaxed font-medium">{f.desc}</p>
                 </div>
-                <h4 className="text-xl font-black text-slate-900 mb-4">{f.title}</h4>
-                <p className="text-slate-500 leading-relaxed font-medium">{f.desc}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

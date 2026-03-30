@@ -148,7 +148,7 @@ export default function PlatformSupportManagement() {
 
                    <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-50 text-slate-500 rounded-full text-[10px] font-black uppercase tracking-widest">
                      <Building2 className="w-3 h-3 text-slate-300" />
-                     {ticket.hospital_name || 'System Level'}
+                     {ticket.hospital?.name || ticket.hospital_name || 'System Level'}
                    </div>
 
                    <div className="text-[10px] font-black text-slate-300 uppercase tracking-widest flex items-center gap-1.5">

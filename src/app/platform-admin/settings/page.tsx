@@ -263,6 +263,16 @@ export default function PlatformSettingsPage() {
                                 />
                              </div>
                              <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Emergency Operations Hotline</label>
+                                <input 
+                                   type="tel" 
+                                   value={settings.emergency_phone || ''} 
+                                   onChange={e => setSettings({...settings, emergency_phone: e.target.value})}
+                                   placeholder="+1 (800) Emergency"
+                                   className="input py-3.5 border-slate-200 font-bold text-rose-600" 
+                                />
+                             </div>
+                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Primary Theme Color</label>
                                 <div className="flex items-center gap-3 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
                                    <input 

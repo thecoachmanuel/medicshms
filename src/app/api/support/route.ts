@@ -82,7 +82,7 @@ export async function GET(request: Request) {
     
     let query = (supabaseAdmin || supabase)
       .from('support_tickets')
-      .select('*, profiles:resolved_by(name, email)')
+      .select('*, profiles:resolved_by(name, email), hospital:hospitals(name)')
       .order('created_at', { ascending: false });
 
     // Platform admin sees everything, hospital admin only sees their own
