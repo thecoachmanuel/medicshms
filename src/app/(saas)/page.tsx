@@ -1,20 +1,6 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
-import { 
-  Shield, Globe, Zap, CheckCircle2, 
-  ArrowRight, Activity, Users, Heart,
-  BarChart3, CloudUpload, Lock, Smartphone,
-  Loader2
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { subscriptionPlansAPI } from '@/lib/api';
-import { useAuth } from '@/context/AuthContext';
-import DemoBookingModal from '@/components/modals/DemoBookingModal';
-import { useRouter } from 'next/navigation';
-import HospitalLogo from '@/components/common/HospitalLogo';
-import GlobalBanner from '@/components/common/GlobalBanner';
+import PlatformInlineEditor, { EditableSection, InlineText, InlineImage } from '@/components/common/PlatformInlineEditor';
 
 interface Plan {
   id: string;
@@ -36,6 +22,9 @@ export default function SaaSLandingPage() {
   const [loading, setLoading] = React.useState(true);
   const [demoModalOpen, setDemoModalOpen] = React.useState(false);
   const [siteContent, setSiteContent] = React.useState<any[]>([]);
+  const [isEditing, setIsEditing] = React.useState(false);
+
+  const isSuperAdmin = user?.role === 'platform_admin';
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -46,7 +35,26 @@ export default function SaaSLandingPage() {
           fetch('/api/site-content?page=home').then(res => res.json())
         ]);
         setPlans(plansRes.data || []);
-        setSiteContent(Array.isArray(contentRes) ? contentRes : []);
+        // Ensure defaults if no content exists yet
+        const sections = Array.isArray(contentRes) ? contentRes : [];
+        if (sections.length === 0) {
+            setSiteContent([
+                { section_key: 'hero', content: { 
+                    title: "One Platform.\nInfinite Hospitals.", 
+                    description: "Empower your healthcare institution with our enterprise-grade SaaS platform. Isolated data, unified management, and seamless patient care—all in one place.",
+                    button_primary: "Launch Your Hospital",
+                    button_secondary: "Book a demo",
+                    hero_image: "https://images.unsplash.com/photo-1540331547168-8b63109228b7?auto=format&fit=crop&q=80&w=2000"
+                }},
+                { section_key: 'features_header', content: {
+                    badge: "Core Capabilities",
+                    title: "Engineered for Excellence",
+                    description: "Everything you need to run a modern, efficient, and patient-centric hospital at scale."
+                }}
+            ]);
+        } else {
+            setSiteContent(sections);
+        }
       } catch (error) {
         console.error('Failed to fetch data:', error);
       } finally {
@@ -56,22 +64,27 @@ export default function SaaSLandingPage() {
     fetchData();
   }, []);
 
-  const getSection = (key: string) => siteContent.find(s => s.section_key === key)?.content;
+  const getSection = (key: string) => siteContent.find(s => s.section_key === key)?.content || {};
 
-  const heroContent = getSection('hero') || {
-    title: "One Platform. Infinite Hospitals.",
-    description: "Empower your healthcare institution with our enterprise-grade SaaS platform. Isolated data, unified management, and seamless patient care—all in one place.",
-    button_primary: "Launch Your Hospital",
-    button_secondary: "Book a demo"
+  const handleUpdateSection = (sectionKey: string, field: string, value: any) => {
+      setSiteContent(prev => prev.map(item => {
+          if (item.section_key === sectionKey) {
+              return { ...item, content: { ...item.content, [field]: value } };
+          }
+          return item;
+      }));
   };
 
-  const featuresContent = getSection('features') || [
-    { icon: Shield, title: "Data Isolation", desc: "Strict multi-tenant architecture ensures each hospital's data is completely isolated and secure." },
-    { icon: Zap, title: "Instant Deployment", desc: "Launch new hospital branches or independent clinics in seconds with one-click cloning." },
-    { icon: Globe, title: "Global Scale", desc: "Optimized for speed and accessibility across the globe with Cloudinary and Supabase edge." },
-    { icon: BarChart3, title: "Advanced Analytics", desc: "Deep insights into patient flow, staff performance, and financial metrics." },
-    { icon: Lock, title: "Role-Based Access", desc: "Fine-grained permissions for admins, doctors, receptionists, and patients." },
-    { icon: Smartphone, title: "Patient Portal", desc: "Dedicated mobile-first interface for patients to book and view records." }
+  const heroContent = getSection('hero');
+  const featuresHeader = getSection('features_header');
+
+  const featuresContent = getSection('features_list')?.items || [
+    { icon: 'Shield', title: "Data Isolation", desc: "Strict multi-tenant architecture ensures each hospital's data is completely isolated and secure." },
+    { icon: 'Zap', title: "Instant Deployment", desc: "Launch new hospital branches or independent clinics in seconds with one-click cloning." },
+    { icon: 'Globe', title: "Global Scale", desc: "Optimized for speed and accessibility across the globe with Cloudinary and Supabase edge." },
+    { icon: 'BarChart3', title: "Advanced Analytics", desc: "Deep insights into patient flow, staff performance, and financial metrics." },
+    { icon: 'Lock', title: "Role-Based Access", desc: "Fine-grained permissions for admins, doctors, receptionists, and patients." },
+    { icon: 'Smartphone', title: "Patient Portal", desc: "Dedicated mobile-first interface for patients to book and view records." }
   ];
 
   const iconMap: any = { Shield, Zap, Globe, BarChart3, Lock, Smartphone };
@@ -79,10 +92,21 @@ export default function SaaSLandingPage() {
   return (
     <div className="min-h-screen bg-slate-50 overflow-hidden font-sans">
       <GlobalBanner />
+
+      {isSuperAdmin && (
+          <PlatformInlineEditor 
+            page="home"
+            initialContent={siteContent}
+            isEditing={isEditing}
+            setIsEditing={setIsEditing}
+            onSave={(updated) => setSiteContent(updated)}
+          />
+      )}
+
       {/* Navigation */}
       <nav className={cn(
         "fixed w-full z-50 bg-white/70 backdrop-blur-xl border-b border-slate-200/50 transition-all duration-300",
-        "top-0" // This will be pushed down handle by CSS or just keep as is
+        "top-0" 
       )}>
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <Link href="/">
@@ -92,9 +116,23 @@ export default function SaaSLandingPage() {
              <a href="#features" className="text-sm font-bold text-slate-600 hover:text-primary-600 transition-colors uppercase tracking-widest">Features</a>
              <a href="#pricing" className="text-sm font-bold text-slate-600 hover:text-primary-600 transition-colors uppercase tracking-widest">Pricing</a>
              <Link href="/login" className="text-sm font-bold text-slate-900 hover:text-primary-600 transition-colors uppercase tracking-widest">Login</Link>
-             <Link href="/signup" className="btn-primary py-2.5 px-6 rounded-xl shadow-lg shadow-primary-600/20 text-sm font-bold uppercase tracking-widest">
-               Start Free Trial
-             </Link>
+             
+             {isSuperAdmin ? (
+                 <button 
+                    onClick={() => setIsEditing(!isEditing)}
+                    className={cn(
+                        "flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all uppercase tracking-widest",
+                        isEditing ? "bg-slate-900 text-white" : "bg-primary-50 text-primary-600 hover:bg-primary-100"
+                    )}
+                 >
+                    <Edit3 className="w-4 h-4" />
+                    {isEditing ? 'Live Editing' : 'Edit Page'}
+                 </button>
+             ) : (
+                <Link href="/signup" className="btn-primary py-2.5 px-6 rounded-xl shadow-lg shadow-primary-600/20 text-sm font-bold uppercase tracking-widest">
+                    Start Free Trial
+                </Link>
+             )}
           </div>
         </div>
       </nav>
@@ -110,44 +148,98 @@ export default function SaaSLandingPage() {
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-700">The Future of Hospital Management</span>
           </div>
           
-          <h1 className="text-6xl md:text-8xl font-black text-slate-900 leading-[1] tracking-tighter" 
-            dangerouslySetInnerHTML={{ __html: (heroContent?.title || "One Platform. Infinite Hospitals.").replace('\n', '<br />') }}
-          >
-          </h1>
-          
-          <p className="max-w-3xl mx-auto text-xl text-slate-500 font-medium leading-relaxed">
-            {heroContent.description}
-          </p>
+          <EditableSection isEditing={isEditing} sectionKey="hero" title="Hero Content">
+            <h1 className="text-6xl md:text-8xl font-black text-slate-900 leading-[1] tracking-tighter">
+                <InlineText 
+                    value={heroContent.title || "One Platform. Infinite Hospitals."} 
+                    onChange={(val) => handleUpdateSection('hero', 'title', val)}
+                    isEditing={isEditing}
+                    multiline
+                />
+            </h1>
+            
+            <p className="max-w-3xl mx-auto text-xl text-slate-500 font-medium leading-relaxed mt-10">
+                <InlineText 
+                    value={heroContent.description || "Empower your healthcare institution..."} 
+                    onChange={(val) => handleUpdateSection('hero', 'description', val)}
+                    isEditing={isEditing}
+                    multiline
+                />
+            </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
-            <Link href="/signup" className="btn-primary py-5 px-12 rounded-2xl text-lg font-bold shadow-2xl shadow-primary-600/30">
-              {heroContent.button_primary}
-              <ArrowRight className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <button 
-              onClick={() => setDemoModalOpen(true)}
-              className="btn-secondary py-5 px-12 rounded-2xl text-lg font-bold bg-white shadow-xl shadow-slate-200/50 border-slate-100 hover:bg-slate-50"
-            >
-              {heroContent.button_secondary}
-            </button>
-          </div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-10">
+                <div className="relative group/btn">
+                    <Link href="/signup" className="btn-primary py-5 px-12 rounded-2xl text-lg font-bold shadow-2xl shadow-primary-600/30">
+                        <InlineText 
+                            value={heroContent.button_primary || "Launch Your Hospital"} 
+                            onChange={(val) => handleUpdateSection('hero', 'button_primary', val)}
+                            isEditing={isEditing}
+                        />
+                        <ArrowRight className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                </div>
+                <button 
+                  onClick={() => setDemoModalOpen(true)}
+                  className="btn-secondary py-5 px-12 rounded-2xl text-lg font-bold bg-white shadow-xl shadow-slate-200/50 border-slate-100 hover:bg-slate-50"
+                >
+                  <InlineText 
+                    value={heroContent.button_secondary || "Book a demo"} 
+                    onChange={(val) => handleUpdateSection('hero', 'button_secondary', val)}
+                    isEditing={isEditing}
+                  />
+                </button>
+            </div>
 
-          <div className="mt-20 relative max-w-5xl mx-auto rounded-[3rem] border border-white/50 bg-white/30 backdrop-blur-2xl p-4 shadow-2xl">
-             <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-inner border border-slate-100">
-                <img src="https://images.unsplash.com/photo-1540331547168-8b63109228b7?auto=format&fit=crop&q=80&w=2000" alt="Dashboard Preview" className="w-full opacity-90 h-[500px] object-cover" />
-             </div>
-          </div>
+            <div className="mt-20 relative max-w-5xl mx-auto rounded-[3rem] border border-white/50 bg-white/30 backdrop-blur-2xl p-4 shadow-2xl overflow-hidden">
+                <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-inner border border-slate-100">
+                    <InlineImage 
+                        url={heroContent.hero_image || "https://images.unsplash.com/photo-1540331547168-8b63109228b7?auto=format&fit=crop&q=80&w=2000"} 
+                        onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            formData.append('folder', 'platform-landing');
+                            uploadAPI.upload(formData).then(res => handleUpdateSection('hero', 'hero_image', res.url));
+                        }}
+                        isEditing={isEditing}
+                        className="w-full opacity-90 h-[600px] object-cover"
+                    />
+                </div>
+            </div>
+          </EditableSection>
         </div>
       </section>
 
       {/* Features Grid */}
       <section id="features" className="py-32 bg-white">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-24 space-y-4">
-            <h2 className="text-[10px] font-black uppercase text-primary-600 tracking-[0.4em]">Core Capabilities</h2>
-            <h3 className="text-4xl md:text-5xl font-black text-slate-900">Engineered for Excellence</h3>
-            <p className="text-slate-500 max-w-2xl mx-auto font-medium">Everything you need to run a modern, efficient, and patient-centric hospital at scale.</p>
-          </div>
+          <EditableSection isEditing={isEditing} sectionKey="features_header" title="Features Header">
+            <div className="text-center mb-24 space-y-4">
+                <h2 className="text-[10px] font-black uppercase text-primary-600 tracking-[0.4em]">
+                    <InlineText 
+                        value={featuresHeader.badge || "Core Capabilities"} 
+                        onChange={(val) => handleUpdateSection('features_header', 'badge', val)}
+                        isEditing={isEditing}
+                    />
+                </h2>
+                <h3 className="text-4xl md:text-5xl font-black text-slate-900">
+                    <InlineText 
+                        value={featuresHeader.title || "Engineered for Excellence"} 
+                        onChange={(val) => handleUpdateSection('features_header', 'title', val)}
+                        isEditing={isEditing}
+                    />
+                </h3>
+                <p className="text-slate-500 max-w-2xl mx-auto font-medium">
+                    <InlineText 
+                        value={featuresHeader.description || "Everything you need to run a modern..."} 
+                        onChange={(val) => handleUpdateSection('features_header', 'description', val)}
+                        isEditing={isEditing}
+                        multiline
+                    />
+                </p>
+            </div>
+          </EditableSection>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {featuresContent.map((f: any, i: number) => {

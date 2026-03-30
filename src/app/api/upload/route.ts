@@ -3,7 +3,7 @@ import { withAuth } from '@/lib/auth';
 import { uploadFile } from '@/lib/storageService';
 
 export async function POST(request: Request) {
-  const { error: authError } = await withAuth(request, ['Admin']);
+  const { error: authError } = await withAuth(request, ['Admin', 'platform_admin']);
   if (authError) return authError;
 
   try {
