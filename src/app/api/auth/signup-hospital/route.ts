@@ -5,14 +5,17 @@ export async function POST(request: Request) {
   try {
     const { 
       hospital_name, 
-      hospital_email, 
+      hospital_email: rawHospitalEmail, 
       admin_name, 
-      admin_email, 
+      admin_email: rawAdminEmail, 
       password, 
       phone,
       plan_id,
       billing_cycle = 'monthly'
     } = await request.json();
+    
+    const hospital_email = rawHospitalEmail?.trim();
+    const admin_email = rawAdminEmail?.trim();
 
     // 1. Generate slug from hospital name
     const slug = hospital_name
