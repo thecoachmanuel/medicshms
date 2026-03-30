@@ -24,7 +24,7 @@ INSERT INTO public.site_settings (
     hospital_id
 )
 VALUES (
-    'MedicsHMS SaaS',
+    'MedicsHMS',
     'MedicsHMS',
     'https://res.cloudinary.com/dmet98v6q/image/upload/v1711280000/saas_logo.png', -- Placeholder or current default
     '#2563eb',

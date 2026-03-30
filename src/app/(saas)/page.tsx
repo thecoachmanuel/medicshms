@@ -238,7 +238,7 @@ export default function SaaSLandingPage() {
       <footer className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-6 text-center space-y-8">
           <HospitalLogo size="md" className="justify-center" />
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">© 2026 Medics HMS Platform. All Rights Reserved.</p>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">© 2026 MedicsHMS Platform. All Rights Reserved.</p>
         </div>
       </footer>
 
