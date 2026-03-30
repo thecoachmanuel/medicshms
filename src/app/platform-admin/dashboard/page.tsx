@@ -6,7 +6,7 @@ import {
   Search, Plus, Filter, MoreVertical,
   ChevronRight, Calendar, ShieldCheck, AlertCircle,
   TrendingUp, BarChart3, Loader2, CheckCircle2,
-  XCircle, Clock, Settings, Pause, Play
+  XCircle, Clock, Settings, Pause, Play, Globe
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
