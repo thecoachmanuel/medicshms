@@ -5,35 +5,38 @@ export async function POST(request: Request) {
   try {
     const { identifier: rawIdentifier, password } = await request.json();
     const identifier = rawIdentifier?.trim();
-    console.log(`[Login API] Attempting login for identifier: "${identifier}"`);
+    console.log(`[Login API] Full diagnostics for identifier: "${identifier}"`);
 
     let loginIdentifier = identifier;
-    const isEmail = identifier.includes('@');
+    let isEmail = identifier.includes('@');
 
     const client = supabaseAdmin || supabase;
+    console.log(`[Login API] Admin client available: ${!!supabaseAdmin}`);
 
-    // 1. Phone-to-Email Fallback
-    // If identifier is a phone number, resolve it to an email from the profiles table
-    if (!isEmail) {
-      console.log(`[Login API] Identifier looks like a phone number. Resolving to email...`);
-      const { data: profileByPhone, error: phoneError } = await client
-        .from('profiles')
-        .select('email')
-        .eq('phone', identifier)
-        .maybeSingle();
+    // Pre-check: Does user exist in profiles?
+    const { data: preCheckProfile } = await client
+      .from('profiles')
+      .select('id, email, role, hospital_id')
+      .or(`email.eq.${identifier},phone.eq.${identifier}`)
+      .maybeSingle();
 
-      if (profileByPhone?.email) {
-        console.log(`[Login API] Resolved phone "${identifier}" to email "${profileByPhone.email}"`);
-        loginIdentifier = profileByPhone.email;
-      } else {
-        console.warn(`[Login API] Could not resolve phone "${identifier}" to any profile. Proceeding with raw identifier.`);
-      }
+    if (preCheckProfile) {
+      console.log(`[Login API] Pre-check found profile: ${preCheckProfile.id} | Role: ${preCheckProfile.role} | Email: ${preCheckProfile.email}`);
+      // Use the email specifically from the profile for auth
+      loginIdentifier = preCheckProfile.email;
+      isEmail = true;
+    } else {
+      console.warn(`[Login API] Pre-check: No profile found for identifier "${identifier}"`);
+    }
+
+    // Force email to lowercase for auth
+    if (isEmail) {
+      loginIdentifier = loginIdentifier.toLowerCase();
     }
 
     // 2. Authenticate with Supabase Auth
-    // We always use 'email' for login if resolved or contains @, else fallback to 'phone'
     const authType = loginIdentifier.includes('@') ? 'email' : 'phone';
-    console.log(`[Login API] Handing over to Supabase Auth with type: ${authType}`);
+    console.log(`[Login API] Handing over to Supabase Auth with type: ${authType} and identifier: ${loginIdentifier}`);
 
     const { data, error: authError } = await supabase.auth.signInWithPassword({
       [authType]: loginIdentifier,
@@ -41,10 +44,11 @@ export async function POST(request: Request) {
     } as any);
 
     if (authError) {
-      console.error(`[Login API] Supabase Auth Error:`, authError.message);
+      console.error(`[Login API] Supabase Auth Error: [${authError.status}] ${authError.message}`);
       return NextResponse.json({ 
         message: authError.message || 'Invalid credentials',
-        details: 'Auth failed' 
+        details: 'Auth failed',
+        code: (authError as any).code
       }, { status: 401 });
     }
 

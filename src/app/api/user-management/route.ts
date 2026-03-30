@@ -13,7 +13,7 @@ export async function POST(request: Request) {
 
   try {
     const { name, email: rawEmail, phone, role } = await request.json();
-    const email = rawEmail?.trim();
+    const email = rawEmail?.trim().toLowerCase();
 
     if (!['Admin', 'Doctor', 'Receptionist'].includes(role)) {
       return NextResponse.json({ message: 'Invalid role' }, { status: 400 });
