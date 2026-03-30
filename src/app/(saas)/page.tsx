@@ -214,7 +214,7 @@ export default function SaaSLandingPage() {
                             const formData = new FormData();
                             formData.append('file', file);
                             formData.append('folder', 'platform-landing');
-                            uploadAPI.upload(formData).then(res => handleUpdateSection('hero', 'hero_image', res.url));
+                            uploadAPI.upload(formData).then((res: any) => handleUpdateSection('hero', 'hero_image', res.url));
                         }}
                         isEditing={isEditing}
                         className="w-full opacity-90 h-[600px] object-cover"
