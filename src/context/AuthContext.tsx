@@ -102,9 +102,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (response.role === 'platform_admin') {
         router.push('/platform-admin/dashboard');
       } else if (response.hospital_slug) {
-        router.push(`/${response.hospital_slug}/${response.role.toLowerCase()}/dashboard`);
+        router.push(`/${response.hospital_slug}/${response.role.toLowerCase().replace(' ', '-')}/dashboard`);
       } else {
-        router.push(`/${response.role.toLowerCase()}/dashboard`);
+        router.push(`/${response.role.toLowerCase().replace(' ', '-')}/dashboard`);
       }
       return { success: true, role: response.role };
     } catch (err: any) {
@@ -121,7 +121,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const pathname = window.location.pathname;
     const parts = pathname.split('/');
     const isPlatformAdmin = pathname.startsWith('/platform-admin');
-    const slug = (!isPlatformAdmin && parts.length > 1 && !['login', 'admin', 'doctor', 'receptionist'].includes(parts[1])) 
+    const portalRoles = ['login', 'admin', 'doctor', 'receptionist', 'nurse', 'lab-scientist', 'pharmacist', 'radiologist'];
+    const slug = (!isPlatformAdmin && parts.length > 1 && !portalRoles.includes(parts[1])) 
       ? parts[1] 
       : '';
 
