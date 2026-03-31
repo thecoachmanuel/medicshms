@@ -94,6 +94,9 @@ export const SECTION_SCHEMAS: Record<string, Record<string, 'text' | 'textarea' 
   },
   quick_access: {
     items: 'list',
+  },
+  features_list: {
+    items: 'list',
   }
 };
 
@@ -104,6 +107,7 @@ export const LIST_ITEM_SCHEMAS: Record<string, Record<string, 'text' | 'textarea
   values_list: { title: 'text', desc: 'textarea', icon_name: 'text' },
   services_list: { title: 'text', desc: 'textarea', icon_name: 'text' },
   quick_access: { title: 'text', meta: 'text', icon_name: 'text', contact: 'text' },
+  features_list: { title: 'text', desc: 'textarea', icon: 'text' },
 };
 
 export const DEFAULT_CONTENT: Record<string, any> = {

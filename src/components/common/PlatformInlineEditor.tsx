@@ -26,13 +26,19 @@ export default function PlatformInlineEditor({
   setIsEditing
 }: PlatformInlineEditorProps) {
   const [content, setContent] = useState<any[]>(initialContent);
+  const [publishedContent, setPublishedContent] = useState<any[]>(initialContent);
   const [saving, setSaving] = useState(false);
   const [activeUpload, setActiveUpload] = useState<{ sectionKey: string; field: string } | null>(null);
-  const [isChanged, setIsChanged] = useState(false);
+
+  const isChanged = JSON.stringify(content) !== JSON.stringify(publishedContent);
 
   useEffect(() => {
     setContent(initialContent);
-  }, [initialContent]);
+    // If not currently editing, keep publishedContent in sync with what's coming from parent (API)
+    if (!isEditing) {
+      setPublishedContent(initialContent);
+    }
+  }, [initialContent, isEditing]);
 
   const handleUpdate = (sectionKey: string, field: string, value: any) => {
     setContent(prev => prev.map(item => {
@@ -44,7 +50,6 @@ export default function PlatformInlineEditor({
       }
       return item;
     }));
-    setIsChanged(true);
   };
 
   const handleSave = async () => {
@@ -59,7 +64,7 @@ export default function PlatformInlineEditor({
       
       await contentAPI.update(payload);
       toast.success('Platform content published successfully!');
-      setIsChanged(false);
+      setPublishedContent(content);
       setIsEditing(false);
       if (onSave) onSave(content);
     } catch (error) {
@@ -125,7 +130,6 @@ export default function PlatformInlineEditor({
                 <button 
                   onClick={() => {
                     setContent(initialContent);
-                    setIsChanged(false);
                   }}
                   className="px-4 py-3 hover:bg-rose-500/10 text-rose-400 rounded-2xl text-xs font-bold transition-all uppercase tracking-widest"
                 >

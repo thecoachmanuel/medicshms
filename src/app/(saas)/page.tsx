@@ -65,6 +65,16 @@ export default function SaaSLandingPage() {
                     badge: "Core Capabilities",
                     title: "Engineered for Excellence",
                     description: "Everything you need to run a modern, efficient, and patient-centric hospital at scale."
+                }},
+                { section_key: 'features_list', content: {
+                    items: [
+                        { icon: 'Shield', title: "Data Isolation", desc: "Strict multi-tenant architecture ensures each hospital's data is completely isolated and secure." },
+                        { icon: 'Zap', title: "Instant Deployment", desc: "Launch new hospital branches or independent clinics in seconds with one-click cloning." },
+                        { icon: 'Globe', title: "Global Scale", desc: "Optimized for speed and accessibility across the globe with Cloudinary and Supabase edge." },
+                        { icon: 'BarChart3', title: "Advanced Analytics", desc: "Deep insights into patient flow, staff performance, and financial metrics." },
+                        { icon: 'Lock', title: "Role-Based Access", desc: "Fine-grained permissions for admins, doctors, receptionists, and patients." },
+                        { icon: 'Smartphone', title: "Patient Portal", desc: "Dedicated mobile-first interface for patients to book and view records." }
+                    ]
                 }}
             ]);
         } else {
@@ -82,12 +92,18 @@ export default function SaaSLandingPage() {
   const getSection = (key: string) => siteContent.find(s => s.section_key === key)?.content || {};
 
   const handleUpdateSection = (sectionKey: string, field: string, value: any) => {
-      setSiteContent(prev => prev.map(item => {
-          if (item.section_key === sectionKey) {
-              return { ...item, content: { ...item.content, [field]: value } };
+      setSiteContent(prev => {
+          const exists = prev.find(s => s.section_key === sectionKey);
+          if (exists) {
+              return prev.map(item => 
+                  item.section_key === sectionKey 
+                  ? { ...item, content: { ...item.content, [field]: value } }
+                  : item
+              );
+          } else {
+              return [...prev, { section_key: sectionKey, content: { [field]: value }, page_path: 'home', hospital_id: null }];
           }
-          return item;
-      }));
+      });
   };
 
   const heroContent = getSection('hero');
@@ -255,20 +271,43 @@ export default function SaaSLandingPage() {
             </div>
           </EditableSection>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {featuresContent.map((f: any, i: number) => {
-              const Icon = typeof f.icon === 'string' ? (iconMap[f.icon] || Shield) : (f.icon || Shield);
-              return (
-                <div key={i} className="p-10 rounded-[2.5rem] bg-slate-50 border border-slate-100 hover:border-primary-500 transition-all hover:shadow-2xl hover:shadow-primary-600/5 group">
-                  <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
-                    <Icon className="w-8 h-8 text-primary-600" />
-                  </div>
-                  <h4 className="text-xl font-black text-slate-900 mb-4">{f.title}</h4>
-                  <p className="text-slate-500 leading-relaxed font-medium">{f.desc}</p>
-                </div>
-              );
-            })}
-          </div>
+          <EditableSection isEditing={isEditing} sectionKey="features_list" title="Features List">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {featuresContent.map((f: any, i: number) => {
+                const Icon = typeof f.icon === 'string' ? (iconMap[f.icon] || Shield) : (f.icon || Shield);
+                return (
+                    <div key={i} className="p-10 rounded-[2.5rem] bg-slate-50 border border-slate-100 hover:border-primary-500 transition-all hover:shadow-2xl hover:shadow-primary-600/5 group">
+                    <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                        <Icon className="w-8 h-8 text-primary-600" />
+                    </div>
+                    <h4 className="text-xl font-black text-slate-900 mb-4">
+                        <InlineText 
+                            value={f.title} 
+                            onChange={(val) => {
+                                const newItems = [...featuresContent];
+                                newItems[i] = { ...newItems[i], title: val };
+                                handleUpdateSection('features_list', 'items', newItems);
+                            }}
+                            isEditing={isEditing}
+                        />
+                    </h4>
+                    <p className="text-slate-500 leading-relaxed font-medium">
+                        <InlineText 
+                            value={f.desc} 
+                            onChange={(val) => {
+                                const newItems = [...featuresContent];
+                                newItems[i] = { ...newItems[i], desc: val };
+                                handleUpdateSection('features_list', 'items', newItems);
+                            }}
+                            isEditing={isEditing}
+                            multiline
+                        />
+                    </p>
+                    </div>
+                );
+                })}
+            </div>
+          </EditableSection>
         </div>
       </section>
 
