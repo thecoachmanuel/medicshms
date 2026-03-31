@@ -7,7 +7,7 @@ import {
   Eye, Edit2, Building2, FileText
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { appointmentAPI } from '@/lib/api';
+import { appointmentAPI, labAPI, radiologyAPI, pharmacyAPI } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -32,6 +32,8 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
   const [showCompleteForm, setShowCompleteForm] = useState(false);
   const [completeNotes, setCompleteNotes] = useState('');
   const [completePrescription, setCompletePrescription] = useState('');
+  const [labRequest, setLabRequest] = useState('');
+  const [radiologyRequest, setRadiologyRequest] = useState('');
   const [editData, setEditData] = useState({
     fullName: appointment?.fullName || appointment?.patientName || '',
     mobileNumber: appointment?.mobileNumber || '',
@@ -71,7 +73,34 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
       };
 
       if (user?.role === 'Doctor') {
-        await appointmentAPI.doctorComplete(appointment._id, data);
+        await appointmentAPI.doctorComplete(appointment._id || appointment.id, data);
+
+        const pId = appointment.patient_id || appointment.patientId;
+        
+        if (labRequest && pId) {
+           await labAPI.createRequest({
+             patient_id: pId,
+             appointment_id: appointment._id || appointment.id,
+             doctor_id: user?.id,
+             test_name: labRequest,
+           }).catch(e => console.error(e));
+        }
+        if (radiologyRequest && pId) {
+           await radiologyAPI.createRequest({
+             patient_id: pId,
+             appointment_id: appointment._id || appointment.id,
+             doctor_id: user?.id,
+             test_name: radiologyRequest,
+           }).catch(e => console.error(e));
+        }
+        if (completePrescription && pId) {
+           await pharmacyAPI.createPrescription({
+             patient_id: pId,
+             appointment_id: appointment._id || appointment.id,
+             notes: completePrescription
+           }).catch(e => console.error(e));
+        }
+
       } else {
         await appointmentAPI.updateStatus(appointment._id, 'Completed', '', data);
       }
@@ -142,13 +171,35 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Prescription Details</label>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Prescription Details (Sent to Pharmacy)</label>
                     <textarea 
                       className="input w-full min-h-[100px] py-3 text-sm" 
                       placeholder="List of medications, dosage, and frequency..."
                       value={completePrescription}
                       onChange={e => setCompletePrescription(e.target.value)}
                     />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Order Lab Tests</label>
+                      <input 
+                        type="text"
+                        className="input w-full py-3 text-sm" 
+                        placeholder="e.g. Complete Blood Count (CBC)"
+                        value={labRequest}
+                        onChange={e => setLabRequest(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Order Radiology Scans</label>
+                      <input 
+                        type="text"
+                        className="input w-full py-3 text-sm" 
+                        placeholder="e.g. Chest X-Ray"
+                        value={radiologyRequest}
+                        onChange={e => setRadiologyRequest(e.target.value)}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

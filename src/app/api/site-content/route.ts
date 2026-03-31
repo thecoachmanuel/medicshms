@@ -20,13 +20,18 @@ export async function GET(request: Request) {
 
   let query = client.from('site_content').select('*');
 
+  // Strict isolation:
+  // If we are looking for a specific tenant (either via hospital_id or slug)
+  // we ONLY return that tenant's content. We do NOT fallback to "null" 
+  // because "null" hospital_id represents the central SaaS platform content.
   if (targetHospitalId) {
-    // Try to get hospital-specific content first, then fallback to global (hospital_id is null)
-    // However, Supabase doesn't easily do "ordered fallback" in one select without complex logic.
-    // We'll fetch both and prioritize hospital-specific in code, or just fetch hospital-specific.
-    query = query.or(`hospital_id.eq.${targetHospitalId},hospital_id.is.null`);
-  } else {
+    query = query.eq('hospital_id', targetHospitalId);
+  } else if (!slug) {
+    // If no hospital_id and no slug, we are strictly querying the SaaS platform landing page
     query = query.is('hospital_id', null);
+  } else {
+    // A slug was provided but hospital wasn't found
+    return NextResponse.json([]);
   }
 
   if (page) {
@@ -43,16 +48,7 @@ export async function GET(request: Request) {
       throw error;
     }
 
-    // Process fallbacks: if we have both hospital-specific and global for a section, keep hospital-specific
-    const sectionsMap = new Map();
-    (data || []).forEach(item => {
-      const key = `${item.page_path}:${item.section_key}`;
-      if (!sectionsMap.has(key) || item.hospital_id !== null) {
-        sectionsMap.set(key, item);
-      }
-    });
-
-    return NextResponse.json(Array.from(sectionsMap.values()));
+    return NextResponse.json(data || []);
   } catch (error: any) {
     console.error('Site content fetch error:', error);
     return NextResponse.json({ message: 'Failed to fetch site content' }, { status: 500 });

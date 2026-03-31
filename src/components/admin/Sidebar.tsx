@@ -24,7 +24,15 @@ import {
   CalendarClock,
   FileCheck,
   Globe,
-  LogOut
+  LogOut,
+  Activity,
+  ClipboardList,
+  TestTubes,
+  Microscope,
+  Pill,
+  Package,
+  Scan,
+  ImageIcon
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -76,7 +84,7 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
         { icon: DollarSign, label: 'Billing', path: `${base}/admin/billing` },
         { icon: ShieldCheck, label: 'Admin', path: `${base}/admin/users` },
         { icon: Stethoscope, label: 'Doctors', path: `${base}/admin/doctors` },
-        { icon: Users, label: 'Receptionist', path: `${base}/admin/receptionists` },
+        { icon: Users, label: 'Hospital Staff', path: `${base}/admin/staff` },
         { icon: Building2, label: 'Departments', path: `${base}/admin/departments` },
         { icon: CalendarClock, label: 'Slot Settings', path: `${base}/admin/slot-settings` },
         { icon: FileCheck, label: 'Template', path: `${base}/admin/invoice-template` },
@@ -102,6 +110,34 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
         { icon: Calendar, label: 'Appointments', path: `${base}/doctor/appointments` },
         { icon: FileText, label: 'Patients', path: `${base}/doctor/patients` },
         { icon: User, label: 'My Profile', path: `${base}/doctor/profile` },
+      ];
+    } else if (role === 'Nurse') {
+      return [
+        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/nurse/dashboard` },
+        { icon: ClipboardList, label: 'Appointments', path: `${base}/nurse/appointments` },
+        { icon: Activity, label: 'Patient Vitals', path: `${base}/nurse/vitals` },
+        { icon: User, label: 'My Profile', path: `${base}/nurse/profile` },
+      ];
+    } else if (role === 'Lab Scientist') {
+      return [
+        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/lab-scientist/dashboard` },
+        { icon: TestTubes, label: 'Lab Requests', path: `${base}/lab-scientist/requests` },
+        { icon: Microscope, label: 'Verified Results', path: `${base}/lab-scientist/results` },
+        { icon: User, label: 'My Profile', path: `${base}/lab-scientist/profile` },
+      ];
+    } else if (role === 'Pharmacist') {
+      return [
+        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/pharmacist/dashboard` },
+        { icon: Pill, label: 'Prescriptions', path: `${base}/pharmacist/prescriptions` },
+        { icon: Package, label: 'Inventory', path: `${base}/pharmacist/inventory` },
+        { icon: User, label: 'My Profile', path: `${base}/pharmacist/profile` },
+      ];
+    } else if (role === 'Radiologist') {
+      return [
+        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/radiologist/dashboard` },
+        { icon: Scan, label: 'Scan Requests', path: `${base}/radiologist/requests` },
+        { icon: ImageIcon, label: 'Verified Reports', path: `${base}/radiologist/reports` },
+        { icon: User, label: 'My Profile', path: `${base}/radiologist/profile` },
       ];
     }
     return [];

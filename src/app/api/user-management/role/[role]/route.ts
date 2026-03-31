@@ -13,7 +13,8 @@ export async function GET(
   const { role } = await params;
 
   try {
-    if (!['Admin', 'Doctor', 'Receptionist'].includes(role)) {
+    const validRoles = ['Admin', 'Doctor', 'Receptionist', 'Nurse', 'Lab Scientist', 'Pharmacist', 'Radiologist'];
+    if (!validRoles.includes(role)) {
       return NextResponse.json({ message: 'Invalid role' }, { status: 400 });
     }
 

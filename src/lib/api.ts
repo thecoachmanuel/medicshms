@@ -251,6 +251,33 @@ export const notificationsAPI = {
   delete: (id: string) => api.delete(`/notifications/${id}`),
 };
 
+export const vitalsAPI = {
+  getPatientVitals: (patientId: string, appointmentId?: string) => 
+    api.get('/vitals', { params: { patientId, appointmentId } }),
+  recordVitals: (data: any) => api.post('/vitals', data),
+};
+
+export const labAPI = {
+  getRequests: (params?: any) => api.get('/lab-services', { params }),
+  createRequest: (data: any) => api.post('/lab-services', data),
+  updateResult: (data: any) => api.put('/lab-services', data),
+};
+
+export const pharmacyAPI = {
+  getInventory: (params?: any) => api.get('/pharmacy/inventory', { params }),
+  createInventoryItem: (data: any) => api.post('/pharmacy/inventory', data),
+  updateInventoryItem: (data: any) => api.put('/pharmacy/inventory', data),
+  getPrescriptions: (params?: any) => api.get('/pharmacy/prescriptions', { params }),
+  createPrescription: (data: any) => api.post('/pharmacy/prescriptions', data),
+  updatePrescription: (data: any) => api.put('/pharmacy/prescriptions', data),
+};
+
+export const radiologyAPI = {
+  getRequests: (params?: any) => api.get('/radiology', { params }),
+  createRequest: (data: any) => api.post('/radiology', data),
+  updateResult: (data: any) => api.put('/radiology', data),
+};
+
 // Aliases for backward compatibility
 export const appointmentAPI = appointmentsAPI;
 export const departmentAPI = departmentsAPI;

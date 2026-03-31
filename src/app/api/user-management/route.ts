@@ -15,7 +15,8 @@ export async function POST(request: Request) {
     const { name, email: rawEmail, phone, role } = await request.json();
     const email = rawEmail?.trim().toLowerCase();
 
-    if (!['Admin', 'Doctor', 'Receptionist'].includes(role)) {
+    const validRoles = ['Admin', 'Doctor', 'Receptionist', 'Nurse', 'Lab Scientist', 'Pharmacist', 'Radiologist'];
+    if (!validRoles.includes(role)) {
       return NextResponse.json({ message: 'Invalid role' }, { status: 400 });
     }
 
@@ -25,6 +26,10 @@ export async function POST(request: Request) {
       case 'Doctor': defaultPassword = 'hms@doctor'; break;
       case 'Receptionist': defaultPassword = 'hms@receptionist'; break;
       case 'Admin': defaultPassword = 'hms@admin'; break;
+      case 'Nurse': defaultPassword = 'hms@nurse'; break;
+      case 'Lab Scientist': defaultPassword = 'hms@lab'; break;
+      case 'Pharmacist': defaultPassword = 'hms@pharmacy'; break;
+      case 'Radiologist': defaultPassword = 'hms@radiology'; break;
       default: defaultPassword = 'hms@default';
     }
 
@@ -64,6 +69,14 @@ export async function POST(request: Request) {
       await (supabaseAdmin || supabase).from('receptionists').insert([{ user_id: user.id, hospital_id: adminProfile?.hospital_id }]);
     } else if (role === 'Admin') {
       await (supabaseAdmin || supabase).from('admins').insert([{ user_id: user.id, hospital_id: adminProfile?.hospital_id }]);
+    } else if (role === 'Nurse') {
+      await (supabaseAdmin || supabase).from('nurses').insert([{ user_id: user.id, hospital_id: adminProfile?.hospital_id }]);
+    } else if (role === 'Lab Scientist') {
+      await (supabaseAdmin || supabase).from('lab_scientists').insert([{ user_id: user.id, hospital_id: adminProfile?.hospital_id }]);
+    } else if (role === 'Pharmacist') {
+      await (supabaseAdmin || supabase).from('pharmacists').insert([{ user_id: user.id, hospital_id: adminProfile?.hospital_id }]);
+    } else if (role === 'Radiologist') {
+      await (supabaseAdmin || supabase).from('radiologists').insert([{ user_id: user.id, hospital_id: adminProfile?.hospital_id }]);
     }
 
     return NextResponse.json({
