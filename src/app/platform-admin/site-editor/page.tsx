@@ -5,12 +5,13 @@ import {
   Layout, Globe, Image as ImageIcon, Type, 
   Save, Loader2, RefreshCw, ChevronRight,
   Home, Info, Briefcase, Phone, Plus, Trash2,
-  AlertCircle, Eye, Sidebar
+  AlertCircle, Eye, Sidebar, Upload
 } from 'lucide-react';
-import { contentAPI } from '@/lib/api';
+import { contentAPI, uploadAPI } from '@/lib/api';
 import { toast } from 'react-hot-toast';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { SECTION_SCHEMAS, LIST_ITEM_SCHEMAS } from '@/lib/cms-schemas';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -19,6 +20,7 @@ function cn(...inputs: ClassValue[]) {
 export default function PlatformSiteEditorPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState<string | null>(null);
   const [activePage, setActivePage] = useState('home');
   const [content, setContent] = useState<any[]>([]);
 
@@ -54,6 +56,25 @@ export default function PlatformSiteEditorPage() {
     ));
   };
 
+  const handleFileUpload = async (file: File, sectionKey: string, fieldKey: string, currentContent: any) => {
+    const uploadKey = `${sectionKey}-${fieldKey}`;
+    try {
+      setUploading(uploadKey);
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', `platform/${activePage}`);
+      
+      const res = await uploadAPI.upload(formData) as any;
+      handleUpdateSection(sectionKey, { ...currentContent, [fieldKey]: res.url });
+      toast.success('Image uploaded successfully');
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload image');
+    } finally {
+      setUploading(null);
+    }
+  };
+
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -80,6 +101,74 @@ export default function PlatformSiteEditorPage() {
           hospital_id: null
       };
       setContent([...content, newSection]);
+  };
+
+  const renderField = (sectionKey: string, fieldKey: string, value: any, currentContent: any) => {
+    const sectionSchema = (SECTION_SCHEMAS as any)[sectionKey] || {};
+    const fieldType = sectionSchema[fieldKey] || (fieldKey.includes('image') ? 'image' : fieldKey.includes('description') || fieldKey.includes('text') ? 'textarea' : 'text');
+    const label = fieldKey.split('_').join(' ');
+    const uploadKey = `${sectionKey}-${fieldKey}`;
+
+    return (
+      <div key={fieldKey} className="space-y-2 group">
+        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 group-hover:text-slate-900 transition-colors">
+          {label}
+        </label>
+        
+        {fieldType === 'textarea' ? (
+          <textarea 
+            value={value || ''}
+            onChange={(e) => handleUpdateSection(sectionKey, { ...currentContent, [fieldKey]: e.target.value })}
+            className="input py-3 min-h-[100px] bg-slate-50/50 focus:bg-white transition-colors text-sm"
+          />
+        ) : (
+          <div className="space-y-3">
+            <div className="relative">
+              <input 
+                type="text" 
+                value={value || ''}
+                onChange={(e) => handleUpdateSection(sectionKey, { ...currentContent, [fieldKey]: e.target.value })}
+                className="input py-3 bg-slate-50/50 focus:bg-white transition-colors text-sm pr-24"
+              />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                {fieldType === 'image' && (
+                  <label className="p-2 hover:bg-white rounded-lg cursor-pointer transition-colors text-slate-900 shadow-sm border border-transparent hover:border-slate-100">
+                    <input 
+                      type="file" 
+                      className="hidden" 
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, sectionKey, fieldKey, currentContent);
+                      }}
+                    />
+                    {uploading === uploadKey ? <Loader2 className="w-4 h-4 animate-spin text-primary-600" /> : <Upload className="w-4 h-4" />}
+                  </label>
+                )}
+                {fieldType !== 'image' && (
+                  fieldType.includes('url') ? <Globe className="w-4 h-4 text-gray-300 mr-2" /> : <Type className="w-4 h-4 text-gray-300 mr-2" />
+                )}
+              </div>
+            </div>
+            {fieldType === 'image' && value && (
+              <div className="relative w-full max-w-md aspect-video rounded-2xl overflow-hidden border border-slate-100 bg-slate-50 group/img">
+                <img 
+                  src={value} 
+                  alt={label} 
+                  className="w-full h-full object-cover transition-transform group-hover/img:scale-105"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Invalid+Image+URL';
+                  }}
+                />
+                <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
+                   <p className="text-[10px] font-black text-white uppercase tracking-widest">Live Preview</p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
   };
 
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 animate-spin text-primary-600" /></div>;
@@ -158,30 +247,7 @@ export default function PlatformSiteEditorPage() {
 
                             <div className="grid grid-cols-1 gap-6">
                                 {Object.keys(section.content).map((key) => (
-                                    <div key={key} className="space-y-2">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">
-                                            {key.split('_').join(' ')}
-                                        </label>
-                                        {key.includes('description') || key.includes('text') || key.includes('address') || key.includes('bio') ? (
-                                            <textarea 
-                                                value={section.content[key]}
-                                                onChange={(e) => handleUpdateSection(section.section_key, { ...section.content, [key]: e.target.value })}
-                                                className="input py-3 min-h-[100px]"
-                                            />
-                                        ) : (
-                                            <div className="relative">
-                                                <input 
-                                                    type="text" 
-                                                    value={section.content[key]}
-                                                    onChange={(e) => handleUpdateSection(section.section_key, { ...section.content, [key]: e.target.value })}
-                                                    className="input py-3"
-                                                />
-                                                {key.includes('image') || key.includes('url') ? (
-                                                    <ImageIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-                                                ) : null}
-                                            </div>
-                                        )}
-                                    </div>
+                                    renderField(section.section_key, key, section.content[key], section.content)
                                 ))}
                                 {Object.keys(section.content).length === 0 && (
                                     <p className="text-gray-400 text-xs italic">Section exists but has no editable fields yet.</p>

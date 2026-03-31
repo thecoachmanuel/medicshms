@@ -22,7 +22,7 @@ export async function POST(request: Request) {
         title: 'New Demo Request',
         message: `A new demo request has been received from ${body.hospital_name}.`,
         type: 'subscription', // Using existing type
-        recipient_role: 'platform_admin'
+        role: 'platform_admin'
       }]);
 
     if (notifError) console.error('Failed to send demo notification:', notifError);
