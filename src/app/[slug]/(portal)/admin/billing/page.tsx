@@ -24,9 +24,9 @@ export default function AdminBillingPage() {
             <div>
               <h3 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.3em] mb-1">Your SaaS Subscription</h3>
               <p className="text-xl font-black text-slate-900 leading-none">
-                {(user as any)?.hospital?.plan?.name || 'Standard Plan'}
+                Standard Managed Plan
                 <span className="ml-3 px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100">
-                  {hospital?.subscription_status || 'Trial'}
+                  {user?.subscription_status || 'Trial'}
                 </span>
               </p>
             </div>

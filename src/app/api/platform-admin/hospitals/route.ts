@@ -24,7 +24,8 @@ export async function GET(request: Request) {
       active: hospitals.filter(h => h.subscription_status === 'active').length,
       trial: hospitals.filter(h => h.subscription_status === 'trial').length,
       expired: hospitals.filter(h => h.subscription_status === 'expired').length,
-      paused: hospitals.filter(h => h.subscription_status === 'paused').length
+      paused: hospitals.filter(h => h.subscription_status === 'paused').length,
+      suspended: hospitals.filter(h => h.subscription_status === 'suspended').length
     };
 
     return NextResponse.json({ hospitals, stats });

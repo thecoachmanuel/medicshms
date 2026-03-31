@@ -20,7 +20,7 @@ interface Hospital {
   email: string;
   custom_domain?: string;
   status: 'active' | 'inactive' | 'onboarding';
-  subscription_status: 'trial' | 'active' | 'expired' | 'paused';
+  subscription_status: 'trial' | 'active' | 'expired' | 'paused' | 'suspended';
   trial_end_date: string;
   created_at: string;
 }
@@ -33,7 +33,8 @@ export default function PlatformAdminDashboard() {
     active: 0,
     trial: 0,
     expired: 0,
-    paused: 0
+    paused: 0,
+    suspended: 0
   });
 
   // New Hospital Modal State
@@ -158,7 +159,8 @@ export default function PlatformAdminDashboard() {
           { check: CheckCircle2, label: "Active Subscriptions", value: stats.active, color: "bg-emerald-600" },
           { clock: Clock, label: "Free Trials", value: stats.trial, color: "bg-amber-600" },
           { alert: AlertCircle, label: "Expired Plans", value: stats.expired, color: "bg-rose-600" },
-          { pause: Pause, label: "Paused Services", value: stats.paused, color: "bg-slate-600" }
+          { pause: Pause, label: "Paused Services", value: stats.paused, color: "bg-slate-600" },
+          { x: XCircle, label: "Suspended", value: stats.suspended, color: "bg-red-900" }
         ].map((s, i) => (
           <div key={i} className="p-6 rounded-[2rem] bg-white border border-slate-100 shadow-sm hover:shadow-xl transition-all group">
             <div className={`w-12 h-12 ${s.color} rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
@@ -167,6 +169,7 @@ export default function PlatformAdminDashboard() {
               {s.clock && <s.clock className="w-6 h-6 text-white" />}
               {s.alert && <s.alert className="w-6 h-6 text-white" />}
               {s.pause && <s.pause className="w-6 h-6 text-white" />}
+              {s.x && <s.x className="w-6 h-6 text-white" />}
             </div>
             <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{s.label}</p>
             <h3 className="text-3xl font-black text-slate-900 mt-1">{s.value}</h3>
@@ -234,6 +237,7 @@ export default function PlatformAdminDashboard() {
                         ${h.subscription_status === 'active' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 
                           h.subscription_status === 'trial' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 
                           h.subscription_status === 'paused' ? 'bg-slate-100 text-slate-600 border border-slate-200' :
+                          h.subscription_status === 'suspended' ? 'bg-rose-100 text-rose-700 border border-rose-200' :
                           'bg-rose-50 text-rose-600 border border-rose-100'}`}>
                         {h.subscription_status === 'active' ? <CheckCircle2 className="w-3 h-3" /> : 
                          h.subscription_status === 'paused' ? <Pause className="w-3 h-3" /> :
@@ -413,7 +417,8 @@ export default function PlatformAdminDashboard() {
                   >
                     <option value="trial">Free Trial</option>
                     <option value="active">Active Subscription</option>
-                    <option value="paused">Paused / Suspended</option>
+                    <option value="paused">Paused / Maintenance</option>
+                    <option value="suspended">Suspended / Policy</option>
                     <option value="expired">Expired</option>
                   </select>
                 </div>

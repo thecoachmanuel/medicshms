@@ -92,21 +92,29 @@ export async function POST(request: Request) {
 
     // 4. Fetch hospital and verify its status
     let hospitalSlug = '';
+    let subscriptionStatus = 'trial';
+    let trialEndDate = '';
+
     if (profile.hospital_id) {
        const { data: hosp } = await client
         .from('hospitals')
-        .select('slug, status')
+        .select('slug, status, subscription_status, trial_end_date')
         .eq('id', profile.hospital_id)
         .maybeSingle();
       
       if (hosp) {
         if (hosp.status !== 'active') {
           console.warn(`[Login API] Attempted login to inactive hospital (${hosp.slug}): ${user.email}`);
-          return NextResponse.json({ message: 'Associated hospital account is currently inactive or suspended.' }, { status: 403 });
+          // Allow platform admin to log in even if hospital is inactive (system-level)
+          if (profile.role !== 'platform_admin') {
+            return NextResponse.json({ message: 'Associated hospital account is currently inactive or suspended.' }, { status: 403 });
+          }
         }
         hospitalSlug = hosp.slug;
+        subscriptionStatus = hosp.subscription_status;
+        trialEndDate = hosp.trial_end_date;
       }
-      console.log(`[Login API] Resolved hospital status/slug: "${hospitalSlug}"`);
+      console.log(`[Login API] Resolved hospital context: Slug: "${hospitalSlug}", Status: ${subscriptionStatus}`);
     }
 
     // 5. Track last login and sync metadata to JWT
@@ -133,6 +141,8 @@ export async function POST(request: Request) {
       role: profile.role,
       hospital_id: profile.hospital_id,
       hospital_slug: hospitalSlug,
+      subscription_status: subscriptionStatus,
+      trial_end_date: trialEndDate,
       token: data.session.access_token,
     });
   } catch (error: any) {

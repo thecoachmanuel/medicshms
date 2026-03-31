@@ -21,11 +21,27 @@ export async function buildProfileResponse(userId: string) {
     email: profile.email,
     phone: profile.phone,
     role: profile.role,
+    hospital_id: profile.hospital_id,
     isActive: profile.is_active,
     lastLogin: profile.last_login,
     createdAt: profile.created_at,
     updatedAt: profile.updated_at
   };
+
+  // 1.5 Get hospital info if available
+  if (profile.hospital_id) {
+    const { data: hospital } = await (supabaseAdmin || supabase)
+      .from('hospitals')
+      .select('slug, subscription_status, trial_end_date')
+      .eq('id', profile.hospital_id)
+      .single();
+    
+    if (hospital) {
+      profileData.hospital_slug = hospital.slug;
+      profileData.subscription_status = hospital.subscription_status;
+      profileData.trial_end_date = hospital.trial_end_date;
+    }
+  }
 
   // 2. Add role-specific data
   if (profile.role === 'Doctor') {
