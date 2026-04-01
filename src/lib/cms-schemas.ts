@@ -38,6 +38,11 @@ export const SECTION_SCHEMAS: Record<string, Record<string, 'text' | 'textarea' 
     phone: 'text',
     email: 'text',
   },
+  'common/header': {
+    logo_url: 'image',
+    contact_phone: 'text',
+    contact_email: 'text',
+  },
   about_header: {
     tagline: 'text',
     title_part1: 'text',
@@ -160,6 +165,11 @@ export const DEFAULT_CONTENT: Record<string, any> = {
     location: "123 Medical Drive, Health City",
     phone: "+234 800 MEDICS",
     email: "info@medicshms.com"
+  },
+  'common/header': {
+    logo_url: "",
+    contact_phone: "+1 (800) 123-4567",
+    contact_email: "info@medicshms.com"
   },
   about_header: {
     tagline: "Our Story",

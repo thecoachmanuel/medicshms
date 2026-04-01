@@ -11,11 +11,19 @@ import { contentAPI, uploadAPI } from '@/lib/api';
 import { toast } from 'react-hot-toast';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { SECTION_SCHEMAS, LIST_ITEM_SCHEMAS } from '@/lib/cms-schemas';
+import { SECTION_SCHEMAS, LIST_ITEM_SCHEMAS, DEFAULT_CONTENT } from '@/lib/cms-schemas';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+const PAGE_SECTIONS: Record<string, string[]> = {
+  home: ['hero', 'stats', 'departments_intro', 'departments_list', 'doctors_section', 'doctors_list', 'cta'],
+  about: ['about_header', 'mission', 'vision', 'values_intro', 'values_list'],
+  services: ['services_header', 'services_list', 'process_cta', 'features_list'],
+  contact: ['contact_header', 'contact_info', 'quick_access'],
+  common: ['common/header', 'common/footer']
+};
 
 export default function PlatformSiteEditorPage() {
   const [loading, setLoading] = useState(false);
@@ -94,13 +102,39 @@ export default function PlatformSiteEditorPage() {
   };
 
   const addSection = (key: string) => {
+      if (content.some(s => s.section_key === key)) {
+          toast.error('Section already exists');
+          return;
+      }
       const newSection = {
           page_path: activePage,
           section_key: key,
-          content: {},
+          content: DEFAULT_CONTENT[key] || {},
           hospital_id: null
       };
       setContent([...content, newSection]);
+  };
+
+  const handleDeleteListItem = (sectionKey: string, fieldKey: string, currentContent: any, index: number) => {
+    const list = Array.isArray(currentContent[fieldKey]) ? [...currentContent[fieldKey]] : [];
+    list.splice(index, 1);
+    handleUpdateSection(sectionKey, { ...currentContent, [fieldKey]: list });
+  };
+
+  const handleAddListItem = (sectionKey: string, fieldKey: string, currentContent: any) => {
+    const list = Array.isArray(currentContent[fieldKey]) ? [...currentContent[fieldKey]] : [];
+    const schema = (LIST_ITEM_SCHEMAS as any)[sectionKey] || {};
+    const newItem: any = {};
+    Object.keys(schema).forEach(k => { newItem[k] = ''; });
+    list.push(newItem);
+    handleUpdateSection(sectionKey, { ...currentContent, [fieldKey]: list });
+  };
+
+  const handleUpdateListItem = (sectionKey: string, fieldKey: string, currentContent: any, index: number, itemKey: string, value: any) => {
+    const list = Array.isArray(currentContent[fieldKey]) ? [...currentContent[fieldKey]] : [];
+    if (!list[index]) list[index] = {};
+    list[index] = { ...list[index], [itemKey]: value };
+    handleUpdateSection(sectionKey, { ...currentContent, [fieldKey]: list });
   };
 
   const renderField = (sectionKey: string, fieldKey: string, value: any, currentContent: any) => {
@@ -108,6 +142,69 @@ export default function PlatformSiteEditorPage() {
     const fieldType = sectionSchema[fieldKey] || (fieldKey.includes('image') ? 'image' : fieldKey.includes('description') || fieldKey.includes('text') ? 'textarea' : 'text');
     const label = fieldKey.split('_').join(' ');
     const uploadKey = `${sectionKey}-${fieldKey}`;
+
+    if (fieldType === 'list') {
+      const listSchema = (LIST_ITEM_SCHEMAS as any)[sectionKey] || {};
+      const listItems = Array.isArray(value) ? value : [];
+
+      return (
+        <div key={fieldKey} className="space-y-4 filter drop-shadow-sm p-4 rounded-xl bg-slate-50 border border-slate-100">
+          <label className="text-[10px] font-black text-slate-800 uppercase tracking-widest pl-1">{label}</label>
+          <div className="space-y-4">
+            {listItems.map((item: any, index: number) => (
+              <div key={index} className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm relative group/item">
+                <button 
+                  onClick={() => handleDeleteListItem(sectionKey, fieldKey, currentContent, index)}
+                  className="absolute -right-2 -top-2 w-6 h-6 bg-red-50 text-red-500 rounded-full flex items-center justify-center opacity-0 group-hover/item:opacity-100 transition-opacity hover:bg-red-500 hover:text-white"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+                <div className="grid gap-3">
+                  {Object.entries(listSchema).map(([itemKey, itemType]) => (
+                    <div key={itemKey}>
+                      <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest block mb-1">{itemKey.split('_').join(' ')}</span>
+                      {itemType === 'textarea' ? (
+                        <textarea 
+                          value={item[itemKey] || ''}
+                          onChange={(e) => handleUpdateListItem(sectionKey, fieldKey, currentContent, index, itemKey, e.target.value)}
+                          className="input py-2 min-h-[60px] text-sm bg-slate-50 focus:bg-white w-full"
+                        />
+                      ) : (
+                        itemType === 'image' ? (
+                          <div className="flex gap-2">
+                            <input 
+                              type="text" 
+                              value={item[itemKey] || ''}
+                              onChange={(e) => handleUpdateListItem(sectionKey, fieldKey, currentContent, index, itemKey, e.target.value)}
+                              className="input py-2 text-sm bg-slate-50 focus:bg-white flex-1"
+                              placeholder="Image URL"
+                            />
+                            {item[itemKey] && <img src={item[itemKey]} className="w-10 h-10 rounded object-cover" alt="" />}
+                          </div>
+                        ) : (
+                          <input 
+                            type="text" 
+                            value={item[itemKey] || ''}
+                            onChange={(e) => handleUpdateListItem(sectionKey, fieldKey, currentContent, index, itemKey, e.target.value)}
+                            className="input py-2 text-sm bg-slate-50 focus:bg-white w-full"
+                          />
+                        )
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <button 
+            onClick={() => handleAddListItem(sectionKey, fieldKey, currentContent)}
+            className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1 hover:text-primary-600 transition-colors mt-2"
+          >
+            <Plus className="w-3 h-3" /> Add Item
+          </button>
+        </div>
+      );
+    }
 
     return (
       <div key={fieldKey} className="space-y-2 group">
@@ -222,10 +319,14 @@ export default function PlatformSiteEditorPage() {
             {content.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 card border-dashed border-2 border-gray-200 bg-gray-50">
                     <Layout className="w-12 h-12 text-gray-300 mb-4" />
-                    <p className="text-gray-400 font-bold uppercase tracking-widest">No sections found for this page</p>
-                    <button onClick={() => addSection('hero')} className="mt-4 text-primary-600 font-bold flex items-center gap-2">
-                        <Plus className="w-4 h-4" /> Add Section
-                    </button>
+                    <p className="text-gray-400 font-bold uppercase tracking-widest mb-6">No sections found for this page</p>
+                    <div className="flex flex-wrap items-center justify-center gap-2 max-w-xl">
+                      {(PAGE_SECTIONS[activePage] || []).map(sec => (
+                        <button key={sec} onClick={() => addSection(sec)} className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold hover:border-primary-500 hover:text-primary-600 flex items-center gap-2 transition-colors shadow-sm">
+                            <Plus className="w-4 h-4" /> Add {sec}
+                        </button>
+                      ))}
+                    </div>
                 </div>
             ) : (
                 <div className="space-y-6">
@@ -256,6 +357,19 @@ export default function PlatformSiteEditorPage() {
                         </div>
                     ))}
                 </div>
+            )}
+
+            {content.length > 0 && PAGE_SECTIONS[activePage]?.filter(sec => !content.some(c => c.section_key === sec)).length > 0 && (
+              <div className="p-6 bg-white rounded-2xl border border-dashed border-gray-200">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Available Sections</p>
+                <div className="flex flex-wrap gap-2">
+                  {PAGE_SECTIONS[activePage].filter(sec => !content.some(c => c.section_key === sec)).map(sec => (
+                    <button key={sec} onClick={() => addSection(sec)} className="px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg text-sm font-bold hover:bg-primary-100 flex items-center gap-2 transition-colors">
+                      <Plus className="w-4 h-4" /> {sec}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
 
             <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 flex items-start gap-4 shadow-sm">
