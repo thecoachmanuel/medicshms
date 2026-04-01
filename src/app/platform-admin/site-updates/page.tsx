@@ -22,10 +22,12 @@ export default function PlatformSiteUpdatesPage() {
   const [saving, setSaving] = useState(false);
 
   // New Banner Form State
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [formData, setFormData] = useState({
     message: '',
     linkText: '',
     linkUrl: '',
+    image_url: '',
     backgroundColor: '#0f172a',
     textColor: '#ffffff',
     startDate: new Date().toISOString().split('T')[0],
@@ -45,6 +47,24 @@ export default function PlatformSiteUpdatesPage() {
       toast.error('Failed to fetch platform banners');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleImageUpload = async (file: File) => {
+    try {
+      setUploadingImage(true);
+      const data = new FormData();
+      data.append('file', file);
+      data.append('folder', 'platform/banners');
+      
+      const res = await uploadAPI.upload(data) as any;
+      setFormData({...formData, image_url: res.url});
+      toast.success('Banner image uploaded successfully');
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload image');
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -82,6 +102,7 @@ export default function PlatformSiteUpdatesPage() {
         message: '',
         linkText: '',
         linkUrl: '',
+        image_url: '',
         backgroundColor: '#0f172a',
         textColor: '#ffffff',
         startDate: new Date().toISOString().split('T')[0],
@@ -135,6 +156,32 @@ export default function PlatformSiteUpdatesPage() {
                 placeholder="Ex: Main platform maintenance scheduled for midnight..."
                 required
               />
+            </div>
+
+            <div className="md:col-span-2 space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Banner Image (Optional)</label>
+              <div className="flex items-center gap-4 p-2 border border-slate-200 rounded-[1.5rem]">
+                <label className="flex-1 flex items-center justify-center p-4 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload(file);
+                    }}
+                  />
+                  {uploadingImage ? <Loader2 className="w-5 h-5 animate-spin text-primary-600" /> : <div className="flex items-center gap-2 text-sm font-bold text-slate-500"><Upload className="w-4 h-4" /> Upload Graphic Element</div>}
+                </label>
+                {formData.image_url && (
+                  <div className="w-16 h-16 shrink-0 rounded-xl overflow-hidden border border-slate-100 bg-slate-50 relative group">
+                    <img src={formData.image_url} alt="Banner" className="w-full h-full object-cover" />
+                    <button type="button" onClick={() => setFormData({...formData, image_url: ''})} className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <X className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">

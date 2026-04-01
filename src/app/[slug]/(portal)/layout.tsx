@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, use } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Sidebar } from '@/components/admin/Sidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
@@ -68,7 +68,10 @@ export default function PortalLayout({
 
   const trialDaysRemaining = getTrialDaysRemaining();
 
-  if (isExpired || isPaused || isSuspended) {
+  const pathname = usePathname();
+  const isExemptRoute = pathname?.endsWith('/admin/billing') || pathname?.endsWith('/admin/support') || pathname?.endsWith('/admin/subscription');
+
+  if ((isExpired || isPaused || isSuspended) && !isExemptRoute) {
     return (
       <div className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-xl flex items-center justify-center p-6 text-center">
         <div className="max-w-md w-full bg-white rounded-[3rem] p-12 space-y-8 shadow-2xl animate-in fade-in zoom-in duration-500">
@@ -100,7 +103,7 @@ export default function PortalLayout({
             )}
             
             {(isSuspended || isPaused) && (
-              <Link href="mailto:support@medicshms.com" className="block w-full py-4 rounded-2xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all no-underline">
+              <Link href={`/${slug}/admin/support`} className="block w-full py-4 rounded-2xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all no-underline">
                 Contact Support
               </Link>
             )}

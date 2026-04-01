@@ -26,11 +26,11 @@ export async function POST(request: Request) {
       if (hosp) hospital_id = hosp.id;
     }
 
-    if (!hospital_id) {
-      console.error('Support creation failed: hospital_id missing');
+    if (!hospital_id && ticket_type === 'tenant') {
+      console.error('Support creation failed: hospital_id missing for tenant ticket');
       return NextResponse.json({
         success: false,
-        message: 'hospital_id is required'
+        message: 'hospital_id is required for hospital support tickets'
       }, { status: 400 });
     }
 
