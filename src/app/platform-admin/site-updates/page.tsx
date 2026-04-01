@@ -7,7 +7,7 @@ import {
   Layout, Loader2, AlertCircle, ToggleLeft, ToggleRight, X, Save
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { siteUpdateAPI } from '@/lib/api';
+import { siteUpdateAPI, uploadAPI } from '@/lib/api';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
