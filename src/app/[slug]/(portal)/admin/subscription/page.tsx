@@ -1,234 +1,231 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { 
-  CreditCard, CheckCircle2, Zap, 
-  ShieldCheck, ArrowRight, Loader2,
-  AlertCircle, Sparkles, Building2,
-  Calendar, Info
-} from 'lucide-react';
-import { toast } from 'react-hot-toast';
-import { subscriptionPlansAPI, siteSettingsAPI } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
-import { cn } from '@/lib/utils';
+import { subscriptionAPI } from '@/lib/api';
+import toast from 'react-hot-toast';
+import { CreditCard, ShieldCheck, CheckCircle2, Clock, CalendarIcon, AlertCircle, ArrowRight } from 'lucide-react';
+import { PaystackButton } from 'react-paystack';
 
 export default function SubscriptionPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
+  const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [plans, setPlans] = useState<any[]>([]);
-  const [selectedPlan, setSelectedPlan] = useState<any>(null);
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  const planId = searchParams.get('plan');
-  const cycle = searchParams.get('cycle') as 'monthly' | 'yearly';
-  const isNew = searchParams.get('new') === 'true';
+  const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
-    const init = async () => {
-      try {
-        const res = await subscriptionPlansAPI.getPublic();
-        const activePlans = res.data || [];
-        setPlans(activePlans);
-        
-        if (planId) {
-          const plan = activePlans.find((p: any) => p.id === planId);
-          if (plan) {
-            setSelectedPlan(plan);
-          }
-        }
-        
-        if (cycle) {
-          setBillingCycle(cycle);
-        }
-      } catch (error) {
-        toast.error('Failed to load subscription plans');
-      } finally {
-        setLoading(false);
-      }
-    };
-    init();
-  }, [planId, cycle]);
+    fetchHistory();
+  }, []);
 
-  const handlePayment = async () => {
-    if (!selectedPlan) return;
-    
-    setIsProcessing(true);
+  const fetchHistory = async () => {
     try {
-      // 1. Initialize Paystack Transaction
-      const amount = billingCycle === 'monthly' ? selectedPlan.price_monthly : selectedPlan.price_yearly;
-      
-      const res = await fetch('/api/payments/paystack/initialize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount,
-          metadata: {
-            hospitalId: (user as any).hospital_id || (user as any).hospital?.id,
-            planId: selectedPlan.id,
-            cycle: billingCycle,
-            type: 'subscription_upgrade'
-          }
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Payment initialization failed');
-
-      // 2. Redirect to Paystack Checkout
-      if (data.data?.authorization_url) {
-        window.location.href = data.data.authorization_url;
-      } else {
-        throw new Error('No checkout URL received');
-      }
-    } catch (error: any) {
-      toast.error(error.message);
-      setIsProcessing(false);
+      const res: any = await subscriptionAPI.getHistory();
+      setHistory(res.data || []);
+    } catch {
+      toast.error('Failed to load billing history');
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
-        <Loader2 className="w-12 h-12 animate-spin text-primary-600 mb-4" />
-        <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Configuring your workspace...</p>
-      </div>
-    );
-  }
+  const currentStatus = user?.subscription_status || 'trial';
+  const isExpired = currentStatus === 'expired' || currentStatus === 'suspended';
+  
+  // Example pricing logic (in Kobo for Paystack)
+  const monthlyPriceNGN = 50000;
+  const yearlyPriceNGN = 500000;
+
+  const handlePaystackSuccessAction = async (reference: any, planType: 'monthly' | 'yearly') => {
+    setVerifying(true);
+    toast.loading('Verifying payment...', { id: 'billing' });
+    try {
+      const res: any = await subscriptionAPI.verifyPayment({
+        reference: reference.reference,
+        planType
+      });
+      toast.success(res.data?.message || 'Subscription Activated!', { id: 'billing' });
+      
+      // Speculatively update local context so the UI reflects the change immediately
+      updateUser({
+        subscription_status: 'active',
+        trial_end_date: res.data?.next_billing_date 
+      });
+      fetchHistory();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Payment verification failed', { id: 'billing' });
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const handlePaystackCloseAction = () => {
+    toast.error('Payment window closed');
+  };
+
+  const getPaystackConfig = (amount: number, planType: 'monthly' | 'yearly') => ({
+    reference: (new Date()).getTime().toString(),
+    email: user?.email || 'admin@hospital.com',
+    amount: amount * 100, // Paystack expects Kobo
+    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_placeholder', // Provide fallback to avoid crash if env matches missing
+  });
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 md:p-12 font-sans overflow-hidden relative">
-      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary-600/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2"></div>
-      
-      <div className="max-w-6xl mx-auto relative z-10">
-        <div className="flex flex-col md:flex-row gap-12 items-start">
-          
-          {/* Left Side: Plan Summary */}
-          <div className="flex-1 space-y-8 animate-in slide-in-from-left-8 duration-700">
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-primary-100 shadow-sm">
-                <Sparkles className="w-4 h-4 text-primary-600" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-primary-700">Premium Activation</span>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight">
-                {isNew ? 'Almost there! Complete your setup.' : 'Upgrade your Clinical Power.'}
-              </h1>
-              <p className="text-lg text-slate-500 font-medium max-w-xl leading-relaxed">
-                Connect your hospital with the best tools in the industry. Your selected plan provides enterprise-grade reliability and patient care management.
-              </p>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Hospital Subscription</h1>
+        <p className="text-gray-500 mt-1">Manage your SaaS billing and view payment history.</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Current Plan Overview */}
+        <div className="lg:col-span-1 space-y-6">
+          <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm relative overflow-hidden h-full">
+            <div className={`absolute top-0 left-0 w-full h-2 ${isExpired ? 'bg-rose-500' : 'bg-emerald-500'}`}></div>
+            
+            <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center mb-6">
+              <ShieldCheck className={`w-7 h-7 ${isExpired ? 'text-rose-500' : 'text-emerald-500'}`} />
+            </div>
+            
+            <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">Current Status</h2>
+            <div className="flex items-center gap-3">
+              <p className="text-3xl font-black text-gray-900 capitalize">{currentStatus}</p>
+              {currentStatus === 'active' && <CheckCircle2 className="w-6 h-6 text-emerald-500" />}
             </div>
 
-            <div className="bg-white rounded-[3rem] p-8 shadow-2xl shadow-slate-200/50 border border-slate-100 space-y-8">
-              <div className="flex items-center justify-between border-b border-slate-50 pb-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-primary-50 rounded-2xl flex items-center justify-center text-primary-600 shrink-0">
-                    <Building2 className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">Plan Selection</h3>
-                    <p className="text-xl font-black text-primary-600">{selectedPlan?.name || 'No Plan Selected'}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Billing Cycle</p>
-                  <span className="px-4 py-1.5 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest">
-                    {billingCycle}
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Included Features</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {selectedPlan?.features?.map((f: string, i: number) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="w-5 h-5 bg-emerald-50 rounded-full flex items-center justify-center shrink-0">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                      </div>
-                      <span className="text-xs font-bold text-slate-600 tracking-tight">{f}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Due</p>
-                  <p className="text-3xl font-black text-slate-900">
-                    ₦{(billingCycle === 'monthly' ? selectedPlan?.price_monthly : selectedPlan?.price_yearly)?.toLocaleString()}
-                  </p>
-                </div>
-                <button 
-                  onClick={() => router.push('/')}
-                  className="text-primary-600 font-bold text-xs uppercase tracking-widest hover:underline"
-                >
-                  Change Plan
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Side: Payment Action */}
-          <div className="w-full md:w-[400px] shrink-0 animate-in slide-in-from-right-8 duration-700">
-            <div className="bg-slate-900 rounded-[3.5rem] p-10 shadow-2xl shadow-primary-600/20 text-white space-y-10 relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-32 h-32 bg-primary-600/30 rounded-full blur-3xl"></div>
-               
-               <div className="space-y-2">
-                 <h2 className="text-2xl font-black italic">Checkout Safe.</h2>
-                 <p className="text-slate-400 text-sm font-medium leading-relaxed">
-                   Your transaction is secured by enterprise-grade SSL and handled via Paystack.
-                 </p>
-               </div>
-
-               <div className="space-y-6">
-                  <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-white/10 transition-all">
-                    <ShieldCheck className="w-6 h-6 text-primary-400" />
-                    <div>
-                      <p className="text-xs font-bold text-white uppercase tracking-widest leading-none mb-1">Encrypted Data</p>
-                      <p className="text-[10px] text-slate-500 font-medium tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">AES-256 standard encryption for all metadata.</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-white/10 transition-all">
-                    <CreditCard className="w-6 h-6 text-primary-400" />
-                    <div>
-                      <p className="text-xs font-bold text-white uppercase tracking-widest leading-none mb-1">Flexible Payment</p>
-                      <p className="text-[10px] text-slate-500 font-medium tracking-tight">Pay via Card, USSD, Transfer or QR Code.</p>
-                    </div>
-                  </div>
-               </div>
-
-               <div className="space-y-4">
-                 <button 
-                   onClick={handlePayment}
-                   disabled={isProcessing || !selectedPlan}
-                   className="w-full h-20 bg-primary-600 hover:bg-primary-500 rounded-3xl font-black text-lg uppercase tracking-widest shadow-xl shadow-primary-600/30 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
-                 >
-                   {isProcessing ? <Loader2 className="w-6 h-6 animate-spin" /> : (
-                     <>
-                        Pay ₦{(billingCycle === 'monthly' ? selectedPlan?.price_monthly : selectedPlan?.price_yearly)?.toLocaleString()} 
-                        <ArrowRight className="w-6 h-6" />
-                     </>
-                   )}
-                 </button>
-                 
-                 <div className="flex items-center justify-center gap-2 text-slate-500">
-                    <Info className="w-4 h-4" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest">Billing will recur {billingCycle}</p>
+            <div className="mt-8 space-y-4">
+               {user?.trial_end_date && (
+                 <div className="flex justify-between items-center text-sm py-4 border-t border-gray-100">
+                   <span className="text-gray-500 flex items-center gap-2"><CalendarIcon className="w-4 h-4"/> Next Billing Date</span>
+                   <span className="font-bold text-gray-900">{new Date(user.trial_end_date).toLocaleDateString()}</span>
                  </div>
-               </div>
-               
-               <div className="pt-6 border-t border-white/5 flex items-center justify-center gap-6 opacity-30 grayscale hover:grayscale-0 transition-all duration-500">
-                  <img src="https://paystack.com/assets/img/v3/logo-blue.svg" alt="Paystack" className="h-6" />
-               </div>
+               )}
             </div>
+            
+            {isExpired && (
+              <div className="mt-6 p-4 bg-rose-50 rounded-xl text-xs text-rose-700 font-bold border border-rose-100 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                Your hospital portal access is restricted. Please renew your subscription to restore full functionality for all your staff.
+              </div>
+            )}
+            
+            {verifying && (
+               <div className="mt-6 text-center text-sm text-primary-600 font-bold animate-pulse">
+                 Synchronizing payment with billing server...
+               </div>
+            )}
           </div>
+        </div>
 
+        {/* Pricing Plans */}
+        <div className="lg:col-span-2 space-y-6">
+           <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest pl-2">Available Plans</h2>
+           
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Monthly Plan */}
+              <div className="bg-white rounded-3xl p-8 border border-gray-100 hover:border-gray-200 transition-colors relative flex flex-col">
+                 <h3 className="text-xl font-bold text-gray-900 mb-2">Monthly Billed</h3>
+                 <p className="text-gray-500 text-sm mb-6">Perfect for scaling hospitals needing flexible commitments.</p>
+                 <div className="mb-8">
+                   <span className="text-4xl font-black text-gray-900">₦{monthlyPriceNGN.toLocaleString()}</span>
+                   <span className="text-gray-500 font-medium"> / month</span>
+                 </div>
+                 <ul className="space-y-3 mb-8 text-sm text-gray-600">
+                    <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-emerald-500"/> Unlimited Patient Records</li>
+                    <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-emerald-500"/> All Specialized Roles (Nurse, Lab, etc)</li>
+                    <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-emerald-500"/> Standard Support</li>
+                 </ul>
+                 
+                 <div className="mt-auto">
+                   <PaystackButton 
+                     {...getPaystackConfig(monthlyPriceNGN, 'monthly')} 
+                     text="Subscribe Monthly"
+                     className="w-full bg-white border-2 border-primary-500 text-primary-600 font-bold py-4 rounded-xl hover:bg-primary-50 transition-colors"
+                     onSuccess={(ref: any) => handlePaystackSuccessAction(ref, 'monthly')}
+                     onClose={handlePaystackCloseAction}
+                   />
+                 </div>
+              </div>
+
+              {/* Yearly Plan */}
+              <div className="bg-primary-900 rounded-3xl p-8 border-2 border-primary-900 shadow-xl relative overflow-hidden text-white flex flex-col">
+                 <div className="absolute top-6 right-6 px-3 py-1 bg-primary-800 rounded-full text-[10px] font-black uppercase tracking-widest text-primary-200">Save 17%</div>
+                 <h3 className="text-xl font-bold mb-2">Yearly Billed</h3>
+                 <p className="text-primary-200 text-sm mb-6">The best value for established, growing medical centers.</p>
+                 <div className="mb-8">
+                   <span className="text-4xl font-black">₦{yearlyPriceNGN.toLocaleString()}</span>
+                   <span className="text-primary-300 font-medium"> / year</span>
+                 </div>
+                 <ul className="space-y-3 mb-8 text-sm text-primary-100">
+                    <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-primary-400"/> Unlimited Patient Records</li>
+                    <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-primary-400"/> All Specialized Roles</li>
+                    <li className="flex items-center gap-3"><CheckCircle2 className="w-4 h-4 text-primary-400"/> Priority 24/7 Support</li>
+                 </ul>
+                 
+                 <div className="mt-auto">
+                   <PaystackButton 
+                     {...getPaystackConfig(yearlyPriceNGN, 'yearly')} 
+                     text="Subscribe Annually"
+                     className="w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-4 rounded-xl transition-colors shrink-0"
+                     onSuccess={(ref: any) => handlePaystackSuccessAction(ref, 'yearly')}
+                     onClose={handlePaystackCloseAction}
+                   />
+                 </div>
+              </div>
+           </div>
         </div>
       </div>
+
+      {/* Payment History */}
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="font-bold text-gray-900 flex items-center gap-2">
+            <CreditCard className="w-5 h-5 text-gray-400" />
+            Billing History
+          </h2>
+        </div>
+        <div className="p-8">
+          {loading ? (
+            <div className="animate-pulse space-y-4">
+              {[1, 2].map(i => <div key={i} className="h-16 bg-gray-50 rounded-xl w-full"></div>)}
+            </div>
+          ) : history.length === 0 ? (
+            <div className="text-center py-12">
+              <Clock className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+              <p className="text-gray-400 font-bold uppercase tracking-widest text-sm">No payment history found</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-gray-100 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                    <th className="pb-4">Transaction Ref</th>
+                    <th className="pb-4">Plan</th>
+                    <th className="pb-4">Amount</th>
+                    <th className="pb-4">Date</th>
+                    <th className="pb-4">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50 text-sm">
+                  {history.map((tx) => (
+                    <tr key={tx.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="py-4 font-mono text-gray-500">#{tx.reference}</td>
+                      <td className="py-4 font-bold capitalize">{tx.plan}</td>
+                      <td className="py-4 font-medium text-gray-900">₦{Number(tx.amount).toLocaleString()}</td>
+                      <td className="py-4 text-gray-500">{new Date(tx.paid_at).toLocaleDateString()}</td>
+                      <td className="py-4">
+                        <span className="inline-flex items-center px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-600 flex items-center gap-1 w-fit">
+                          <CheckCircle2 className="w-3 h-3" /> {tx.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+
     </div>
   );
 }

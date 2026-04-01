@@ -278,6 +278,11 @@ export const radiologyAPI = {
   updateResult: (data: any) => api.put('/radiology', data),
 };
 
+export const subscriptionAPI = {
+  verifyPayment: (data: any) => api.post('/billing/verify', data),
+  getHistory: () => api.get('/billing/history'),
+};
+
 // Aliases for backward compatibility
 export const appointmentAPI = appointmentsAPI;
 export const departmentAPI = departmentsAPI;
