@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Bell, Plus, Search, Edit2, Trash2, 
   ExternalLink, Palette, Type, Calendar, 
-  Layout, Loader2, AlertCircle, ToggleLeft, ToggleRight, X, Save
+  Layout, Loader2, AlertCircle, ToggleLeft, ToggleRight, X, Save, Upload
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { siteUpdateAPI, uploadAPI } from '@/lib/api';
