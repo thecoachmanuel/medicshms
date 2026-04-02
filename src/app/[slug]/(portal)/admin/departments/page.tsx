@@ -73,7 +73,11 @@ export default function DepartmentsPage() {
       name: dept.name,
       description: dept.description || '',
       defaultConsultationFee: dept.defaultConsultationFee || 0,
-      contact: dept.contact || { phone: '', email: '', location: '' }
+      contact: {
+        phone: dept.contact?.phone || '',
+        email: dept.contact?.email || '',
+        location: dept.contact?.location || ''
+      }
     });
     setImagePreview(dept.imageUrl || '');
     setShowModal(true);
