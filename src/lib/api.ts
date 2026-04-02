@@ -1,4 +1,11 @@
 import axios from 'axios';
+import { 
+  User, 
+  Department, 
+  InventoryItem, 
+  APIResponse,
+  Appointment
+} from '@/types';
 
 const api = axios.create({
   baseURL: '/api',
@@ -49,81 +56,81 @@ api.interceptors.response.use(
 
 // API Endpoints
 export const authAPI = {
-  login: (credentials: any) => api.post('/auth/login', credentials),
-  register: (userData: any) => api.post('/auth/register', userData),
-  getProfile: () => api.get('/auth/profile'),
-  updateProfile: (userData: any) => api.put('/auth/profile', userData),
-  uploadPhoto: (formData: FormData) => api.post('/profile/upload-photo', formData, {
+  login: (credentials: any) => api.post<APIResponse<{ user: User; token: string }>>('/auth/login', credentials),
+  register: (userData: any) => api.post<APIResponse<{ user: User; token: string }>>('/auth/register', userData),
+  getProfile: () => api.get<APIResponse<User>>('/auth/profile'),
+  updateProfile: (userData: Partial<User>) => api.put<APIResponse<User>>('/auth/profile', userData),
+  uploadPhoto: (formData: FormData) => api.post<APIResponse<{ url: string }>>('/profile/upload-photo', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
-  deletePhoto: () => api.delete('/profile/photo'),
+  deletePhoto: () => api.delete<APIResponse<void>>('/profile/photo'),
 };
 
 export const usersAPI = {
-  getUsersByRole: (role: string) => api.get(`/user-management/role/${role}`),
-  createUser: (data: any) => api.post('/user-management', data),
-  updateUser: (id: string, data: any) => api.put(`/user-management/${id}`, data),
-  toggleStatus: (id: string) => api.patch(`/user-management/${id}/toggle-status`),
-  resetPassword: (id: string) => api.patch(`/user-management/${id}/reset-password`),
-  getFullProfile: (id: string) => api.get(`/user-management/profile/${id}`),
-  getProfile: (id: string) => api.get(`/user-management/profile/${id}`),
-  deleteUser: (id: string) => api.delete(`/user-management/${id}`),
+  getUsersByRole: (role: string) => api.get<APIResponse<User[]>>(`/user-management/role/${role}`),
+  createUser: (data: any) => api.post<APIResponse<User>>('/user-management', data),
+  updateUser: (id: string, data: Partial<User>) => api.put<APIResponse<User>>(`/user-management/${id}`, data),
+  toggleStatus: (id: string) => api.patch<APIResponse<User>>(`/user-management/${id}/toggle-status`),
+  resetPassword: (id: string) => api.patch<APIResponse<{ message: string }>>(`/user-management/${id}/reset-password`),
+  getFullProfile: (id: string) => api.get<APIResponse<User>>(`/user-management/profile/${id}`),
+  getProfile: (id: string) => api.get<APIResponse<User>>(`/user-management/profile/${id}`),
+  deleteUser: (id: string) => api.delete<APIResponse<void>>(`/user-management/${id}`),
 };
 
 export const appointmentsAPI = {
-  getAll: (params?: any) => api.get('/admin-appointments', { params }),
-  getMyAppointments: (params?: any) => api.get('/admin-appointments/my-appointments', { params }),
-  getById: (id: string) => api.get(`/admin-appointments/${id}`),
-  create: (data: any) => api.post('/admin-appointments', data),
-  book: (data: any) => api.post('/admin-appointments/book', data),
-  update: (id: string, data: any) => api.put(`/admin-appointments/${id}`, data),
-  delete: (id: string) => api.delete(`/admin-appointments/${id}`),
+  getAll: (params?: any) => api.get<APIResponse<Appointment[]>>('/admin-appointments', { params }),
+  getMyAppointments: (params?: any) => api.get<APIResponse<Appointment[]>>('/admin-appointments/my-appointments', { params }),
+  getById: (id: string) => api.get<APIResponse<Appointment>>(`/admin-appointments/${id}`),
+  create: (data: any) => api.post<APIResponse<Appointment>>('/admin-appointments', data),
+  book: (data: any) => api.post<APIResponse<Appointment>>('/admin-appointments/book', data),
+  update: (id: string, data: any) => api.put<APIResponse<Appointment>>(`/admin-appointments/${id}`, data),
+  delete: (id: string) => api.delete<APIResponse<void>>(`/admin-appointments/${id}`),
   updateStatus: (id: string, status: string, reason?: string, data?: any) => 
-    api.patch(`/admin-appointments/${id}/status`, { status, reason, ...data }),
+    api.patch<APIResponse<Appointment>>(`/admin-appointments/${id}/status`, { status, reason, ...data }),
   assignDoctor: (id: string, doctorId: string) => 
-    api.patch(`/admin-appointments/${id}/assign-doctor`, { doctorId }),
+    api.patch<APIResponse<Appointment>>(`/admin-appointments/${id}/assign-doctor`, { doctorId }),
   getTimeSlots: (date: string, department?: string) => 
-    api.get('/admin-appointments/slots', { params: { date, department } }),
+    api.get<APIResponse<string[]>>('/admin-appointments/slots', { params: { date, department } }),
   lookupPatient: (mobile: string) => 
-    api.get(`/admin-appointments/lookup/${mobile}`),
-  doctorComplete: (id: string, data?: any) => api.patch(`/admin-appointments/${id}/doctor-complete`, data),
+    api.get<APIResponse<User>>(`/admin-appointments/lookup/${mobile}`),
+  doctorComplete: (id: string, data?: any) => api.patch<APIResponse<Appointment>>(`/admin-appointments/${id}/doctor-complete`, data),
   doctorRemove: (id: string, reason: string) => 
-    api.patch(`/admin-appointments/${id}/doctor-remove`, { reason }),
-  getStats: () => api.get('/admin-appointments/stats'),
-  download: (params?: any) => api.get('/admin-appointments/download', { params }),
+    api.patch<APIResponse<Appointment>>(`/admin-appointments/${id}/doctor-remove`, { reason }),
+  getStats: () => api.get<APIResponse<any>>('/admin-appointments/stats'),
+  download: (params?: any) => api.get<APIResponse<any>>('/admin-appointments/download', { params }),
 };
 
 export const patientsAPI = {
-  getAll: (params?: any) => api.get('/patients', { params }),
-  getById: (id: string) => api.get(`/patients/${id}`),
-  getMe: () => api.get('/patients/me'),
-  updateMe: (data: any) => api.put('/patients/me', data),
-  create: (data: any) => api.post('/patients', data),
-  update: (id: string, data: any) => api.patch(`/patients/${id}`, data),
-  delete: (id: string) => api.delete(`/patients/${id}`),
-  download: (params?: any) => api.get('/patients/public-appointments/download', { params }),
-  getPublicList: (params: any) => api.get('/patients/public-appointments/list', { params }),
+  getAll: (params?: any) => api.get<APIResponse<User[]>>('/patients', { params }),
+  getById: (id: string) => api.get<APIResponse<User>>(`/patients/${id}`),
+  getMe: () => api.get<APIResponse<User>>('/patients/me'),
+  updateMe: (data: Partial<User>) => api.put<APIResponse<User>>('/patients/me', data),
+  create: (data: any) => api.post<APIResponse<User>>('/patients', data),
+  update: (id: string, data: Partial<User>) => api.patch<APIResponse<User>>(`/patients/${id}`, data),
+  delete: (id: string) => api.delete<APIResponse<void>>(`/patients/${id}`),
+  download: (params?: any) => api.get<APIResponse<any>>('/patients/public-appointments/download', { params }),
+  getPublicList: (params: any) => api.get<APIResponse<Appointment[]>>('/patients/public-appointments/list', { params }),
 };
 
 export const departmentsAPI = {
-  getAll: (params?: any) => api.get('/departments', { params }),
-  getAdminAll: () => api.get('/departments/admin/all'),
-  getById: (id: string) => api.get(`/departments/${id}`),
-  create: (formData: FormData) => api.post('/departments', formData, { 
+  getAll: (params?: any) => api.get<APIResponse<Department[]>>('/departments', { params }),
+  getAdminAll: () => api.get<APIResponse<Department[]>>('/departments/admin/all'),
+  getById: (id: string) => api.get<APIResponse<Department>>(`/departments/${id}`),
+  create: (formData: FormData) => api.post<APIResponse<Department>>('/departments', formData, { 
     headers: { 'Content-Type': 'multipart/form-data' } 
   }),
-  update: (id: string, formData: FormData) => api.put(`/departments/${id}`, formData, { 
+  update: (id: string, formData: FormData) => api.put<APIResponse<Department>>(`/departments/${id}`, formData, { 
     headers: { 'Content-Type': 'multipart/form-data' } 
   }),
-  toggleStatus: (id: string) => api.patch(`/departments/${id}/toggle-status`),
-  delete: (id: string) => api.delete(`/departments/${id}`),
+  toggleStatus: (id: string) => api.patch<APIResponse<Department>>(`/departments/${id}/toggle-status`),
+  delete: (id: string) => api.delete<APIResponse<void>>(`/departments/${id}`),
 };
 
 export const doctorsAPI = {
-  getAll: () => api.get('/doctors'),
-  getById: (id: string) => api.get(`/doctors/${id}`),
-  createProfile: (data: any) => api.post('/doctors', data),
-  updateProfile: (id: string, data: any) => api.put(`/doctors/${id}`, data),
+  getAll: () => api.get<APIResponse<User[]>>('/doctors'),
+  getById: (id: string) => api.get<APIResponse<User>>(`/doctors/${id}`),
+  createProfile: (data: any) => api.post<APIResponse<any>>('/doctors', data),
+  updateProfile: (id: string, data: any) => api.put<APIResponse<any>>(`/doctors/${id}`, data),
 };
 
 export const billingAPI = {
@@ -253,34 +260,34 @@ export const notificationsAPI = {
 
 export const vitalsAPI = {
   getPatientVitals: (patientId: string, appointmentId?: string) => 
-    api.get('/vitals', { params: { patientId, appointmentId } }),
-  recordVitals: (data: any) => api.post('/vitals', data),
+    api.get<APIResponse<any[]>>('/vitals', { params: { patientId, appointmentId } }),
+  recordVitals: (data: any) => api.post<APIResponse<any>>('/vitals', data),
 };
 
 export const labAPI = {
-  getRequests: (params?: any) => api.get('/lab-services', { params }),
-  createRequest: (data: any) => api.post('/lab-services', data),
-  updateResult: (data: any) => api.put('/lab-services', data),
+  getRequests: (params?: any) => api.get<APIResponse<any[]>>('/lab-services', { params }),
+  createRequest: (data: any) => api.post<APIResponse<any>>('/lab-services', data),
+  updateResult: (data: any) => api.put<APIResponse<any>>('/lab-services', data),
 };
 
 export const pharmacyAPI = {
-  getInventory: (params?: any) => api.get('/pharmacy/inventory', { params }),
-  createInventoryItem: (data: any) => api.post('/pharmacy/inventory', data),
-  updateInventoryItem: (data: any) => api.put('/pharmacy/inventory', data),
-  getPrescriptions: (params?: any) => api.get('/pharmacy/prescriptions', { params }),
-  createPrescription: (data: any) => api.post('/pharmacy/prescriptions', data),
-  updatePrescription: (data: any) => api.put('/pharmacy/prescriptions', data),
+  getInventory: (params?: any) => api.get<APIResponse<InventoryItem[]>>('/pharmacy/inventory', { params }),
+  createInventoryItem: (data: Partial<InventoryItem>) => api.post<APIResponse<InventoryItem>>('/pharmacy/inventory', data),
+  updateInventoryItem: (data: Partial<InventoryItem> & { id: string }) => api.put<APIResponse<InventoryItem>>('/pharmacy/inventory', data),
+  getPrescriptions: (params?: any) => api.get<APIResponse<any[]>>('/pharmacy/prescriptions', { params }),
+  createPrescription: (data: any) => api.post<APIResponse<any>>('/pharmacy/prescriptions', data),
+  updatePrescription: (data: any) => api.put<APIResponse<any>>('/pharmacy/prescriptions', data),
 };
 
 export const radiologyAPI = {
-  getRequests: (params?: any) => api.get('/radiology', { params }),
-  createRequest: (data: any) => api.post('/radiology', data),
-  updateResult: (data: any) => api.put('/radiology', data),
+  getRequests: (params?: any) => api.get<APIResponse<any[]>>('/radiology', { params }),
+  createRequest: (data: any) => api.post<APIResponse<any>>('/radiology', data),
+  updateResult: (data: any) => api.put<APIResponse<any>>('/radiology', data),
 };
 
 export const subscriptionAPI = {
-  verifyPayment: (data: any) => api.post('/billing/verify', data),
-  getHistory: () => api.get('/billing/history'),
+  verifyPayment: (data: any) => api.post<APIResponse<any>>('/billing/verify', data),
+  getHistory: () => api.get<APIResponse<any[]>>('/billing/history'),
 };
 
 // Aliases for backward compatibility

@@ -5,7 +5,13 @@ import { useAuth } from '@/context/AuthContext';
 import { useParams } from 'next/navigation';
 import { vitalsAPI, patientsAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Activity, Search, Save } from 'lucide-react';
+import { Activity, Search, Save, User, Clock, ChevronRight, Scale, Thermometer, Wind, Droplets, HeartPulse } from 'lucide-react';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export default function NurseVitalsPage() {
   const { user } = useAuth();
@@ -108,129 +114,215 @@ export default function NurseVitalsPage() {
   if (loading) return <div className="p-8 text-center text-gray-500 animate-pulse">Loading patient data...</div>;
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="relative min-h-[calc(100vh-10rem)] space-y-8 pb-12">
+      {/* Background Decor */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-50/30 via-transparent to-white -z-10" />
+      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.015] -z-10" />
+
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Activity className="w-6 h-6 text-emerald-500" /> Vitals Recording
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center border border-emerald-100/50 shadow-sm shadow-emerald-100/20">
+              <Activity className="w-6 h-6 text-emerald-600" />
+            </div>
+            Clinical Vitals
           </h1>
-          <p className="text-gray-500 mt-1">Record and track patient vital signs</p>
+          <p className="text-gray-500 font-medium mt-1 ml-15">Precision monitoring and physiological data logging.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Form */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm p-6 overflow-hidden">
-          <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Select Patient</label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <select
-                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 appearance-none"
-                value={selectedPatientId}
-                onChange={handlePatientSelect}
-              >
-                <option value="">-- Choose a patient --</option>
-                {patients.map(p => (
-                  <option key={p._id} value={p._id}>{p.fullName} ({p.patientId})</option>
-                ))}
-              </select>
+        <div className="lg:col-span-2 space-y-6">
+          <div className="card bg-white/70 backdrop-blur-xl border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.04)] p-8">
+            <div className="mb-10">
+              <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                <User className="w-3.5 h-3.5 text-emerald-500" /> Patient Identification
+              </label>
+              <div className="relative group">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-emerald-500 transition-colors" />
+                <select
+                  className="w-full pl-12 pr-10 py-4 bg-white/60 border border-white/80 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:bg-white outline-none appearance-none transition-all font-bold text-gray-900 shadow-sm"
+                  value={selectedPatientId}
+                  onChange={handlePatientSelect}
+                >
+                  <option value="">Search & Select Active Patient...</option>
+                  {patients.map(p => (
+                    <option key={p._id} value={p._id}>{p.fullName} • {p.patientId}</option>
+                  ))}
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <ChevronRight className="w-5 h-5 text-gray-300 rotate-90" />
+                </div>
+              </div>
             </div>
+
+            <form onSubmit={handleSubmit} className="space-y-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
+                <div className="group space-y-2">
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.1em] ml-1">Blood Pressure (mmHg)</label>
+                  <div className="relative">
+                    <HeartPulse className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-emerald-500 transition-colors" />
+                    <input type="text" name="blood_pressure" value={formData.blood_pressure} onChange={handleChange} placeholder="120/80" className="w-full pl-11 pr-4 py-3.5 bg-white/50 border border-white/80 rounded-xl focus:bg-white focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-bold text-gray-900 shadow-sm" />
+                  </div>
+                </div>
+                <div className="group space-y-2">
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.1em] ml-1">Heart Rate (bpm)</label>
+                  <div className="relative">
+                    <Activity className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-emerald-500 transition-colors" />
+                    <input type="number" name="heart_rate" value={formData.heart_rate} onChange={handleChange} placeholder="72" className="w-full pl-11 pr-4 py-3.5 bg-white/50 border border-white/80 rounded-xl focus:bg-white focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-bold text-gray-900 shadow-sm" />
+                  </div>
+                </div>
+                <div className="group space-y-2">
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.1em] ml-1">Temperature (°C)</label>
+                  <div className="relative">
+                    <Thermometer className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-emerald-500 transition-colors" />
+                    <input type="number" step="0.1" name="temperature" value={formData.temperature} onChange={handleChange} placeholder="37.0" className="w-full pl-11 pr-4 py-3.5 bg-white/50 border border-white/80 rounded-xl focus:bg-white focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-bold text-gray-900 shadow-sm" />
+                  </div>
+                </div>
+                <div className="group space-y-2">
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.1em] ml-1">Respiratory Rate (bpm)</label>
+                  <div className="relative">
+                    <Wind className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-emerald-500 transition-colors" />
+                    <input type="number" name="respiratory_rate" value={formData.respiratory_rate} onChange={handleChange} placeholder="16" className="w-full pl-11 pr-4 py-3.5 bg-white/50 border border-white/80 rounded-xl focus:bg-white focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-bold text-gray-900 shadow-sm" />
+                  </div>
+                </div>
+                <div className="group space-y-2">
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.1em] ml-1">Oxygen Saturation (SpO2 %)</label>
+                  <div className="relative">
+                    <Droplets className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-emerald-500 transition-colors" />
+                    <input type="number" name="oxygen_saturation" value={formData.oxygen_saturation} onChange={handleChange} placeholder="98" className="w-full pl-11 pr-4 py-3.5 bg-white/50 border border-white/80 rounded-xl focus:bg-white focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-bold text-gray-900 shadow-sm" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="group space-y-2">
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.1em] ml-1">Weight (kg)</label>
+                    <div className="relative">
+                      <Scale className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-emerald-500 transition-colors" />
+                      <input type="number" step="0.1" name="weight" value={formData.weight} onChange={handleChange} placeholder="70" className="w-full pl-11 pr-4 py-3.5 bg-white/50 border border-white/80 rounded-xl focus:bg-white focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-bold text-gray-900 shadow-sm" />
+                    </div>
+                  </div>
+                  <div className="group space-y-2">
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.1em] ml-1">Height (cm)</label>
+                    <div className="relative">
+                      <Scale className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-emerald-500 transition-colors" />
+                      <input type="number" step="0.1" name="height" value={formData.height} onChange={handleChange} placeholder="175" className="w-full pl-11 pr-4 py-3.5 bg-white/50 border border-white/80 rounded-xl focus:bg-white focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-bold text-gray-900 shadow-sm" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1 mb-4">Nursing Assessment & Clinical Observations</label>
+                <textarea 
+                  name="notes" 
+                  value={formData.notes} 
+                  onChange={handleChange} 
+                  rows={4} 
+                  placeholder="Record detailed patient observations, appearance, and immediate physical concerns..." 
+                  className="w-full px-6 py-4 bg-white/50 border border-white/80 rounded-[1.5rem] focus:bg-white focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-medium text-gray-800 shadow-sm"
+                ></textarea>
+              </div>
+
+              <div className="flex justify-end pt-8 border-t border-gray-100/50">
+                <button 
+                  type="submit" 
+                  disabled={saving || !selectedPatientId} 
+                  className="btn-primary py-4 px-10 rounded-[1.25rem] flex items-center gap-3 disabled:opacity-30 disabled:shadow-none shadow-xl shadow-emerald-500/20 active:scale-95 transition-all"
+                >
+                  {saving ? <Activity className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                  <span className="tracking-widest uppercase font-black text-xs">{saving ? 'Syncing...' : 'Authenticate & Commit'}</span>
+                </button>
+              </div>
+            </form>
           </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Blood Pressure (mmHg)</label>
-                <input type="text" name="blood_pressure" value={formData.blood_pressure} onChange={handleChange} placeholder="e.g. 120/80" className="w-full px-4 py-2 border rounded-lg focus:ring-emerald-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Heart Rate (bpm)</label>
-                <input type="number" name="heart_rate" value={formData.heart_rate} onChange={handleChange} placeholder="e.g. 72" className="w-full px-4 py-2 border rounded-lg focus:ring-emerald-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Temperature (°C)</label>
-                <input type="number" step="0.1" name="temperature" value={formData.temperature} onChange={handleChange} placeholder="e.g. 37.2" className="w-full px-4 py-2 border rounded-lg focus:ring-emerald-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Respiratory Rate (bpm)</label>
-                <input type="number" name="respiratory_rate" value={formData.respiratory_rate} onChange={handleChange} placeholder="e.g. 16" className="w-full px-4 py-2 border rounded-lg focus:ring-emerald-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">SpO2 (%)</label>
-                <input type="number" name="oxygen_saturation" value={formData.oxygen_saturation} onChange={handleChange} placeholder="e.g. 98" className="w-full px-4 py-2 border rounded-lg focus:ring-emerald-500" />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
-                  <input type="number" step="0.1" name="weight" value={formData.weight} onChange={handleChange} placeholder="70" className="w-full px-4 py-2 border rounded-lg focus:ring-emerald-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Height (cm)</label>
-                  <input type="number" step="0.1" name="height" value={formData.height} onChange={handleChange} placeholder="175" className="w-full px-4 py-2 border rounded-lg focus:ring-emerald-500" />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Clinical Notes</label>
-              <textarea name="notes" value={formData.notes} onChange={handleChange} rows={3} placeholder="Any observations..." className="w-full px-4 py-2 border rounded-lg focus:ring-emerald-500"></textarea>
-            </div>
-
-            <div className="flex justify-end pt-4 border-t border-gray-100">
-              <button 
-                type="submit" 
-                disabled={saving || !selectedPatientId} 
-                className="btn-primary bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20 py-3 px-8 rounded-xl flex items-center gap-2 disabled:opacity-50"
-              >
-                <Save className="w-5 h-5" />
-                {saving ? 'Saving...' : 'Record Vitals'}
-              </button>
-            </div>
-          </form>
         </div>
 
         {/* Right Column: History */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 overflow-hidden">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Patient History</h2>
-          {!selectedPatientId ? (
-            <div className="text-center text-gray-400 py-10">
-              <Activity className="w-12 h-12 mx-auto mb-3 opacity-20" />
-              <p>Select a patient to view history</p>
-            </div>
-          ) : vitalsHistory.length === 0 ? (
-            <div className="text-center text-gray-400 py-10">
-              <p>No vitals recorded yet</p>
-            </div>
-          ) : (
-            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-              {vitalsHistory.map((vital, idx) => (
-                <div key={vital.id || idx} className="p-4 bg-gray-50 border border-gray-100 rounded-lg text-sm">
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="font-bold text-gray-900">{new Date(vital.recorded_at).toLocaleDateString()}</span>
-                    <span className="text-xs text-gray-500">{new Date(vital.recorded_at).toLocaleTimeString()}</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-gray-700">
-                    {vital.blood_pressure && <div><span className="text-gray-500">BP:</span> {vital.blood_pressure}</div>}
-                    {vital.heart_rate && <div><span className="text-gray-500">HR:</span> {vital.heart_rate} bpm</div>}
-                    {vital.temperature && <div><span className="text-gray-500">Temp:</span> {vital.temperature}°C</div>}
-                    {vital.oxygen_saturation && <div><span className="text-gray-500">SpO2:</span> {vital.oxygen_saturation}%</div>}
-                    {vital.weight && <div><span className="text-gray-500">Wt/Ht:</span> {vital.weight}kg / {vital.height}cm</div>}
-                    {vital.bmi && <div><span className="text-gray-500">BMI:</span> <span className="font-semibold">{vital.bmi}</span></div>}
-                  </div>
-                  {vital.notes && (
-                    <div className="mt-2 pt-2 border-t border-gray-200 text-gray-600">
-                      <span className="text-xs font-semibold text-gray-400 block mb-1">Notes:</span>
-                      {vital.notes}
-                    </div>
-                  )}
-                  <p className="text-[10px] text-gray-400 mt-3 pt-2 border-t border-gray-100">
-                    Recorded by: {vital.recorded_by_profile?.name || 'Unknown'} ({vital.recorded_by_profile?.role || 'Nurse'})
-                  </p>
+        <div className="space-y-6">
+          <div className="card bg-white/70 backdrop-blur-xl border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.04)] p-8 h-full flex flex-col">
+            <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] mb-8 flex items-center gap-2">
+              <Clock className="w-3.5 h-3.5 text-emerald-500" /> Longitudinal Timeline
+            </h2>
+            
+            {!selectedPatientId ? (
+              <div className="flex-1 flex flex-col items-center justify-center text-center py-20 px-6 bg-gray-50/50 rounded-[2.5rem] border-2 border-dashed border-gray-200/50">
+                <div className="w-20 h-20 rounded-[2.5rem] bg-white flex items-center justify-center border border-gray-100 shadow-sm mb-6">
+                  <User className="w-10 h-10 text-gray-200" />
                 </div>
-              ))}
-            </div>
-          )}
+                <p className="text-gray-400 font-black text-[10px] uppercase tracking-[0.2em]">Awaiting Identity Select</p>
+              </div>
+            ) : vitalsHistory.length === 0 ? (
+              <div className="flex-1 flex flex-col items-center justify-center text-center py-20 px-6 bg-gray-50/50 rounded-[2.5rem] border-2 border-dashed border-gray-200/50">
+                <Activity className="w-12 h-12 text-gray-200 mb-4 animate-pulse" />
+                <p className="text-gray-400 font-black text-[10px] uppercase tracking-[0.2em]">Zero Historical Metrics</p>
+              </div>
+            ) : (
+              <div className="space-y-6 overflow-y-auto max-h-[700px] pr-2 custom-scrollbar">
+                {vitalsHistory.map((vital, idx) => (
+                  <div key={vital._id || idx} className="relative pl-8 border-l border-emerald-100/50 pb-8 last:pb-0 group">
+                    <div className="absolute -left-[4.5px] top-0 w-2 h-2 rounded-full bg-emerald-500 ring-4 ring-emerald-50 shadow-sm"></div>
+                    <div className="bg-white/60 p-5 rounded-2xl border border-white/80 hover:border-emerald-200 transition-all hover:bg-white hover:shadow-lg hover:shadow-emerald-100/20 group/card">
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-lg">
+                          {new Date(vital.recorded_at).toLocaleDateString()}
+                        </span>
+                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{new Date(vital.recorded_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                        {vital.blood_pressure && (
+                          <div className="bg-emerald-50/30 p-2 rounded-xl flex items-center gap-2 border border-emerald-100/20">
+                            <HeartPulse className="w-3.5 h-3.5 text-emerald-600" />
+                            <span className="text-xs font-black text-emerald-900">{vital.blood_pressure}</span>
+                          </div>
+                        )}
+                        {vital.heart_rate && (
+                          <div className="bg-emerald-50/30 p-2 rounded-xl flex items-center gap-2 border border-emerald-100/20">
+                            <Activity className="w-3.5 h-3.5 text-emerald-600" />
+                            <span className="text-xs font-black text-emerald-900">{vital.heart_rate}<span className="text-[9px] font-bold ml-1 opacity-50">bpm</span></span>
+                          </div>
+                        )}
+                        {vital.temperature && (
+                          <div className="bg-amber-50/30 p-2 rounded-xl flex items-center gap-2 border border-amber-100/20">
+                            <Thermometer className="w-3.5 h-3.5 text-amber-600" />
+                            <span className="text-xs font-black text-amber-900">{vital.temperature}°C</span>
+                          </div>
+                        )}
+                        {vital.oxygen_saturation && (
+                          <div className="bg-blue-50/30 p-2 rounded-xl flex items-center gap-2 border border-blue-100/20">
+                            <Droplets className="w-3.5 h-3.5 text-blue-600" />
+                            <span className="text-xs font-black text-blue-900">{vital.oxygen_saturation}%</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {vital.bmi && (
+                        <div className="mt-4 pt-4 border-t border-gray-100/50 flex items-center justify-between">
+                          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                            <Scale className="w-3.5 h-3.5" /> Body Mass Index
+                          </span>
+                          <span className="text-sm font-black text-gray-900 tracking-tight bg-gray-100 px-3 py-1 rounded-lg border border-gray-200/30">{vital.bmi}</span>
+                        </div>
+                      )}
+                      
+                      {vital.notes && (
+                        <div className="mt-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100/50 italic text-[11px] text-gray-500 leading-relaxed font-medium">
+                          "{vital.notes}"
+                        </div>
+                      )}
+                      
+                      <div className="mt-4 pt-4 border-t border-gray-100/50 flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-400">
+                          {vital.recorded_by_profile?.name?.[0] || 'N'}
+                        </div>
+                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{vital.recorded_by_profile?.name || 'Staff Nurse'}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

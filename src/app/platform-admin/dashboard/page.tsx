@@ -134,7 +134,11 @@ export default function PlatformAdminDashboard() {
   );
 
   return (
-    <div className="p-8 space-y-10 max-w-7xl mx-auto font-sans">
+    <div className="relative min-h-screen p-8 space-y-10 max-w-7xl mx-auto font-sans">
+      {/* Dynamic Background Pattern */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-50/50 via-slate-50/20 to-white -z-10" />
+      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02] mix-blend-overlay -z-10" />
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-6">
@@ -162,8 +166,9 @@ export default function PlatformAdminDashboard() {
           { pause: Pause, label: "Paused Services", value: stats.paused, color: "bg-slate-600" },
           { x: XCircle, label: "Suspended", value: stats.suspended, color: "bg-red-900" }
         ].map((s, i) => (
-          <div key={i} className="p-6 rounded-[2rem] bg-white border border-slate-100 shadow-sm hover:shadow-xl transition-all group">
-            <div className={`w-12 h-12 ${s.color} rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
+          <div key={i} className="relative p-6 rounded-[2rem] bg-white/70 backdrop-blur-xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-500 group overflow-hidden">
+            <div className={`absolute -right-8 -top-8 w-32 h-32 blur-3xl opacity-0 group-hover:opacity-10 transition-opacity duration-500 ${s.color}`} />
+            <div className={`relative w-12 h-12 ${s.color} rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-500`}>
               {s.icon && <s.icon className="w-6 h-6 text-white" />}
               {s.check && <s.check className="w-6 h-6 text-white" />}
               {s.clock && <s.clock className="w-6 h-6 text-white" />}
@@ -178,7 +183,7 @@ export default function PlatformAdminDashboard() {
       </div>
 
       {/* Hospital List Table */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/40 overflow-hidden">
+      <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
         <div className="p-8 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <h3 className="text-xl font-black text-slate-900">Registered Institutions</h3>
           <div className="flex items-center gap-4">

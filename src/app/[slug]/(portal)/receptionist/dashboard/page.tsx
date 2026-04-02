@@ -76,7 +76,11 @@ export default function ReceptionistDashboard({ params }: { params: Promise<{ sl
   ] : [];
 
   return (
-    <div className="space-y-6">
+    <div className="relative min-h-screen space-y-6 pb-12">
+      {/* Dynamic Background */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-fuchsia-50/40 via-purple-50/20 to-white -z-10" />
+      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02] mix-blend-overlay -z-10" />
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 leading-tight">Hello, {user?.name?.split(' ')[0]}</h1>

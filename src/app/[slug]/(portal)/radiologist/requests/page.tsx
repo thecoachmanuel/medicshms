@@ -4,7 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { radiologyAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Scan, Search, CheckCircle, UploadCloud, Printer, Download, Eye, Link as LinkIcon } from 'lucide-react';
+import { Scan, Search, CheckCircle, UploadCloud, Printer, Download, Eye, Link as LinkIcon, Clock, User, ChevronRight, X, AlertCircle } from 'lucide-react';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export default function RadiologyRequestsPage() {
   const { user } = useAuth();
@@ -134,29 +140,46 @@ export default function RadiologyRequestsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="relative min-h-[calc(100vh-10rem)] space-y-8 pb-12">
+      {/* Background Decor */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-50/20 via-transparent to-white -z-10" />
+      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.015] -z-10" />
+
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Scan className="w-6 h-6 text-primary-500" /> Radiology Services
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100/50 shadow-sm shadow-indigo-100/20">
+              <Scan className="w-6 h-6 text-indigo-600" />
+            </div>
+            Imaging Informatics
           </h1>
-          <p className="text-gray-500 mt-1">Manage scan requests and imaging reports</p>
+          <p className="text-gray-500 font-medium mt-1 ml-15">Advanced radiological study management and interpretation.</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="flex border-b border-gray-100">
+      <div className="card bg-white/70 backdrop-blur-xl border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.04)] overflow-hidden">
+        <div className="flex p-2 gap-2 bg-gray-50/50 border-b border-gray-100">
           <button 
             onClick={() => setActiveTab('Pending')}
-            className={`flex-1 py-4 text-sm font-bold uppercase tracking-widest ${activeTab === 'Pending' ? 'text-primary-600 border-b-2 border-primary-600 bg-primary-50/50' : 'text-gray-500 hover:bg-gray-50'}`}
+            className={cn(
+              "flex-1 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] rounded-xl transition-all duration-300",
+              activeTab === 'Pending' 
+                ? "bg-white text-indigo-600 shadow-sm border border-indigo-100/50" 
+                : "text-gray-400 hover:text-gray-600 hover:bg-white/50"
+            )}
           >
-            Pending Scans
+            Pending Modalities
           </button>
           <button 
             onClick={() => setActiveTab('Completed')}
-            className={`flex-1 py-4 text-sm font-bold uppercase tracking-widest ${activeTab === 'Completed' ? 'text-emerald-600 border-b-2 border-emerald-600 bg-emerald-50/50' : 'text-gray-500 hover:bg-gray-50'}`}
+            className={cn(
+              "flex-1 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] rounded-xl transition-all duration-300",
+              activeTab === 'Completed' 
+                ? "bg-white text-emerald-600 shadow-sm border border-emerald-100/50" 
+                : "text-gray-400 hover:text-gray-600 hover:bg-white/50"
+            )}
           >
-            Verified Reports
+            Authorized Reports
           </button>
         </div>
 
@@ -172,48 +195,84 @@ export default function RadiologyRequestsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="py-3 font-semibold text-gray-500 px-4">Patient</th>
-                    <th className="py-3 font-semibold text-gray-500 px-4">Modality / Study</th>
-                    <th className="py-3 font-semibold text-gray-500 px-4">Requested On</th>
-                    <th className="py-3 font-semibold text-gray-500 px-4 text-right">Action</th>
+                  <tr className="bg-gray-50/20 border-b border-gray-100">
+                    <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Patient Profile</th>
+                    <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Study Protocol</th>
+                    <th className="px-6 py-5 text-[11px) font-black text-gray-400 uppercase tracking-[0.2em]">Timestamp</th>
+                    <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] text-right">Operations</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {requests.map(req => (
-                    <tr key={req.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="py-4 px-4">
-                        <p className="font-bold text-gray-900">{req.patient?.full_name || 'Unknown'}</p>
-                        <p className="text-xs text-gray-500">{req.patient?.patient_id}</p>
+                    <tr key={req.id} className="group hover:bg-indigo-50/30 transition-all duration-300">
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-4">
+                          <div className={cn(
+                            "w-10 h-10 rounded-[1rem] flex items-center justify-center border shadow-sm transition-all duration-300 font-black text-xs",
+                            activeTab === 'Pending' ? "bg-indigo-50 border-indigo-100 text-indigo-600" : "bg-emerald-50 border-emerald-100 text-emerald-600"
+                          )}>
+                            {req.patient?.full_name?.[0] || 'P'}
+                          </div>
+                          <div>
+                            <p className="text-sm font-black text-gray-900 leading-none mb-1.5">{req.patient?.full_name || 'N/A'}</p>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none bg-gray-50 px-2 py-1 rounded-md border border-gray-100">#{req.patient?.patient_id || 'ID-REDACTED'}</p>
+                          </div>
+                        </div>
                       </td>
-                      <td className="py-4 px-4">
-                        <p className="font-medium max-w-xs truncate" title={req.test_name}>{req.test_name}</p>
-                        {req.clinical_notes && <p className="text-xs text-amber-600 mt-1 max-w-xs truncate">Clinical Indication: {req.clinical_notes}</p>}
+                      <td className="px-6 py-5 text-sm">
+                        <div className="space-y-1.5">
+                          <p className="font-black text-gray-900 tracking-tight">{req.test_name}</p>
+                          {req.clinical_notes && (
+                            <div className="flex items-start gap-2 text-[10px] text-amber-600 font-bold leading-relaxed bg-amber-50/50 px-2 py-1 rounded-lg border border-amber-100/20 max-w-xs">
+                              <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" />
+                              <span className="italic">"{req.clinical_notes}"</span>
+                            </div>
+                          )}
+                        </div>
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-500">
-                        {new Date(req.requested_at).toLocaleDateString()}
+                      <td className="px-6 py-5">
+                        <div className="space-y-1">
+                          <p className="text-xs font-black text-gray-900 tracking-widest">{new Date(req.requested_at).toLocaleDateString()}</p>
+                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none">{new Date(req.requested_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
                       </td>
-                      <td className="py-4 px-4 text-right">
+                      <td className="px-6 py-5 text-right">
                         {activeTab === 'Pending' ? (
                           <button 
                             onClick={() => handleOpenUpdate(req)}
-                            className="bg-primary-50 text-primary-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-primary-100 transition-colors inline-block"
+                            className="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg shadow-gray-200 active:scale-95"
                           >
                             Read & Report
                           </button>
                         ) : (
-                          <div className="flex items-center justify-end gap-2">
+                          <div className="flex items-center justify-end gap-3 transition-all duration-300 group-hover:translate-x-[-4px]">
                             {req.dicom_url && (
-                              <a href={req.dicom_url} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-700 p-2" title="View DICOM Viewer Link">
+                              <a 
+                                href={req.dicom_url} 
+                                target="_blank" 
+                                rel="noreferrer" 
+                                className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all shadow-sm"
+                                title="View DICOM Archive"
+                              >
                                 <LinkIcon className="w-5 h-5" />
                               </a>
                             )}
                             {req.file_url && (
-                              <a href={req.file_url} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-primary-600 p-2" title="View PDF Report">
+                              <a 
+                                href={req.file_url} 
+                                target="_blank" 
+                                rel="noreferrer" 
+                                className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-all shadow-sm"
+                                title="View PDF Report"
+                              >
                                 <Eye className="w-5 h-5" />
                               </a>
                             )}
-                            <button onClick={() => handlePrint(req)} className="text-gray-400 hover:text-emerald-600 p-2" title="Print Report">
+                            <button 
+                              onClick={() => handlePrint(req)} 
+                              className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-all shadow-sm"
+                              title="Print Report"
+                            >
                               <Printer className="w-5 h-5" />
                             </button>
                           </div>
@@ -229,76 +288,94 @@ export default function RadiologyRequestsPage() {
       </div>
 
       {selectedRequest && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold">Interpret & Report Study</h2>
-              <button onClick={() => setSelectedRequest(null)} className="text-gray-400 hover:text-gray-600 font-bold">&times;</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setSelectedRequest(null)}></div>
+          <div className="relative bg-white rounded-[2.5rem] max-w-2xl w-full p-10 shadow-2xl overflow-hidden border border-white/20">
+            <div className="flex justify-between items-center mb-10">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100/50">
+                  <Scan className="w-6 h-6 text-indigo-600" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-gray-900 tracking-tight">Study Interpretation</h2>
+                  <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mt-0.5">Clinical Imaging Verification</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedRequest(null)} 
+                className="p-3 bg-gray-50 rounded-xl text-gray-400 hover:text-rose-500 hover:rotate-90 transition-all duration-300"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
             
-            <div className="bg-gray-50 p-4 rounded-xl mb-6">
-              <p className="text-sm text-gray-500 uppercase font-bold tracking-widest mb-1">Patient</p>
-              <p className="font-bold">{selectedRequest.patient?.full_name}</p>
-              <p className="text-sm text-gray-500 uppercase font-bold tracking-widest mt-4 mb-1">Study Requested</p>
-              <p className="font-medium text-primary-700">{selectedRequest.test_name}</p>
+            <div className="bg-gray-50 p-6 rounded-[2rem] mb-10 grid grid-cols-2 gap-8 border border-gray-100">
+              <div>
+                <p className="text-[10px] text-gray-400 uppercase font-black tracking-[0.2em] mb-2">Subject</p>
+                <p className="font-black text-gray-900">{selectedRequest.patient?.full_name}</p>
+                <p className="text-xs text-gray-500 mt-1">Ref: #{selectedRequest.patient?.patient_id}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-400 uppercase font-black tracking-[0.2em] mb-2">Study Protocol</p>
+                <p className="font-black text-indigo-600">{selectedRequest.test_name}</p>
+              </div>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Findings & Impression</label>
+            <div className="space-y-6 max-h-[40vh] overflow-y-auto pr-4 custom-scrollbar">
+              <div className="group">
+                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] ml-1 mb-2">Findings & Impression</label>
                 <textarea 
                   rows={4} 
-                  className="w-full border rounded-xl p-3 focus:ring-2 focus:ring-primary-500" 
-                  placeholder="Enter detailed radiological findings..."
+                  className="w-full bg-gray-50 border border-gray-200/50 rounded-[1.5rem] p-5 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-medium text-gray-800 shadow-inner" 
+                  placeholder="Record interpretive findings and diagnostic impressions..."
                   value={resultText}
                   onChange={(e) => setResultText(e.target.value)}
                 />
               </div>
               
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Attach Dictation / PDF Report (URL)</label>
-                <div className="relative">
-                  <UploadCloud className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input 
-                    type="text" 
-                    className="w-full pl-10 pr-3 py-3 border rounded-xl focus:ring-2 focus:ring-primary-500" 
-                    placeholder="https://..."
-                    value={fileUrl}
-                    onChange={(e) => setFileUrl(e.target.value)}
-                  />
+              <div className="grid grid-cols-2 gap-6">
+                <div className="group">
+                  <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] ml-1 mb-2">PDF Report URI</label>
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-white flex items-center justify-center border border-gray-100 shadow-sm">
+                      <UploadCloud className="w-4 h-4 text-indigo-500" />
+                    </div>
+                    <input 
+                      type="text" 
+                      className="w-full pl-16 pr-6 py-4 bg-gray-50 border border-gray-200/50 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-bold text-gray-900 shadow-inner" 
+                      placeholder="Report link..."
+                      value={fileUrl}
+                      onChange={(e) => setFileUrl(e.target.value)}
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">DICOM Viewer Link (Imaging URL)</label>
-                <div className="relative">
-                  <LinkIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input 
-                    type="text" 
-                    className="w-full pl-10 pr-3 py-3 border rounded-xl focus:ring-2 focus:ring-primary-500" 
-                    placeholder="https://viewer.hospital.com/study/..."
-                    value={dicomUrl}
-                    onChange={(e) => setDicomUrl(e.target.value)}
-                  />
+                <div className="group">
+                  <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] ml-1 mb-2">DICOM Link (PACS)</label>
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-white flex items-center justify-center border border-gray-100 shadow-sm">
+                      <LinkIcon className="w-4 h-4 text-indigo-500" />
+                    </div>
+                    <input 
+                      type="text" 
+                      className="w-full pl-16 pr-6 py-4 bg-gray-50 border border-gray-200/50 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-bold text-gray-900 shadow-inner" 
+                      placeholder="DICOM viewer link..."
+                      value={dicomUrl}
+                      onChange={(e) => setDicomUrl(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-8 flex justify-end gap-3">
-              <button 
-                onClick={() => setSelectedRequest(null)}
-                className="px-6 py-3 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors"
-                disabled={isUpdating}
-              >
-                Cancel
-              </button>
+            <div className="mt-10 flex justify-end gap-4">
               <button 
                 onClick={handleUpdateSubmit}
                 disabled={isUpdating}
-                className="px-6 py-3 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20 shadow-lg flex items-center gap-2"
+                className="w-full py-4 rounded-[1.25rem] font-black text-white bg-gray-900 hover:bg-emerald-600 hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gray-200 hover:shadow-emerald-100 flex items-center justify-center gap-3 disabled:opacity-30 disabled:hover:bg-gray-900 group"
               >
-                <CheckCircle className="w-5 h-5" />
-                {isUpdating ? 'Signing...' : 'Sign & Complete'}
+                {isUpdating ? <Clock className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5 group-hover:animate-bounce" />}
+                <span className="uppercase tracking-[0.2em] text-xs">{isUpdating ? 'Electronically Signing...' : 'Finalize & Sign Report'}</span>
               </button>
             </div>
           </div>

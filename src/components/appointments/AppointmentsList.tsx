@@ -112,12 +112,12 @@ export default function AppointmentsList({ role }: Props) {
 
   const getStatusStyle = (status: string) => {
     const styles: Record<string, string> = {
-      'Pending': 'bg-amber-100 text-amber-700',
-      'Confirmed': 'bg-primary-100 text-primary-700',
-      'Completed': 'bg-emerald-100 text-emerald-700',
-      'Cancelled': 'bg-rose-100 text-rose-700',
+      'Pending': 'bg-amber-50 text-amber-600 border-amber-100/50 shadow-sm shadow-amber-100/20',
+      'Confirmed': 'bg-indigo-50 text-indigo-600 border-indigo-100/50 shadow-sm shadow-indigo-100/20',
+      'Completed': 'bg-emerald-50 text-emerald-600 border-emerald-100/50 shadow-sm shadow-emerald-100/20',
+      'Cancelled': 'bg-rose-50 text-rose-600 border-rose-100/50 shadow-sm shadow-rose-100/20',
     };
-    return styles[status] || 'bg-gray-100 text-gray-700';
+    return styles[status] || 'bg-gray-50 text-gray-600 border-gray-100 shadow-sm';
   };
 
   const handleDownloadCSV = async () => {
@@ -168,8 +168,12 @@ export default function AppointmentsList({ role }: Props) {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="relative min-h-[calc(100vh-10rem)] space-y-8 pb-12">
+      {/* Background Decor */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-50/30 via-transparent to-white -z-10" />
+      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.015] mix-blend-overlay -z-10" />
+
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 leading-tight">
             {isDoctor ? 'My Consultations' : 'Appointment Queue'}
@@ -178,137 +182,141 @@ export default function AppointmentsList({ role }: Props) {
             {isDoctor ? 'Review and manage your patient appointments.' : 'Manage all hospital appointments and schedules.'}
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <button onClick={() => fetchAppointments()} className="p-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
-            <RefreshCw className={cn("w-4 h-4 text-gray-400", loading && "animate-spin")} />
+        <div className="flex items-center gap-4">
+          <button onClick={() => fetchAppointments()} className="p-3 bg-white/70 backdrop-blur-md border border-white/50 rounded-2xl hover:bg-white hover:shadow-lg transition-all" title="Refresh Feed">
+            <RefreshCw className={cn("w-4 h-4 text-gray-400 font-bold", loading && "animate-spin")} />
           </button>
           {!isDoctor && (
-            <button onClick={handleDownloadCSV} className="btn-secondary">
+            <button onClick={handleDownloadCSV} className="btn-secondary px-6">
               <Download className="w-4 h-4" />
-              Export CSV
+              Export Records
             </button>
           )}
           {isAdminOrReceptionist && (
-            <button onClick={() => setShowBookModal(true)} className="btn-primary">
+            <button onClick={() => setShowBookModal(true)} className="btn-primary px-6">
               <Plus className="w-4 h-4" />
-              Book New
+              Book Encounter
             </button>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="md:col-span-2 relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+        <div className="md:col-span-2 relative group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
           <input 
             type="text" 
             placeholder="Search by ID, Patient Name or Mobile..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none w-full shadow-sm"
+            className="pl-11 pr-4 py-3.5 bg-white/60 backdrop-blur-sm border border-white/80 rounded-2xl text-sm focus:bg-white focus:ring-4 focus:ring-primary-500/10 outline-none w-full shadow-sm transition-all shadow-indigo-100/10"
           />
         </div>
         <div>
           <select 
             value={filter} 
             onChange={(e) => setFilter(e.target.value)}
-            className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none shadow-sm cursor-pointer"
+            className="w-full px-4 py-3.5 bg-white/60 backdrop-blur-sm border border-white/80 rounded-2xl text-sm focus:bg-white focus:ring-4 focus:ring-primary-500/10 outline-none shadow-sm cursor-pointer transition-all appearance-none"
           >
-            <option value="all">All Statuses</option>
-            <option value="Pending">Pending</option>
+            <option value="all">Every Status</option>
+            <option value="Pending">Pending Review</option>
             <option value="Confirmed">Confirmed</option>
             <option value="Completed">Completed</option>
             <option value="Cancelled">Cancelled</option>
           </select>
         </div>
-        <div>
+        <div className="relative group">
           <input 
             type="date" 
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
-            className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none shadow-sm"
+            className="w-full px-4 py-3.5 bg-white/60 backdrop-blur-sm border border-white/80 rounded-2xl text-sm focus:bg-white focus:ring-4 focus:ring-primary-500/10 outline-none shadow-sm transition-all appearance-none uppercase font-bold tracking-widest text-[10px]"
           />
+          <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300 pointer-events-none group-focus-within:text-primary-500" />
         </div>
       </div>
 
-      <div className="card overflow-hidden border-none shadow-xl shadow-gray-200/50">
+      <div className="card bg-white/70 backdrop-blur-xl border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.04)] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-gray-50/50 border-b border-gray-100">
-                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Appointment ID</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Patient Details</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Schedule</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Department</th>
-                {isAdminOrReceptionist && <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Doctor</th>}
-                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Actions</th>
+              <tr className="bg-gray-50/20 border-b border-gray-100">
+                <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Ref ID</th>
+                <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Patient Profile</th>
+                <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Time-Slot</th>
+                <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Unit</th>
+                {isAdminOrReceptionist && <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Physician</th>}
+                <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Status</th>
+                <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
               {loading ? (
                 [...Array(6)].map((_, i) => (
                   <tr key={i} className="animate-pulse">
-                    <td colSpan={isAdminOrReceptionist ? 7 : 6} className="px-6 py-6 h-20 bg-gray-50/20"></td>
+                    <td colSpan={isAdminOrReceptionist ? 7 : 6} className="px-6 py-8">
+                       <div className="h-4 bg-gray-100 rounded-full w-3/4 mb-2"></div>
+                       <div className="h-3 bg-gray-50 rounded-full w-1/2"></div>
+                    </td>
                   </tr>
                 ))
               ) : appointments.length === 0 ? (
                 <tr>
-                  <td colSpan={isAdminOrReceptionist ? 7 : 6} className="px-6 py-20 text-center">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-16 h-16 rounded-3xl bg-gray-50 flex items-center justify-center">
-                        <Calendar className="w-8 h-8 text-gray-200" />
+                  <td colSpan={isAdminOrReceptionist ? 7 : 6} className="px-6 py-24 text-center">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-20 h-20 rounded-[2.5rem] bg-gray-50 flex items-center justify-center border border-gray-100 shadow-inner">
+                        <Calendar className="w-10 h-10 text-gray-200" />
                       </div>
-                      <p className="text-gray-400 font-medium">No appointments found matching your criteria.</p>
+                      <p className="text-gray-400 font-bold text-sm uppercase tracking-widest">Empty Workspace</p>
                     </div>
                   </td>
                 </tr>
               ) : appointments.map((apt) => (
-                <tr key={apt._id} className="group hover:bg-gray-50/60 transition-colors">
+                <tr key={apt._id} className="group hover:bg-indigo-50/30 transition-all duration-300">
                   <td className="px-6 py-4">
                     <span className="font-black text-gray-900 text-sm">#{apt.appointmentId}</span>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-primary-50 flex items-center justify-center shrink-0">
-                        <User className="w-4 h-4 text-primary-600" />
+                  <td className="px-6 py-5">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center shrink-0 border border-indigo-100/50 shadow-sm shadow-indigo-100/20 group-hover:bg-white group-hover:scale-110 transition-all duration-300">
+                        <User className="w-5 h-5 text-indigo-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-gray-900 leading-none mb-1">{apt.fullName}</p>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                        <p className="text-sm font-black text-gray-900 leading-none mb-1.5">{apt.fullName}</p>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.1em]">
                           {apt.mobileNumber} {apt.age ? `• ${apt.age}y` : ''}
                         </p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Calendar className="w-3.5 h-3.5 text-primary-500" />
-                      <span className="text-xs font-bold text-gray-700">{formatDate(apt.appointmentDate)}</span>
+                  <td className="px-6 py-5">
+                    <div className="flex items-center gap-2.5 mb-1.5">
+                      <Calendar className="w-4 h-4 text-indigo-500" />
+                      <span className="text-xs font-black text-gray-700 tracking-tight">{formatDate(apt.appointmentDate)}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-gray-400" />
-                      <span className="text-[10px] font-bold text-gray-400">{apt.appointmentTime}</span>
+                    <div className="flex items-center gap-2.5">
+                      <Clock className="w-4 h-4 text-gray-400" />
+                      <span className="text-[11px] font-bold text-gray-400">{apt.appointmentTime}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded-lg">{apt.department}</span>
+                  <td className="px-6 py-5">
+                    <span className="text-[10px] font-black text-indigo-500 bg-indigo-50/50 px-3 py-1.5 rounded-xl border border-indigo-100/30 uppercase tracking-widest">{apt.department}</span>
                   </td>
                   {isAdminOrReceptionist && (
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-5">
                       {apt.doctorAssigned ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center">
-                            <Stethoscope className="w-3.5 h-3.5 text-emerald-600" />
+                        <div className="flex items-center gap-3">
+                          <div className="w-7 h-7 rounded-full bg-emerald-50 flex items-center justify-center border border-emerald-100/50">
+                            <Stethoscope className="w-4 h-4 text-emerald-600" />
                           </div>
-                          <span className="text-xs font-bold text-gray-700">Dr. {apt.doctorAssigned?.user?.name || apt.doctorAssigned?.name}</span>
+                          <span className="text-xs font-black text-gray-700">Dr. {apt.doctorAssigned?.user?.name || apt.doctorAssigned?.name}</span>
                         </div>
                       ) : (
                         <button 
                           onClick={() => openModal(apt, 'assign')}
-                          className="text-[10px] font-black uppercase text-primary-600 hover:text-primary-700 underline underline-offset-4"
+                          className="flex items-center gap-1.5 text-[10px] font-black uppercase text-indigo-600 hover:text-indigo-700 hover:gap-2 transition-all"
                         >
-                          Assign Doc
+                          Assign Physician <ArrowUpRight className="w-3 h-3" />
                         </button>
                       )}
                     </td>
@@ -321,70 +329,70 @@ export default function AppointmentsList({ role }: Props) {
                       {apt.appointmentStatus}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <td className="px-6 py-5 text-right">
+                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
                       {apt.appointmentStatus === 'Pending' && (
                         <button 
                           onClick={() => handleStatusUpdate(apt._id, 'Confirmed')}
-                          className="p-2 bg-primary-50 rounded-lg shadow-sm text-primary-600 hover:bg-primary-100 transition-all border border-primary-100"
-                          title="Approve Appointment"
+                          className="p-2.5 bg-indigo-50 rounded-xl shadow-sm text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all border border-indigo-100/50"
+                          title="Verify Appointment"
                         >
-                          <Check className="w-4 h-4" />
+                          <Check className="w-4.5 h-4.5" />
                         </button>
                       )}
                       <button 
                         onClick={() => openModal(apt, 'view')}
-                        className="p-2 hover:bg-white rounded-lg shadow-sm text-gray-400 hover:text-primary-600 transition-all border border-transparent hover:border-gray-100"
+                        className="p-2.5 bg-white border border-gray-100 rounded-xl shadow-sm text-gray-400 hover:text-indigo-600 hover:border-indigo-100 transition-all"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-4.5 h-4.5" />
                       </button>
                       {isAdminOrReceptionist && (
                         <button 
                           onClick={() => openModal(apt, 'edit')}
-                          className="p-2 hover:bg-white rounded-lg shadow-sm text-gray-400 hover:text-amber-600 transition-all border border-transparent hover:border-gray-100"
+                          className="p-2.5 bg-white border border-gray-100 rounded-xl shadow-sm text-gray-400 hover:text-amber-600 hover:border-amber-100 transition-all"
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Edit2 className="w-4.5 h-4.5" />
                         </button>
                       )}
                       {isAdminOrReceptionist && apt.appointmentStatus !== 'Cancelled' && apt.appointmentStatus !== 'Completed' && (
                         <button 
                           onClick={() => handleStatusUpdate(apt._id, 'Cancelled')}
-                          className="p-2 hover:bg-white rounded-lg shadow-sm text-gray-400 hover:text-rose-600 transition-all border border-transparent hover:border-gray-100"
+                          className="p-2.5 bg-white border border-gray-100 rounded-xl shadow-sm text-gray-400 hover:text-rose-600 hover:border-rose-100 transition-all"
                         >
-                          <XCircle className="w-4 h-4" />
+                          <XCircle className="w-4.5 h-4.5" />
                         </button>
                       )}
                       {(isDoctor || role === 'Admin') && apt.appointmentStatus === 'Confirmed' && (
                         <button 
                           onClick={() => handleStatusUpdate(apt._id, 'Completed')}
                           className={cn(
-                            "p-2 rounded-lg shadow-sm transition-all border",
+                            "p-2.5 rounded-xl shadow-sm transition-all border",
                             isDoctor 
-                              ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border-emerald-100" 
-                              : "bg-primary-50 text-primary-600 hover:bg-primary-100 border-primary-100"
+                              ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white border-emerald-100/50" 
+                              : "bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border-indigo-100/50"
                           )}
-                          title="Complete Appointment"
+                          title="Complete Session"
                         >
-                          <CheckCircle className="w-4 h-4" />
+                          <CheckCircle className="w-4.5 h-4.5" />
                         </button>
                       )}
                       {isAdminOrReceptionist && (
                         <button 
                           onClick={async () => {
-                            if (window.confirm('Are you sure you want to delete this appointment?')) {
+                            if (window.confirm('Confirm deletion of this record?')) {
                               try {
                                 await appointmentAPI.delete(apt._id);
-                                toast.success('Appointment deleted');
+                                toast.success('Record purged');
                                 fetchAppointments();
                               } catch (err) {
-                                toast.error('Failed to delete appointment');
+                                toast.error('Purge failed');
                               }
                             }
                           }}
-                          className="p-2 hover:bg-white rounded-lg shadow-sm text-gray-400 hover:text-rose-600 transition-all border border-transparent hover:border-gray-100"
-                          title="Delete Appointment"
+                          className="p-2.5 bg-white border border-gray-100 rounded-xl shadow-sm text-gray-400 hover:text-rose-600 hover:border-rose-100 transition-all"
+                          title="Purge Record"
                         >
-                          <UserMinus className="w-4 h-4" />
+                          <UserMinus className="w-4.5 h-4.5" />
                         </button>
                       )}
                     </div>
@@ -396,20 +404,20 @@ export default function AppointmentsList({ role }: Props) {
         </div>
         
         {totalPages > 1 && (
-          <div className="px-6 py-6 border-t border-gray-100 bg-gray-50/30 flex items-center justify-between">
-            <p className="text-xs text-gray-500 font-medium">Page {currentPage} of {totalPages}</p>
-            <div className="flex items-center gap-2">
+          <div className="px-8 py-6 border-t border-gray-100 bg-gray-50/20 flex items-center justify-between">
+            <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Showing Cycle {currentPage} of {totalPages}</p>
+            <div className="flex items-center gap-3">
               <button 
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage(p => p - 1)}
-                className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-all shadow-sm"
+                className="px-6 py-2.5 bg-white border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-600 hover:bg-gray-50 disabled:opacity-30 transition-all shadow-sm"
               >
-                Previous
+                Prev
               </button>
               <button 
                 disabled={currentPage === totalPages}
                 onClick={() => setCurrentPage(p => p + 1)}
-                className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-all shadow-sm"
+                className="px-6 py-2.5 bg-white border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-600 hover:bg-gray-50 disabled:opacity-30 transition-all shadow-sm"
               >
                 Next
               </button>

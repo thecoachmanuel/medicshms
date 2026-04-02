@@ -59,15 +59,15 @@
   }
 
   .card {
-    @apply bg-white rounded-xl border border-gray-200 shadow-sm transition-all duration-300;
+    @apply bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-0.5 transition-all duration-500 overflow-hidden;
   }
 
   .btn-primary {
-    @apply bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed;
+    @apply bg-gradient-to-r from-primary-600 to-primary-500 text-white px-5 py-2.5 rounded-xl hover:from-primary-700 hover:to-primary-600 shadow-lg shadow-primary-500/25 transition-all font-bold flex items-center justify-center gap-2 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0;
   }
 
   .btn-secondary {
-    @apply bg-white text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors font-medium flex items-center justify-center gap-2;
+    @apply bg-white/80 backdrop-blur-sm text-gray-700 px-5 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all font-bold flex items-center justify-center gap-2 hover:-translate-y-0.5;
   }
 
   .input-field {

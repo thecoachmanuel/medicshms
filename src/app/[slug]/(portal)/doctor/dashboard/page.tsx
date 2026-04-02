@@ -85,7 +85,11 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
   ] : [];
 
   return (
-    <div className="space-y-6">
+    <div className="relative min-h-screen space-y-6 pb-12">
+      {/* Dynamic Background */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-50/40 via-cyan-50/20 to-white -z-10" />
+      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02] mix-blend-overlay -z-10" />
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 leading-tight">Welcome, Dr. {user?.name}</h1>
@@ -129,7 +133,7 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
           <h3 className="font-bold text-gray-900 mb-6">Today's Appointments</h3>
           <div className="space-y-4">
             {todayAppointments.length > 0 ? todayAppointments.map((apt, i) => (
-              <div key={i} className="p-4 bg-gray-50 rounded-xl flex items-center justify-between gap-4">
+              <div key={i} className="p-4 bg-white/60 backdrop-blur-md rounded-xl border border-white flex items-center justify-between gap-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-gray-900 truncate">{apt.patientName}{apt.age ? ` (${apt.age}y)` : ''}</p>
                   <p className="text-[10px] text-gray-500 font-bold uppercase">{apt.appointmentTime}</p>
