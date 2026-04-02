@@ -71,7 +71,7 @@ export const AdminHeader = ({ toggleSidebar }: AdminHeaderProps) => {
               </div>
               <div className="hidden md:block text-left">
                 <p className="text-sm font-medium text-gray-900 leading-none">{user?.name || 'User'}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{user?.role === 'platform_admin' ? 'Super Admin' : user?.role || 'Portal'}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{user?.role === 'Platform Admin' ? 'Super Admin' : user?.role || 'Portal'}</p>
               </div>
               <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
             </button>

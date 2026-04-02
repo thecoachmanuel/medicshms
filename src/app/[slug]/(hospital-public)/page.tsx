@@ -78,7 +78,7 @@ export default function HomePage({ params }: { params: Promise<{ slug: string }>
               </Link>
               {user ? (
                 <Link 
-                  href={user.role === 'platform_admin' ? '/platform-admin/dashboard' : `/${slug}/${user.role.toLowerCase()}/dashboard`} 
+                  href={user.role === 'Platform Admin' ? '/platform-admin/dashboard' : `/${slug}/${user.role.toLowerCase()}/dashboard`} 
                   className="btn-secondary py-4 px-10 rounded-2xl text-lg border-none hover:bg-secondary-50 hover:text-secondary-600 w-full sm:w-auto text-center"
                 >
                   Go to Dashboard

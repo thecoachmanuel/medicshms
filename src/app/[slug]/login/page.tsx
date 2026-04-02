@@ -25,7 +25,7 @@ export default function HospitalLoginPage({ params }: { params: Promise<{ slug: 
   useEffect(() => {
     if (!authLoading && user) {
       const role = user.role.toLowerCase();
-      if (role === 'platform_admin') {
+      if (role === 'Platform Admin') {
         router.push('/platform-admin/dashboard');
       } else {
         const authorizedSlug = user.hospital_slug || slug;

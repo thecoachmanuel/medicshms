@@ -15,7 +15,7 @@ export default function PublicFooter({ slug: propSlug, settings: initialSettings
   const settings = initialSettings || contextSettings;
   const { getContent, refresh } = useContent('common', slug);
   const [isEditing, setIsEditing] = useState(false);
-  const isEditor = user?.role === 'Admin' || (user?.role === 'platform_admin' && !slug);
+  const isEditor = user?.role === 'Admin' || (user?.role === 'Platform Admin' && !slug);
 
   const footer = getContent('footer');
 

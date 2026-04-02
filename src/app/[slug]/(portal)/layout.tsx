@@ -28,7 +28,7 @@ export default function PortalLayout({
       router.push(slug ? `/${slug}/login` : '/login');
     } else if (!authLoading && user) {
       // Direct access check: If user's hospital doesn't match the slug, redirect them
-      if (user.role !== 'platform_admin' && user.hospital_slug !== slug) {
+      if (user.role !== 'Platform Admin' && user.hospital_slug !== slug) {
         console.error('Multi-tenant mismatch: User hospital slug does not match URL slug');
         router.push(`/${user.hospital_slug}/${user.role.toLowerCase()}/dashboard`);
       }
@@ -52,12 +52,12 @@ export default function PortalLayout({
 
   if (!user) return null;
 
-  const isExpired = user.role !== 'platform_admin' && (
+  const isExpired = user.role !== 'Platform Admin' && (
     user.subscription_status === 'expired' || 
     (user.subscription_status === 'trialing' && user.trial_end_date && new Date(user.trial_end_date) < new Date())
   );
-  const isPaused = user.role !== 'platform_admin' && user.subscription_status === 'paused';
-  const isSuspended = user.role !== 'platform_admin' && user.subscription_status === 'suspended';
+  const isPaused = user.role !== 'Platform Admin' && user.subscription_status === 'paused';
+  const isSuspended = user.role !== 'Platform Admin' && user.subscription_status === 'suspended';
 
   // Calculate days remaining if trialing
   const getTrialDaysRemaining = () => {

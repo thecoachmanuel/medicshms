@@ -63,7 +63,7 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
     const role = user?.role;
     const base = slug ? `/${slug}` : '';
 
-    if (role === 'platform_admin') {
+    if (role === 'Platform Admin') {
       return [
         { icon: LayoutDashboard, label: 'Super Admin', path: '/platform-admin/dashboard' },
         { icon: Building2, label: 'Hospitals', path: '/platform-admin/dashboard' },

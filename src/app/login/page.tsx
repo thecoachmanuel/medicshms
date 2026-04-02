@@ -22,7 +22,7 @@ function LoginForm() {
   useEffect(() => {
     if (!loading && user) {
       const role = user.role.toLowerCase();
-      if (role === 'platform_admin' || role === 'super_admin') {
+      if (role === 'Platform Admin' || role === 'super_admin') {
         router.push('/platform-admin/dashboard');
       } else {
         const targetSlug = user.hospital_slug || slug;
@@ -46,7 +46,7 @@ function LoginForm() {
     try {
       const result = await login({ identifier, password });
       if (result.success) {
-        if (result.role !== 'platform_admin' && result.role !== 'super_admin') {
+        if (result.role !== 'Platform Admin' && result.role !== 'super_admin') {
           toast.error('This portal is for Platform Administrators only. Redirecting to your hospital...');
           // Redirection will be handled by useEffect, but we've shown the error
         } else {

@@ -23,7 +23,7 @@ export default function PublicLayout({
 
   useEffect(() => {
     if (!settingsLoading && settings?.maintenance_mode && !authLoading) {
-      const isStaff = user?.role === 'Admin' || user?.role === 'Doctor' || user?.role === 'Receptionist' || user?.role === 'platform_admin';
+      const isStaff = user?.role === 'Admin' || user?.role === 'Doctor' || user?.role === 'Receptionist' || user?.role === 'Platform Admin';
       const isMaintenancePage = pathname.endsWith('/maintenance');
       
       if (!isStaff && !isMaintenancePage) {
@@ -43,7 +43,7 @@ export default function PublicLayout({
     </div>
   );
 
-  const isStaff = user?.role === 'Admin' || user?.role === 'Doctor' || user?.role === 'Receptionist' || user?.role === 'platform_admin';
+  const isStaff = user?.role === 'Admin' || user?.role === 'Doctor' || user?.role === 'Receptionist' || user?.role === 'Platform Admin';
   const isMaintenancePage = pathname.endsWith('/maintenance');
   const showHeaderFooter = !settings?.maintenance_mode || isStaff || !isMaintenancePage;
 

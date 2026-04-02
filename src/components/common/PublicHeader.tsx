@@ -30,7 +30,7 @@ export default function PublicHeader({ slug: propSlug, settings: initialSettings
   const [scrolled, setScrolled] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   
-  const isEditor = user?.role === 'Admin' || (user?.role === 'platform_admin' && !slug);
+  const isEditor = user?.role === 'Admin' || (user?.role === 'Platform Admin' && !slug);
   const header = getContent('header');
 
   useEffect(() => {
@@ -74,7 +74,7 @@ export default function PublicHeader({ slug: propSlug, settings: initialSettings
           </Link>
           {user ? (
             <Link 
-              href={user.role === 'platform_admin' ? '/platform-admin/dashboard' : `/${slug || user.hospital_slug || ''}/${user.role.toLowerCase()}/dashboard`} 
+              href={user.role === 'Platform Admin' ? '/platform-admin/dashboard' : `/${slug || user.hospital_slug || ''}/${user.role.toLowerCase()}/dashboard`} 
               className="bg-secondary-900 text-white py-2.5 px-6 rounded-xl shadow-lg shadow-secondary-900/20 hover:bg-secondary-800 transition-all font-bold text-sm"
             >
               Go to Dashboard
@@ -134,7 +134,7 @@ export default function PublicHeader({ slug: propSlug, settings: initialSettings
           <div className="pt-6 space-y-4">
             {user ? (
               <Link 
-                href={user.role === 'platform_admin' ? '/platform-admin/dashboard' : `/${slug || user.hospital_slug || ''}/${user.role.toLowerCase()}/dashboard`} 
+                href={user.role === 'Platform Admin' ? '/platform-admin/dashboard' : `/${slug || user.hospital_slug || ''}/${user.role.toLowerCase()}/dashboard`} 
                 onClick={() => setIsOpen(false)}
                 className="block w-full btn-primary text-center py-4 rounded-2xl"
               >
