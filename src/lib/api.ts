@@ -4,7 +4,8 @@ import {
   Department, 
   InventoryItem, 
   APIResponse,
-  Appointment
+  Appointment,
+  Patient
 } from '@/types';
 
 const api = axios.create({
@@ -100,13 +101,15 @@ export const appointmentsAPI = {
   download: (params?: any) => api.get<APIResponse<any>>('/admin-appointments/download', { params }),
 };
 
+
+
 export const patientsAPI = {
-  getAll: (params?: any) => api.get<APIResponse<User[]>>('/patients', { params }),
-  getById: (id: string) => api.get<APIResponse<User>>(`/patients/${id}`),
-  getMe: () => api.get<APIResponse<User>>('/patients/me'),
-  updateMe: (data: Partial<User>) => api.put<APIResponse<User>>('/patients/me', data),
-  create: (data: any) => api.post<APIResponse<User>>('/patients', data),
-  update: (id: string, data: Partial<User>) => api.patch<APIResponse<User>>(`/patients/${id}`, data),
+  getAll: (params?: any) => api.get<APIResponse<Patient[]>>('/patients', { params }),
+  getById: (id: string) => api.get<APIResponse<Patient>>(`/patients/${id}`),
+  getMe: () => api.get<APIResponse<Patient>>('/patients/me'),
+  updateMe: (data: Partial<Patient>) => api.put<APIResponse<Patient>>('/patients/me', data),
+  create: (data: any) => api.post<APIResponse<Patient>>('/patients', data),
+  update: (id: string, data: Partial<Patient>) => api.patch<APIResponse<Patient>>(`/patients/${id}`, data),
   delete: (id: string) => api.delete<APIResponse<void>>(`/patients/${id}`),
   download: (params?: any) => api.get<APIResponse<any>>('/patients/public-appointments/download', { params }),
   getPublicList: (params: any) => api.get<APIResponse<Appointment[]>>('/patients/public-appointments/list', { params }),

@@ -4,12 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { X, User, Phone, Mail, MapPin, Calendar, Heart, Loader2 } from 'lucide-react';
 import { patientsAPI } from '@/lib/api';
 import { toast } from 'react-hot-toast';
+import { Patient } from '@/types';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  patient: any;
+  patient: Patient;
 }
 
 export default function EditPatientModal({ isOpen, onClose, onSuccess, patient }: Props) {

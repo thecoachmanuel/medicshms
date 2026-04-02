@@ -73,6 +73,23 @@ export interface Appointment {
   updatedAt?: string;
 }
 
+export interface Patient {
+  _id: string;
+  patientId?: string;
+  fullName: string;
+  emailAddress: string;
+  mobileNumber: string;
+  gender: string;
+  dateOfBirth: string;
+  bloodGroup?: string;
+  address?: string;
+  emergencyContactName?: string;
+  emergencyContactNumber?: string;
+  hospital_id?: string;
+  lastVisit?: string;
+  is_active?: boolean;
+}
+
 export interface APIResponse<T> {
   success: boolean;
   data: T;
