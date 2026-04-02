@@ -85,7 +85,7 @@ export async function GET(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Admin', 'platform_admin']) as any;
+  const { error: authError, profile } = await withAuth(request, ['Admin', 'Platform Admin']) as any;
   if (authError) return authError;
 
   try {

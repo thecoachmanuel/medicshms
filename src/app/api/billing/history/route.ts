@@ -3,7 +3,7 @@ import { supabaseAdmin, supabase } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
 
 export async function GET(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Admin', 'platform_admin']);
+  const { error: authError, profile } = await withAuth(request, ['Admin', 'Platform Admin']);
   if (authError) return authError;
 
   try {
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
       .order('paid_at', { ascending: false });
 
     // Restrict isolation if not a platform admin
-    if (profile.role !== 'platform_admin') {
+    if (profile.role !== 'Platform Admin') {
       query = query.eq('hospital_id', profile.hospital_id);
     }
 

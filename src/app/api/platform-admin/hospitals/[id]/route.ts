@@ -7,7 +7,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const { error: authError } = await withAuth(request, ['platform_admin']);
+  const { error: authError } = await withAuth(request, ['Platform Admin']);
   if (authError) return authError;
 
   try {
@@ -44,7 +44,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const { error: authError } = await withAuth(request, ['platform_admin']);
+  const { error: authError } = await withAuth(request, ['Platform Admin']);
   if (authError) return authError;
 
   try {

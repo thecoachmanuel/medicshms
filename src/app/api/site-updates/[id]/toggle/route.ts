@@ -5,7 +5,7 @@ import { withAuth } from '@/lib/auth';
 // Toggle banner active status (Admin only)
 // PUT /api/site-updates/:id/toggle
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { error: authError } = await withAuth(request, ['Admin', 'platform_admin']);
+  const { error: authError } = await withAuth(request, ['Admin', 'Platform Admin']);
   if (authError) return authError;
 
   const { id } = await params;

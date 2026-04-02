@@ -57,7 +57,7 @@ export async function GET(request: Request) {
 
 // PUT /api/site-content
 export async function PUT(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Admin', 'platform_admin']);
+  const { error: authError, profile } = await withAuth(request, ['Admin', 'Platform Admin']);
   if (authError) return authError;
 
   try {
@@ -67,7 +67,7 @@ export async function PUT(request: Request) {
     const sanitizedBody = body.map((item: any) => ({
       page_path: item.page_path,
       section_key: item.section_key,
-      hospital_id: profile.role === 'platform_admin' ? null : profile.hospital_id,
+      hospital_id: profile.role === 'Platform Admin' ? null : profile.hospital_id,
       content: item.content,
       updated_by: profile.id,
       updated_at: new Date().toISOString()

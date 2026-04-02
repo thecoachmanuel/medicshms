@@ -5,7 +5,7 @@ import { withAuth } from '@/lib/auth';
 // Get all site update banners (Admin only)
 // GET /api/site-updates
 export async function GET(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Admin', 'platform_admin']);
+  const { error: authError, profile } = await withAuth(request, ['Admin', 'Platform Admin']);
   if (authError) return authError;
 
   try {
@@ -13,7 +13,7 @@ export async function GET(request: Request) {
       .from('site_updates')
       .select('*, profiles:created_by(name, email)');
     
-    if (profile.role === 'platform_admin') {
+    if (profile.role === 'Platform Admin') {
       query = query.is('hospital_id', null);
     } else {
       query = query.eq('hospital_id', profile.hospital_id);
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
 // Create site update banner (Admin only)
 // POST /api/site-updates
 export async function POST(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Admin', 'platform_admin']);
+  const { error: authError, profile } = await withAuth(request, ['Admin', 'Platform Admin']);
   if (authError) return authError;
 
   try {
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
         text_color: textColor,
         start_date: formattedStartDate,
         end_date: formattedEndDate,
-        hospital_id: profile.role === 'platform_admin' ? null : profile.hospital_id,
+        hospital_id: profile.role === 'Platform Admin' ? null : profile.hospital_id,
         created_by: profile?.id
       }])
       .select()

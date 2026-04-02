@@ -39,7 +39,7 @@ export default function SaaSLandingPage() {
   const [siteContent, setSiteContent] = React.useState<any[]>([]);
   const [isEditing, setIsEditing] = React.useState(false);
 
-  const isSuperAdmin = user?.role === 'platform_admin';
+  const isSuperAdmin = user?.role === 'Platform Admin';
 
   React.useEffect(() => {
     const fetchData = async () => {

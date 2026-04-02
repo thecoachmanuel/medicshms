@@ -5,7 +5,7 @@ import { withAuth } from '@/lib/auth';
 // Get single ticket (Admin only)
 // GET /api/support/:id
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { error: authError } = await withAuth(request, ['Admin', 'platform_admin']);
+  const { error: authError } = await withAuth(request, ['Admin', 'Platform Admin']);
   if (authError) return authError;
 
   const { id } = await params;
@@ -44,7 +44,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 // Update ticket status (Admin only)
 // PUT /api/support/:id
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { error: authError, profile } = await withAuth(request, ['Admin', 'platform_admin']);
+  const { error: authError, profile } = await withAuth(request, ['Admin', 'Platform Admin']);
   if (authError) return authError;
 
   const { id } = await params;
@@ -97,7 +97,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 // Delete ticket (Admin only)
 // DELETE /api/support/:id
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { error: authError } = await withAuth(request, ['Admin', 'platform_admin']);
+  const { error: authError } = await withAuth(request, ['Admin', 'Platform Admin']);
   if (authError) return authError;
 
   const { id } = await params;

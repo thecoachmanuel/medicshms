@@ -14,7 +14,7 @@ export async function PUT(request: Request) {
       .update({ is_read: true, read_at: new Date().toISOString() })
       .eq('is_read', false);
 
-    if (profile.role === 'platform_admin') {
+    if (profile.role === 'Platform Admin') {
       query = query.or(`user_id.eq.${profile.id},and(hospital_id.is.null,role.eq.platform_admin)`);
     } else {
       query = query.or(`user_id.eq.${profile.id},and(hospital_id.eq.${profile.hospital_id},role.eq.${profile.role})`);

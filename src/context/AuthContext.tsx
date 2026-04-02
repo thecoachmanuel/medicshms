@@ -34,16 +34,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // Verify token and get latest profile
           const response: any = await authAPI.getProfile();
           const latestUser: User = {
+            _id: response.id || response._id,
             id: response.id || response._id,
             name: response.name,
             email: response.email,
             role: response.role,
+            isActive: response.isActive ?? true,
             hospital_id: response.hospital_id,
             hospital_slug: response.hospital_slug,
             subscription_status: response.subscription_status,
             trial_end_date: response.trial_end_date,
             phone: response.phone,
-            profilePhoto: response.profilePhoto || response.profilePhoto,
+            profilePhoto: response.profilePhoto || response.profile_photo,
             doctorProfileId: response.doctor_profile_id || response.doctorProfileId
           };
           localStorage.setItem('user', JSON.stringify(latestUser));
@@ -69,16 +71,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response: any = await authAPI.login(credentials);
       
       const userData: User = {
+        _id: response._id,
         id: response._id,
         name: response.name,
         email: response.email,
         role: response.role,
+        isActive: response.isActive ?? true,
         hospital_id: response.hospital_id,
         hospital_slug: response.hospital_slug,
         subscription_status: response.subscription_status,
         trial_end_date: response.trial_end_date,
         phone: response.phone,
-        profilePhoto: response.profilePhoto || response.profilePhoto,
+        profilePhoto: response.profilePhoto || response.profile_photo,
         doctorProfileId: response.doctor_id || response.doctorProfileId
       };
 
@@ -86,7 +90,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
       
-      if (response.role === 'platform_admin') {
+      if (response.role === 'Platform Admin') {
         router.push('/platform-admin/dashboard');
       } else if (response.hospital_slug) {
         router.push(`/${response.hospital_slug}/${response.role.toLowerCase().replace(' ', '-')}/dashboard`);

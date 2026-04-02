@@ -68,7 +68,7 @@ export async function POST(request: Request) {
 // Get all support tickets (Admin only)
 // GET /api/support
 export async function GET(request: Request) {
-  const { error: authError } = await withAuth(request, ['Admin', 'platform_admin']);
+  const { error: authError } = await withAuth(request, ['Admin', 'Platform Admin']);
   if (authError) return authError;
 
   const { searchParams } = new URL(request.url);
@@ -78,7 +78,7 @@ export async function GET(request: Request) {
   const ticketType = searchParams.get('ticket_type');
 
   try {
-    const { profile } = await withAuth(request, ['Admin', 'platform_admin']) as any;
+    const { profile } = await withAuth(request, ['Admin', 'Platform Admin']) as any;
     
     let query = (supabaseAdmin || supabase)
       .from('support_tickets')
@@ -86,7 +86,7 @@ export async function GET(request: Request) {
       .order('created_at', { ascending: false });
 
     // Platform admin sees everything, hospital admin only sees their own
-    if (profile.role !== 'platform_admin') {
+    if (profile.role !== 'Platform Admin') {
       query = query.eq('hospital_id', profile.hospital_id);
     }
 

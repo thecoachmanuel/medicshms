@@ -19,7 +19,7 @@ export default function PlatformAdminLayout({
     if (!loading) {
       if (!user) {
         router.push('/login');
-      } else if (user.role !== 'platform_admin') {
+      } else if (user.role !== 'Platform Admin') {
         // If they are a tenant user, redirect to their own login or dashboard
         const slug = (user as any).hospital?.slug || '';
         if (slug) {
@@ -39,7 +39,7 @@ export default function PlatformAdminLayout({
     );
   }
 
-  if (!user || user.role !== 'platform_admin') return null;
+  if (!user || user.role !== 'Platform Admin') return null;
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">

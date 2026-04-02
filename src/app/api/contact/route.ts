@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Admin', 'platform_admin']);
+  const { error: authError, profile } = await withAuth(request, ['Admin', 'Platform Admin']);
   if (authError) return authError;
 
   if (!supabaseAdmin) {
@@ -50,7 +50,7 @@ export async function GET(request: Request) {
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (profile.role !== 'platform_admin') {
+  if (profile.role !== 'Platform Admin') {
     query = query.eq('hospital_id', profile.hospital_id);
   }
 

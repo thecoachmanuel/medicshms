@@ -106,7 +106,7 @@ export async function POST(request: Request) {
         if (hosp.status !== 'active') {
           console.warn(`[Login API] Attempted login to inactive hospital (${hosp.slug}): ${user.email}`);
           // Allow platform admin to log in even if hospital is inactive (system-level)
-          if (profile.role !== 'platform_admin') {
+          if (profile.role !== 'Platform Admin') {
             return NextResponse.json({ message: 'Associated hospital account is currently inactive or suspended.' }, { status: 403 });
           }
         }

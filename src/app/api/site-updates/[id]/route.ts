@@ -5,7 +5,7 @@ import { withAuth } from '@/lib/auth';
 // Get single site update banner (Admin only)
 // GET /api/site-updates/:id
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { error: authError } = await withAuth(request, ['Admin', 'platform_admin']);
+  const { error: authError } = await withAuth(request, ['Admin', 'Platform Admin']);
   if (authError) return authError;
 
   const { id } = await params;
@@ -39,7 +39,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 // Update site update banner (Admin only)
 // PUT /api/site-updates/:id
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { error: authError } = await withAuth(request, ['Admin', 'platform_admin']);
+  const { error: authError } = await withAuth(request, ['Admin', 'Platform Admin']);
   if (authError) return authError;
 
   const { id } = await params;
@@ -90,7 +90,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 // Delete site update banner (Admin only)
 // DELETE /api/site-updates/:id
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { error: authError } = await withAuth(request, ['Admin', 'platform_admin']);
+  const { error: authError } = await withAuth(request, ['Admin', 'Platform Admin']);
   if (authError) return authError;
 
   const { id } = await params;

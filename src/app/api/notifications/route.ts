@@ -17,7 +17,7 @@ export async function GET(request: Request) {
       .order('created_at', { ascending: false });
 
     // Filter by user_id OR (hospital_id AND role)
-    if (profile.role === 'platform_admin') {
+    if (profile.role === 'Platform Admin') {
       // Platform admins see global notifications (no hospital_id) targeted at their role
       query = query.or(`user_id.eq.${profile.id},and(hospital_id.is.null,role.eq.platform_admin)`);
     } else {
@@ -52,7 +52,7 @@ export async function PUT(request: Request) {
         .from('notifications')
         .update({ is_read: true, read_at: new Date().toISOString() });
 
-      if (profile.role === 'platform_admin') {
+      if (profile.role === 'Platform Admin') {
         query = query.or(`user_id.eq.${profile.id},and(hospital_id.is.null,role.eq.platform_admin)`);
       } else {
         query = query.or(`user_id.eq.${profile.id},and(hospital_id.eq.${profile.hospital_id},role.eq.${profile.role})`);
