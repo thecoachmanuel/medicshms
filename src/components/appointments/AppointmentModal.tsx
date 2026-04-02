@@ -327,8 +327,8 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
                         )}
                       >
                         <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0 overflow-hidden">
-                           {(doc.profile_photo || doc.user?.profile_photo) ? (
-                            <img src={doc.profile_photo || doc.user?.profile_photo} className="w-full h-full object-cover" />
+                           {(doc.profilePhoto || doc.user?.profilePhoto) ? (
+                            <img src={doc.profilePhoto || doc.user?.profilePhoto} className="w-full h-full object-cover" />
                           ) : (
                             <Stethoscope className="w-6 h-6 text-primary-600" />
                           )}

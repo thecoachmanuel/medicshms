@@ -4,20 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { authAPI } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  hospital_id?: string;
-  hospital_slug?: string;
-  subscription_status?: string;
-  trial_end_date?: string;
-  phone?: string;
-  profile_photo?: string;
-  doctorProfileId?: string;
-  createdAt?: string;
-}
+import { User } from '@/types';
 
 interface AuthContextType {
   user: User | null;
@@ -56,7 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             subscription_status: response.subscription_status,
             trial_end_date: response.trial_end_date,
             phone: response.phone,
-            profile_photo: response.profile_photo,
+            profilePhoto: response.profilePhoto || response.profilePhoto,
             doctorProfileId: response.doctor_profile_id || response.doctorProfileId
           };
           localStorage.setItem('user', JSON.stringify(latestUser));
@@ -91,7 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         subscription_status: response.subscription_status,
         trial_end_date: response.trial_end_date,
         phone: response.phone,
-        profile_photo: response.profile_photo,
+        profilePhoto: response.profilePhoto || response.profilePhoto,
         doctorProfileId: response.doctor_id || response.doctorProfileId
       };
 

@@ -42,8 +42,8 @@ export default function ProfilePage() {
     setLoading(true);
     try {
       const res = await authAPI.updateProfile(formData);
-      if (res.data) {
-        updateUser(res.data);
+      if (res.data.data) {
+        updateUser(res.data.data);
         toast.success('Profile updated successfully');
       }
     } catch (error: any) {
@@ -62,9 +62,9 @@ export default function ProfilePage() {
 
     setLoading(true);
     try {
-      const res = await (authAPI as any).uploadPhoto(formData);
-      if (res.url) {
-        updateUser({ profile_photo: res.url });
+      const res = await authAPI.uploadPhoto(formData);
+      if (res.data.data?.url) {
+        updateUser({ profilePhoto: res.data.data.url });
         toast.success('Photo updated');
       }
     } catch (error: any) {
@@ -79,8 +79,8 @@ export default function ProfilePage() {
     
     setLoading(true);
     try {
-      await (authAPI as any).deletePhoto();
-      updateUser({ profile_photo: undefined });
+      await authAPI.deletePhoto();
+      updateUser({ profilePhoto: undefined });
       toast.success('Photo removed');
     } catch (error: any) {
       toast.error('Failed to remove photo');
@@ -110,14 +110,14 @@ export default function ProfilePage() {
                   onChange={handlePhotoUpload} 
                 />
                 <div className="w-32 h-32 rounded-[2.5rem] bg-primary-50 border-4 border-white shadow-xl flex items-center justify-center overflow-hidden">
-                   {user?.profile_photo ? (
-                     <img src={user.profile_photo} className="w-full h-full object-cover" />
+                   {user?.profilePhoto ? (
+                     <img src={user.profilePhoto} className="w-full h-full object-cover" />
                    ) : (
                      <User className="w-12 h-12 text-primary-200" />
                    )}
                 </div>
                 <div className="absolute bottom-1 right-1 flex gap-1">
-                  {user?.profile_photo && (
+                  {user?.profilePhoto && (
                     <button 
                       onClick={handlePhotoDelete}
                       className="p-2 bg-red-500 text-white rounded-xl shadow-lg hover:scale-110 transition-transform"

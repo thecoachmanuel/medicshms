@@ -7,7 +7,11 @@ export interface User {
   role: 'Platform Admin' | 'Admin' | 'Doctor' | 'Nurse' | 'Lab Scientist' | 'Pharmacist' | 'Radiologist' | 'Receptionist' | 'Patient';
   isActive: boolean;
   hospital_id?: string;
+  hospital_slug?: string;
+  subscription_status?: string;
+  trial_end_date?: string;
   profilePhoto?: string;
+  doctorProfileId?: string;
   createdAt?: string;
   updatedAt?: string;
   doctorInfo?: {
