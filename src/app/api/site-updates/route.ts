@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
 import { isPlatformAdmin } from '@/lib/auth-helpers';
+import { NextResponse } from 'next/server';
 
 // Get all site update banners (Admin only)
 // GET /api/site-updates
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   if (authError) return authError;
 
   try {
-    let query = supabase
+    let query = (supabaseAdmin || supabase)
       .from('site_updates')
       .select('*, profiles:created_by(name, email)');
     
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     const formattedStartDate = startDate && startDate.trim() !== '' ? startDate : new Date().toISOString();
     const formattedEndDate = endDate && endDate.trim() !== '' ? endDate : null;
 
-    const { data: banner, error } = await supabase
+    const { data: banner, error } = await (supabaseAdmin || supabase)
       .from('site_updates')
       .insert([{
         message,

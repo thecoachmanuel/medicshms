@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
 
 // Toggle banner active status (Admin only)
@@ -11,7 +11,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const { id } = await params;
 
   try {
-    const { data: banner, error: fetchError } = await supabase
+    const { data: banner, error: fetchError } = await (supabaseAdmin || supabase)
       .from('site_updates')
       .select('is_active')
       .eq('id', id)
@@ -24,7 +24,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       }, { status: 404 });
     }
 
-    const { data: updated, error: updateError } = await supabase
+    const { data: updated, error: updateError } = await (supabaseAdmin || supabase)
       .from('site_updates')
       .update({ is_active: !banner.is_active })
       .eq('id', id)

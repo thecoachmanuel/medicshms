@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
 
 // Get single site update banner (Admin only)
@@ -11,7 +11,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const { id } = await params;
 
   try {
-    const { data: banner, error } = await supabase
+    const { data: banner, error } = await (supabaseAdmin || supabase)
       .from('site_updates')
       .select('*, profiles:created_by(name, email)')
       .eq('id', id)
@@ -51,7 +51,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const formattedStartDate = startDate && startDate.trim() !== '' ? startDate : null;
     const formattedEndDate = endDate && endDate.trim() !== '' ? endDate : null;
 
-    const { data: banner, error } = await supabase
+    const { data: banner, error } = await (supabaseAdmin || supabase)
       .from('site_updates')
       .update({
         message,
@@ -96,7 +96,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   const { id } = await params;
 
   try {
-    const { error } = await supabase
+    const { error } = await (supabaseAdmin || supabase)
       .from('site_updates')
       .delete()
       .eq('id', id);

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
+import { isPlatformAdmin } from '@/lib/auth-helpers';
 
 // Get single ticket (Admin only)
 // GET /api/support/:id
@@ -11,7 +12,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const { id } = await params;
 
   try {
-    const { data: ticket, error } = await supabase
+    const { data: ticket, error } = await (supabaseAdmin || supabase)
       .from('support_tickets')
       .select('*, profiles:resolved_by(name, email)')
       .eq('id', id)
@@ -44,7 +45,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 // Update ticket status (Admin only)
 // PUT /api/support/:id
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { error: authError, profile } = await withAuth(request, ['Admin', 'Platform Admin']);
+  const { error: authError, profile } = await withAuth(request, ['Admin', 'Platform Admin']) as any;
   if (authError) return authError;
 
   const { id } = await params;
@@ -62,7 +63,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       updateData.resolved_by = profile?.id;
     }
 
-    const { data: ticket, error } = await supabase
+    const { data: ticket, error } = await (supabaseAdmin || supabase)
       .from('support_tickets')
       .update(updateData)
       .eq('id', id)
@@ -103,7 +104,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   const { id } = await params;
 
   try {
-    const { error } = await supabase
+    const { error } = await (supabaseAdmin || supabase)
       .from('support_tickets')
       .delete()
       .eq('id', id);
