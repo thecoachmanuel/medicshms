@@ -36,7 +36,22 @@ export default function LabRequestsPage() {
     clinical_notes: ''
   });
   const [isCreating, setIsCreating] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [globalSearch, setGlobalSearch] = useState('');
+  const [patientSearchTerm, setPatientSearchTerm] = useState('');
+
+  const filteredRequests = (requests || []).filter(req => {
+    const searchLow = globalSearch.toLowerCase();
+    return (
+      req.test_name?.toLowerCase().includes(searchLow) ||
+      req.patient?.full_name?.toLowerCase().includes(searchLow) ||
+      req.patient?.patient_id?.toLowerCase().includes(searchLow)
+    );
+  });
+
+  const filteredPatients = (patients || []).filter(p => {
+    const s = patientSearchTerm.toLowerCase();
+    return p.full_name?.toLowerCase().includes(s) || p.patient_id?.toLowerCase().includes(s);
+  });
 
   useEffect(() => {
     fetchRequests(activeTab);
@@ -250,13 +265,25 @@ export default function LabRequestsPage() {
           </h1>
           <p className="text-gray-500 font-medium mt-1 ml-15">Advanced laboratory matrix for clinical investigation.</p>
         </div>
-        <button 
-          onClick={() => setShowNewModal(true)}
-          className="btn-primary bg-gray-900 hover:bg-blue-600 text-white px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-100 flex items-center gap-3 transition-all active:scale-95"
-        >
-          <UploadCloud className="w-4 h-4" />
-          Assign New Job
-        </button>
+        <div className="flex items-center gap-4">
+          <div className="relative group w-full md:w-80">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-blue-600 transition-all" />
+            <input 
+              type="text"
+              placeholder="Filter by Subject or Analysis..."
+              className="w-full pl-11 pr-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-[11px] font-black uppercase tracking-widest focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 outline-none transition-all shadow-sm"
+              value={globalSearch}
+              onChange={(e) => setGlobalSearch(e.target.value)}
+            />
+          </div>
+          <button 
+            onClick={() => setShowNewModal(true)}
+            className="btn-primary bg-gray-900 hover:bg-blue-600 text-white px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-100 flex items-center gap-3 transition-all active:scale-95"
+          >
+            <UploadCloud className="w-4 h-4" />
+            Assign New Job
+          </button>
+        </div>
       </div>
 
       <div className="card bg-white/70 backdrop-blur-xl border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.04)] overflow-hidden">
@@ -287,11 +314,13 @@ export default function LabRequestsPage() {
 
         <div className="p-6">
           {loading ? (
-            <div className="text-center py-12 text-gray-400 animate-pulse">Loading requests...</div>
-          ) : requests.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
-              <TestTubes className="w-12 h-12 mx-auto mb-3 opacity-20" />
-              <p>No {activeTab.toLowerCase()} requests found</p>
+            <div className="text-center py-12 text-gray-400 animate-pulse font-black uppercase tracking-widest text-[11px]">Synchronizing Diagnostics...</div>
+          ) : filteredRequests.length === 0 ? (
+            <div className="text-center py-20 text-gray-400">
+              <div className="w-20 h-20 mx-auto mb-6 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100">
+                <TestTubes className="w-10 h-10 opacity-20" />
+              </div>
+              <p className="font-black uppercase tracking-widest text-[10px]">No matches found in clinical index</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -306,7 +335,7 @@ export default function LabRequestsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {requests.map(req => (
+                  {filteredRequests.map(req => (
                     <tr key={req.id} className="group hover:bg-blue-50/30 transition-all duration-300">
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-4">
@@ -358,7 +387,7 @@ export default function LabRequestsPage() {
                             </div>
                           )}
                           {req.test_price > 0 && (
-                            <p className="text-[10px] font-bold text-gray-400 ml-1">Valuation: ${req.test_price}</p>
+                            <p className="text-[10px] font-bold text-gray-400 ml-1">Valuation: ₦ {req.test_price.toLocaleString()}</p>
                           )}
                         </div>
                       </td>
@@ -513,23 +542,56 @@ export default function LabRequestsPage() {
               {/* Patient Selection */}
               <div className="space-y-4">
                 <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Identify Subject</label>
-                <div className="relative group">
-                  <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors">
-                    <User className="w-5 h-5" />
+                <div className="relative">
+                  <div className="relative group">
+                    <div className="absolute left-5 top-[22px] text-gray-400 group-focus-within:text-blue-600 transition-colors z-10">
+                      <Search className="w-5 h-5" />
+                    </div>
+                    <input 
+                      type="text"
+                      className="w-full pl-14 pr-6 py-5 bg-gray-50/50 border border-gray-100 rounded-[1.5rem] focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-black text-gray-900 shadow-inner"
+                      placeholder="Search patient name or ID..."
+                      value={patientSearchTerm}
+                      onChange={(e) => setPatientSearchTerm(e.target.value)}
+                    />
                   </div>
-                  <select 
-                    className="w-full pl-14 pr-6 py-5 bg-gray-50/50 border border-gray-100 rounded-[1.5rem] focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-black text-gray-900 appearance-none shadow-inner"
-                    value={newRequest.patient_id}
-                    onChange={(e) => setNewRequest({...newRequest, patient_id: e.target.value})}
-                  >
-                    <option value="">Select Patient...</option>
-                    {patients.map(p => (
-                      <option key={p.id} value={p.id}>{p.full_name} (#{p.patient_id})</option>
-                    ))}
-                  </select>
-                  <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
-                    <ChevronRight className="w-5 h-5 rotate-90" />
-                  </div>
+                  
+                  {filteredPatients.length > 0 && (patientSearchTerm || newRequest.patient_id) && !newRequest.patient_id && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-[2rem] border border-gray-100 shadow-2xl p-3 z-50 max-h-60 overflow-y-auto">
+                      {filteredPatients.map(p => (
+                        <button 
+                          key={p.id}
+                          onClick={() => {
+                            setNewRequest({...newRequest, patient_id: p.id});
+                            setPatientSearchTerm(p.full_name);
+                          }}
+                          className="w-full flex items-center gap-4 p-4 hover:bg-blue-50/50 rounded-2xl transition-all text-left group"
+                        >
+                          <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover:border-blue-100 group-hover:bg-white font-black text-xs text-blue-600 transition-all">
+                            {p.full_name?.[0]}
+                          </div>
+                          <div>
+                            <p className="text-sm font-black text-gray-900 leading-tight">{p.full_name}</p>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">#{p.patient_id}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {newRequest.patient_id && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pr-2">
+                       <button 
+                         onClick={() => {
+                            setNewRequest({...newRequest, patient_id: ''});
+                            setPatientSearchTerm('');
+                         }}
+                         className="p-1.5 hover:bg-rose-50 rounded-lg text-rose-500 transition-all border border-transparent hover:border-rose-100"
+                       >
+                         <X className="w-4 h-4" />
+                       </button>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -552,7 +614,7 @@ export default function LabRequestsPage() {
                   >
                     <option value="">Standard Panels...</option>
                     {labServices.map(s => (
-                      <option key={s._id} value={s._id}>{s.name} - ${s.price}</option>
+                      <option key={s._id} value={s._id}>{s.name} - ₦ {s.price.toLocaleString()}</option>
                     ))}
                     <option value="custom">Custom Test</option>
                   </select>
@@ -585,7 +647,7 @@ export default function LabRequestsPage() {
             <div className="mt-12 flex items-center justify-between p-2 bg-blue-50/30 rounded-[2rem] border border-blue-100/20">
               <div className="px-6 py-2">
                 <p className="text-[10px] text-blue-600 font-black uppercase tracking-[0.2em]">Estimated Val.</p>
-                <p className="text-xl font-black text-gray-900">${newRequest.test_price}</p>
+                <p className="text-xl font-black text-gray-900">₦ {newRequest.test_price.toLocaleString()}</p>
               </div>
               <button 
                 onClick={handleCreateRequest}
