@@ -7,13 +7,15 @@ import { getPresignedUrl } from '@/lib/services/storageService';
 const getOrCreateTemplate = async (hospital_id: string) => {
     const tenantKey = `default_${hospital_id}`;
     
-    let { data: template, error } = await supabase
+    // Use admin client for lookup to ensure singleton resolution is stable 
+    // and correctly identifies existing records regardless of RLS state for new users
+    let { data: template, error } = await (supabaseAdmin || supabase)
         .from('invoice_templates')
         .select('*')
         .eq('key', tenantKey)
-        .single();
+        .maybeSingle();
     
-    if (error && error.code === 'PGRST116') { // Not found
+    if (!template) {
         const { data: newTemplate, error: insertError } = await (supabaseAdmin || supabase)
             .from('invoice_templates')
             .insert([{ key: tenantKey, hospital_id }])
@@ -22,7 +24,6 @@ const getOrCreateTemplate = async (hospital_id: string) => {
         if (insertError) throw insertError;
         return newTemplate;
     }
-    if (error) throw error;
     return template;
 };
 

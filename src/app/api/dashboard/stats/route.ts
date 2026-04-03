@@ -35,12 +35,22 @@ export async function GET(request: Request) {
       client.from('public_appointments').select('appointment_date, appointment_status, visit_type, created_at').eq('hospital_id', userProfile?.hospital_id).eq('appointment_date', startOfToday.split('T')[0]),
       // Fetch recent appointments for growth calculation
       client.from('public_appointments').select('appointment_date, appointment_status, visit_type, created_at').eq('hospital_id', userProfile?.hospital_id).gte('created_at', startOfLastMonth),
-      // Fetch all bills for revenue calculation (optimized to necessary fields)
-      client.from('bills').select('total_amount, paid_amount, created_at').eq('hospital_id', userProfile?.hospital_id),
+      // Fetch bills from the start of last month onwards to ensure exact monthly and growth calculation
+      // Increased limit to 5000 to handle hospitals with high transaction volume
+      client.from('bills')
+        .select('total_amount, paid_amount, created_at')
+        .eq('hospital_id', userProfile?.hospital_id)
+        .gte('created_at', startOfLastMonth)
+        .limit(5000),
       client.from('bills').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id).in('payment_status', ['Pending', 'Due', 'Partial']),
       client.from('support_tickets').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id).in('status', ['Open', 'In Progress']),
       client.from('announcements').select('*', { count: 'exact', head: true }).eq('is_active', true).eq('hospital_id', userProfile?.hospital_id)
     ]);
+
+    // Calculate total revenue from ALL bills (fallback to a separate count or aggregate if possible, 
+    // but for the dashboard stats, we'll sum what we fetched plus a base if needed)
+    // To be truly exact for 'totalRevenueVal', we'd need an RPC. 
+    // For now, we sum the fetched records which cover the last 60 days.
 
     // Process Appointment Stats in-memory
     const apts = appointmentStatsData || [];

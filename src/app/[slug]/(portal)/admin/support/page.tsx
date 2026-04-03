@@ -57,9 +57,10 @@ export default function SupportTicketsPage() {
       // Get hospital settings for metadata
       const settingsRes = await siteSettingsAPI.get({ slug }) as any;
       
-      // Resolve hospital email: settings > user email > generic clinic identifier
-      const hospitalName = settingsRes.data?.hospital_name || user?.name || 'Hospital Tenant';
-      const hospitalEmail = settingsRes.data?.contact_email || user?.email || `support@${slug}.com`;
+      // Resolve hospital metadata for exactly capturing the tenant's identity 
+      // We prioritize site_settings contact email, then hospital's registration email, then fallback to current session
+      const hospitalName = settingsRes.data?.hospital_name || settingsRes.data?.name || user?.name || 'Hospital Tenant';
+      const hospitalEmail = settingsRes.data?.contact_email || settingsRes.data?.email || user?.email || `support@${slug}.com`;
 
       await supportAPI.create({
         ...platformTicket,
