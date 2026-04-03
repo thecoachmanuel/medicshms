@@ -12,13 +12,15 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { name, email: rawEmail, phone, role } = await request.json();
+    const { name, email: rawEmail, phone, role, departmentId } = await request.json();
     const email = rawEmail?.trim().toLowerCase();
 
     const validRoles = ['Admin', 'Doctor', 'Receptionist', 'Nurse', 'Lab Scientist', 'Pharmacist', 'Radiologist'];
     if (!validRoles.includes(role)) {
       return NextResponse.json({ message: 'Invalid role' }, { status: 400 });
     }
+
+    const client = (supabaseAdmin || supabaseClient);
 
     // Set default password based on role
     let defaultPassword = '';
@@ -46,7 +48,7 @@ export async function POST(request: Request) {
     const user = authData.user;
 
     // 2. Create profile
-    const { data: profile, error: profileError } = await supabaseAdmin
+    const { data: profile, error: profileError } = await client
       .from('profiles')
       .insert([{ 
         id: user.id, 
@@ -63,22 +65,22 @@ export async function POST(request: Request) {
     if (profileError) return NextResponse.json({ message: profileError.message }, { status: 400 });
 
     // 3. Auto-create role-specific profile
-    const specializationData = { user_id: user.id, hospital_id: adminProfile?.hospital_id, department_id: body.departmentId };
+    const specializationData = { user_id: user.id, hospital_id: adminProfile?.hospital_id, department_id: departmentId };
     
     if (role === 'Doctor') {
-      await (supabaseAdmin || supabase).from('doctors').insert([specializationData]);
+      await client.from('doctors').insert([specializationData]);
     } else if (role === 'Receptionist') {
-      await (supabaseAdmin || supabase).from('receptionists').insert([specializationData]);
+      await client.from('receptionists').insert([specializationData]);
     } else if (role === 'Admin') {
-      await (supabaseAdmin || supabase).from('admins').insert([specializationData]);
+      await client.from('admins').insert([specializationData]);
     } else if (role === 'Nurse') {
-      await (supabaseAdmin || supabase).from('nurses').insert([specializationData]);
+      await client.from('nurses').insert([specializationData]);
     } else if (role === 'Lab Scientist') {
-      await (supabaseAdmin || supabase).from('lab_scientists').insert([specializationData]);
+      await client.from('lab_scientists').insert([specializationData]);
     } else if (role === 'Pharmacist') {
-      await (supabaseAdmin || supabase).from('pharmacists').insert([specializationData]);
+      await client.from('pharmacists').insert([specializationData]);
     } else if (role === 'Radiologist') {
-      await (supabaseAdmin || supabase).from('radiologists').insert([specializationData]);
+      await client.from('radiologists').insert([specializationData]);
     }
 
     return NextResponse.json({

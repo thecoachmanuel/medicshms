@@ -16,7 +16,8 @@ export async function PUT(
 
   const { id } = await params;
 
-  try {
+    const client = (supabaseAdmin || supabaseClient);
+
     const { name, email, phone, isActive, departmentId } = await request.json();
 
     const updateData: any = {};
@@ -25,7 +26,7 @@ export async function PUT(
     if (phone) updateData.phone = phone;
     if (isActive !== undefined) updateData.is_active = isActive;
 
-    const { data: profile, error } = await (supabaseAdmin || supabase)
+    const { data: profile, error } = await client
       .from('profiles')
       .update(updateData)
       .eq('id', id)
@@ -53,11 +54,15 @@ export async function PUT(
       }
 
       if (specializationTable) {
-        await (supabaseAdmin || supabase)
+        const { error: specError } = await client
           .from(specializationTable)
           .update(specializationUpdate)
           .eq('user_id', id)
           .eq('hospital_id', adminProfile?.hospital_id);
+          
+        if (specError) {
+          console.error(`[Specialization Update Error] ${specializationTable}:`, specError.message);
+        }
       }
     }
 
