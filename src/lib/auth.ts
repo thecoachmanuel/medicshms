@@ -1,5 +1,6 @@
 import { supabase, supabaseAdmin } from "./supabase";
 import { NextResponse } from "next/server";
+import { normalizeRole, isPlatformAdmin } from "./auth-helpers";
 
 /**
  * Helper to get the authenticated user from the request header
@@ -49,8 +50,20 @@ export async function withAuth(request: Request, roles?: string[]) {
     return { error: NextResponse.json({ message: 'Not authorized' }, { status: 401 }), profile: null };
   }
 
-  if (roles && !roles.includes(profile.role)) {
-    return { error: NextResponse.json({ message: 'Forbidden' }, { status: 403 }), profile: null };
+  if (roles) {
+    const normUserRole = normalizeRole(profile.role);
+    const isAuthorized = roles.some(requiredRole => {
+      // 1. If route requires "Platform Admin", allow all platform admin variants
+      if (requiredRole === 'Platform Admin') {
+        return isPlatformAdmin(profile.role);
+      }
+      // 2. Otherwise do a normalized comparison
+      return normalizeRole(requiredRole) === normUserRole;
+    });
+
+    if (!isAuthorized) {
+      return { error: NextResponse.json({ message: 'Forbidden' }, { status: 403 }), profile: null };
+    }
   }
 
   return { error: null, profile };

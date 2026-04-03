@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth, getAuthUser } from '@/lib/auth';
+import { isPlatformAdmin } from '@/lib/auth-helpers';
 
 // GET /api/site-settings
 export async function GET(request: Request) {
@@ -94,7 +95,7 @@ export async function PUT(request: Request) {
     // Resolve target hospital:
     // If Admin, they can ONLY update their own.
     // If platform_admin, they can update the one in the body, or global (null) if none.
-    let targetHospitalId = profile.role === 'Admin' ? profile.hospital_id : (body.hospital_id || null);
+    let targetHospitalId = isPlatformAdmin(profile.role) ? (body.hospital_id || null) : profile.hospital_id;
 
     // Sanitize body to only include allowed fields
     const allowedFields = [

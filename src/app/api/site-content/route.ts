@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
+import { isPlatformAdmin } from '@/lib/auth-helpers';
 
 // GET /api/site-content?page=home
 export async function GET(request: Request) {
@@ -67,7 +68,7 @@ export async function PUT(request: Request) {
     const sanitizedBody = body.map((item: any) => ({
       page_path: item.page_path,
       section_key: item.section_key,
-      hospital_id: profile.role === 'Platform Admin' ? null : profile.hospital_id,
+      hospital_id: isPlatformAdmin(profile.role) ? null : profile.hospital_id,
       content: item.content,
       updated_by: profile.id,
       updated_at: new Date().toISOString()
