@@ -16,7 +16,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export default function StaffManagement() {
-  const [staffList, setStaffList] = useState<any[]>([]);
+  const [staffList, setStaffList] = useState<User[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

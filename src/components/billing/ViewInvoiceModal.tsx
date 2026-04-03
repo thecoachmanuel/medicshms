@@ -116,9 +116,12 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
         </head>
         <body>
           <div class="header">
-            <div>
-              <div class="title">INVOICE</div>
-              <div class="status-badge">${bill.paymentStatus}</div>
+            <div style="display: flex; align-items: center; gap: 20px;">
+              ${template?.hospitalLogoUrl ? `<img src="${template.hospitalLogoUrl}" style="height: 80px; object-contain: contain;" />` : ''}
+              <div>
+                <div class="title">INVOICE</div>
+                <div class="status-badge">${bill.paymentStatus}</div>
+              </div>
             </div>
             <div style="text-align: right">
               <div style="font-size: 24px; font-weight: 900;">${template?.hospital_name || 'Hospital HMS'}</div>
@@ -232,9 +235,20 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="p-10" ref={printRef}>
             <div className="flex justify-between items-start mb-12">
-              <div>
-                <h1 className="text-4xl font-black text-gray-900 tracking-tighter mb-2">INVOICE</h1>
-                <p className="text-sm font-bold text-gray-400 tracking-widest uppercase">{bill.billNumber}</p>
+              <div className="flex items-center gap-6">
+                {template?.hospitalLogoUrl ? (
+                   <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center overflow-hidden border border-gray-100 p-2">
+                      <img src={template.hospitalLogoUrl} alt="Logo" className="w-full h-full object-contain" />
+                   </div>
+                ) : (
+                  <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center">
+                    <Building2 className="w-8 h-8 text-gray-300" />
+                  </div>
+                )}
+                <div>
+                  <h1 className="text-4xl font-black text-gray-900 tracking-tighter mb-2">INVOICE</h1>
+                  <p className="text-sm font-bold text-gray-400 tracking-widest uppercase">{bill.billNumber}</p>
+                </div>
               </div>
               <div className="text-right">
                 <p className="text-lg font-black text-gray-900">{template?.hospital_name || 'Hospital HMS'}</p>

@@ -14,6 +14,8 @@ export interface User {
   doctorProfileId?: string;
   createdAt?: string;
   updatedAt?: string;
+  department?: string;
+  departmentId?: string;
   doctorInfo?: {
     departmentId?: string;
     primaryDepartment?: Department;

@@ -124,7 +124,7 @@ export default function DoctorManagement() {
       name: doctor.name, 
       email: doctor.email, 
       phone: doctor.phone || '',
-      departmentId: doctor.doctorInfo?.departmentId || '',
+      departmentId: doctor.departmentId || '',
       isActive: doctor.isActive 
     });
     setShowModal(true);
@@ -249,9 +249,9 @@ export default function DoctorManagement() {
                     </div>
                   </td>
                   <td className="px-10 py-6">
-                    {doctor.doctorInfo?.primaryDepartment ? (
+                    {doctor.department ? (
                       <span className="inline-flex items-center px-4 py-2 bg-primary-50 text-primary-700 rounded-xl text-[10px] font-black uppercase tracking-widest border border-primary-100/50 shadow-sm">
-                        {doctor.doctorInfo.primaryDepartment.name}
+                        {doctor.department}
                       </span>
                     ) : (
                       <span className="text-[10px] text-gray-300 font-black uppercase tracking-widest bg-gray-50 px-4 py-2 rounded-xl border border-gray-100">Unassigned Unit</span>

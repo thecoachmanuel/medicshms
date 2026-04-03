@@ -78,6 +78,7 @@ export async function PUT(request: Request) {
     if (websiteUrl !== undefined) updateData.website_url = websiteUrl;
     if (footerNote !== undefined) updateData.footer_note = footerNote;
     if (termsAndConditions !== undefined) updateData.terms_and_conditions = termsAndConditions;
+    if (body.logoUrl !== undefined) updateData.hospital_logo = body.logoUrl;
 
     const { data: updated, error } = await supabase
       .from('invoice_templates')

@@ -23,7 +23,20 @@ export default function AddAnnouncementModal({ onClose, onSuccess }: AddAnnounce
     e.preventDefault();
     try {
       setLoading(true);
-      await announcementAPI.create(formData);
+      
+      // Map priority to integer for DB consistency
+      const priorityMap: Record<string, number> = {
+        'Low': 0,
+        'Normal': 1,
+        'High': 2
+      };
+
+      const payload = {
+        ...formData,
+        priority: priorityMap[formData.priority] || 0
+      };
+
+      await announcementAPI.create(payload);
       toast.success('Announcement created successfully');
       onSuccess();
       onClose();

@@ -41,7 +41,15 @@ export async function POST(request: Request) {
   if (authError) return authError;
 
   try {
-    const { title, message, type, priority, startDate, endDate, targetAudience, icon } = await request.json();
+    const body = await request.json();
+    const { title, message, type, priority, startDate, endDate, targetAudience, icon } = body;
+
+    // Safety mapping for priority if it's sent as a string from anywhere else
+    const priorityValue = typeof priority === 'string' ? {
+      'Low': 0,
+      'Normal': 1,
+      'High': 2
+    }[priority] || 0 : priority;
 
     const { data: announcement, error } = await (supabaseAdmin || supabase)
       .from('announcements')
@@ -50,7 +58,7 @@ export async function POST(request: Request) {
         message,
         type,
         hospital_id: profile?.hospital_id,
-        priority: priority || 0,
+        priority: priorityValue || 0,
         start_date: startDate,
         end_date: endDate,
         target_audience: targetAudience,

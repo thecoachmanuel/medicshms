@@ -155,6 +155,7 @@ export default function SettingsPage() {
 
   const tabs = [
     { id: 'general', icon: Settings, label: 'General System' },
+    { id: 'domain', icon: Globe, label: 'Custom Domain' },
     { id: 'security', icon: Lock, label: 'Access & Auth' },
     { id: 'notifications', icon: Bell, label: 'Email & Push' },
     { id: 'database', icon: Database, label: 'Data Management' },
@@ -420,18 +421,112 @@ export default function SettingsPage() {
                             )}></span>
                          </button>
                       </div>
-                   </div>
+                    </div>
+                 </div>
+
+                 <div className="p-6 bg-primary-50 rounded-[2rem] border border-primary-100 flex items-start gap-4">
+                    <AlertCircle className="w-6 h-6 text-primary-500 mt-0.5" />
+                    <div>
+                        <p className="text-xs font-bold text-primary-900 uppercase tracking-widest mb-1">System Action Required</p>
+                        <p className="text-xs text-primary-700 leading-relaxed font-medium">Changes to branding and contact info will reflect across all public pages and patient receipts immediately after syncing.</p>
+                    </div>
+                 </div>
+              </div>
+            )}
+
+            {activeTab === 'domain' && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <div className="card p-8 space-y-8">
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-primary-50 rounded-2xl flex items-center justify-center text-primary-600">
+                        <Globe className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-gray-900">External Domain Configuration</h3>
+                        <p className="text-xs text-gray-400 font-bold uppercase tracking-widest leading-loose">Connect your own brand domain to your hospital portal</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Your Custom Domain</label>
+                        <div className="flex gap-4">
+                          <input 
+                            type="text" 
+                            placeholder="e.g. portal.yourhospital.com"
+                            value={settings.custom_domain || ''} 
+                            onChange={e => setSettings({...settings, custom_domain: e.target.value.toLowerCase().trim()})}
+                            className="input flex-1 py-3 font-bold text-slate-700" 
+                          />
+                          <button 
+                            type="button"
+                            onClick={handleSave}
+                            className="btn-primary px-8"
+                          >
+                            Set Domain
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-primary-600 font-bold mt-2 italic px-1">
+                          Current Platform URL: {typeof window !== 'undefined' ? `${window.location.origin}/${settings.slug}` : ''}
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
+                        <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 relative overflow-hidden group">
+                           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                              <Database className="w-12 h-12" />
+                           </div>
+                           <h4 className="text-xs font-black uppercase tracking-widest text-slate-900 underline decoration-primary-500 decoration-2 underline-offset-4">Method 1: Nameservers (Recommended)</h4>
+                           <p className="text-xs text-slate-500 leading-relaxed font-medium">Point your entire domain to our high-performance infrastructure for better security and global caching.</p>
+                           <div className="bg-white p-4 rounded-xl space-y-3 shadow-sm border border-slate-100">
+                              <div className="flex justify-between items-center group/ns">
+                                 <code className="text-[10px] font-black text-primary-600">ns1.medicshms.com</code>
+                                 <button onClick={() => { navigator.clipboard.writeText('ns1.medicshms.com'); toast.success('Copied ns1'); }} className="text-[10px] uppercase font-black text-slate-300 hover:text-primary-600 transition-colors">Copy</button>
+                              </div>
+                              <div className="h-px bg-slate-50"></div>
+                              <div className="flex justify-between items-center group/ns">
+                                 <code className="text-[10px] font-black text-primary-600">ns2.medicshms.com</code>
+                                 <button onClick={() => { navigator.clipboard.writeText('ns2.medicshms.com'); toast.success('Copied ns2'); }} className="text-[10px] uppercase font-black text-slate-300 hover:text-primary-600 transition-colors">Copy</button>
+                              </div>
+                           </div>
+                        </div>
+
+                        <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 relative overflow-hidden group">
+                           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                              <Hospital className="w-12 h-12" />
+                           </div>
+                           <h4 className="text-xs font-black uppercase tracking-widest text-slate-900 underline decoration-emerald-500 decoration-2 underline-offset-4">Method 2: CNAME Record</h4>
+                           <p className="text-xs text-slate-500 leading-relaxed font-medium">Use a subdomain (e.g. portal.hospital.com) by adding a CNAME record in your existing DNS provider.</p>
+                           <div className="bg-white p-4 rounded-xl space-y-3 shadow-sm border border-slate-100">
+                              <div className="flex flex-col gap-1">
+                                 <span className="text-[8px] font-black uppercase text-slate-400">Type / Record</span>
+                                 <span className="text-[10px] font-black text-emerald-600 uppercase">CNAME @</span>
+                              </div>
+                              <div className="h-px bg-slate-50"></div>
+                              <div className="flex justify-between items-center group/ns">
+                                 <div className="flex flex-col gap-1">
+                                    <span className="text-[8px] font-black uppercase text-slate-400">Value</span>
+                                    <code className="text-[10px] font-black text-emerald-600">app.medicshms.com</code>
+                                 </div>
+                                 <button onClick={() => { navigator.clipboard.writeText('app.medicshms.com'); toast.success('Copied CNAME'); }} className="text-[10px] uppercase font-black text-slate-300 hover:text-emerald-600 transition-colors">Copy</button>
+                              </div>
+                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="p-6 bg-primary-50 rounded-[2rem] border border-primary-100 flex items-start gap-4">
-                   <AlertCircle className="w-6 h-6 text-primary-500 mt-0.5" />
-                   <div>
-                       <p className="text-xs font-bold text-primary-900 uppercase tracking-widest mb-1">System Action Required</p>
-                       <p className="text-xs text-primary-700 leading-relaxed font-medium">Changes to branding and contact info will reflect across all public pages and patient receipts immediately after syncing.</p>
-                   </div>
+                <div className="p-6 bg-amber-50 rounded-[2rem] border border-amber-100 flex items-start gap-4">
+                  <AlertCircle className="w-6 h-6 text-amber-500 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-bold text-amber-900 uppercase tracking-widest mb-1">Propagation Notice</p>
+                    <p className="text-xs text-amber-700 leading-relaxed font-medium">DNS changes can take up to 24-48 hours to propagate globally. Make sure to only save the custom domain after updating your DNS records to avoid downtime.</p>
+                  </div>
                 </div>
-             </div>
-           )}
+              </div>
+            )}
 
             {activeTab === 'security' && (
               <div className="space-y-6">

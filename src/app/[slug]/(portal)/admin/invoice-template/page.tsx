@@ -37,8 +37,20 @@ export default function InvoiceTemplatePage() {
   const fetchTemplate = async () => {
     try {
       setLoading(true);
-      const res = await invoiceTemplateAPI.get();
-      if (res.data) setTemplate(res.data);
+      const res = await invoiceTemplateAPI.get() as any;
+      if (res.success && res.data) {
+        setTemplate({
+          hospitalName: res.data.hospital_name || '',
+          hospitalAddress: res.data.hospital_address || '',
+          contactNumber: res.data.contact_number || '',
+          emailAddress: res.data.email_address || '',
+          websiteUrl: res.data.website_url || '',
+          gstNumber: res.data.gst_number || '',
+          logoUrl: res.data.hospital_logo || '',
+          footerNote: res.data.footer_note || '',
+          termsAndConditions: res.data.terms_and_conditions || ''
+        });
+      }
     } catch {
       toast.error('Failed to fetch template');
     } finally {
@@ -103,6 +115,29 @@ export default function InvoiceTemplatePage() {
                   <input type="text" value={template.gstNumber} onChange={e => setTemplate({...template, gstNumber: e.target.value})} className="input py-3" />
                 </div>
               </div>
+              <div className="space-y-4">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Hospital Logo</label>
+                <div className="flex items-center gap-6 p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200 group-hover:border-primary-200 transition-all">
+                  <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow-sm relative overflow-hidden group/logo">
+                    {template.logoUrl ? (
+                      <img src={template.logoUrl} alt="Logo" className="w-full h-full object-contain p-2" />
+                    ) : (
+                      <ImageIcon className="w-6 h-6 text-gray-300" />
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <p className="text-[10px] text-gray-500 font-medium">Recommended: 400x400 PNG with transparency</p>
+                    <input 
+                      type="text" 
+                      value={template.logoUrl || ''} 
+                      onChange={e => setTemplate({...template, logoUrl: e.target.value})} 
+                      placeholder="https://example.com/logo.png"
+                      className="input py-2 text-xs" 
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-1.5 pt-4">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Footer Message</label>
                 <textarea rows={2} value={template.footerNote} onChange={e => setTemplate({...template, footerNote: e.target.value})} className="input py-3" placeholder="Get well soon..." />
