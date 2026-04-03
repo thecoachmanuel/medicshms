@@ -320,7 +320,7 @@ export default function StaffManagement() {
                       <div className="relative mt-3">
                         <select required value={formData.departmentId} onChange={e => setFormData({...formData, departmentId: e.target.value})} className="w-full appearance-none px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-gray-700 focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all cursor-pointer">
                           <option value="">Select Unit</option>
-                          {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                          {departments.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
                         </select>
                         <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
                           <Users className="w-5 h-5" />
