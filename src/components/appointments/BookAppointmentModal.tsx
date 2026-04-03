@@ -68,8 +68,8 @@ export default function BookAppointmentModal({ onClose, onSuccess }: Props) {
   const steps = visitType === 'Follow-up' ? STEPS_FOLLOWUP : STEPS_NEW;
 
   useEffect(() => {
-    departmentsAPI.getAll().then(r => setDepartments(r.data.data || [])).catch(console.error);
-    doctorsAPI.getAll().then(r => setDoctors(r.data.data || [])).catch(console.error);
+    departmentsAPI.getAll().then(r => setDepartments(r.data || [])).catch(console.error);
+    doctorsAPI.getAll().then(r => setDoctors(r.data || [])).catch(console.error);
   }, []);
 
   useEffect(() => {

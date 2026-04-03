@@ -46,7 +46,7 @@ export default function PharmacyInventoryPage() {
     setLoading(true);
     try {
       const response = await pharmacyAPI.getInventory({ search: searchTerm });
-      setItems(response.data.data || []);
+      setItems(response.data || []);
     } catch (error) {
       toast.error('Failed to load inventory');
     } finally {

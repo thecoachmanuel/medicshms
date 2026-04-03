@@ -59,11 +59,11 @@ export default function PublicBookingForm({ hospitalId, slug }: Props) {
   useEffect(() => {
     // Fetch departments for THIS hospital
     departmentsAPI.getAll({ hospitalSlug: slug })
-      .then(r => setDepartments(r.data.data || []))
+      .then(r => setDepartments(r.data || []))
       .catch(console.error);
     
     doctorsAPI.getAll()
-      .then(r => setDoctors(r.data.data || []))
+      .then(r => setDoctors(r.data || []))
       .catch(console.error);
   }, [slug]);
 
