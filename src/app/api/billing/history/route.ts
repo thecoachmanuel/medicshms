@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin, supabase } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
+import { isPlatformAdmin } from '@/lib/auth-helpers';
 
 export async function GET(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Admin', 'Platform Admin']);
+  const { error: authError, profile } = await withAuth(request, ['Admin', 'Platform Admin']) as any;
   if (authError) return authError;
 
   try {
@@ -14,7 +15,7 @@ export async function GET(request: Request) {
       .order('paid_at', { ascending: false });
 
     // Restrict isolation if not a platform admin
-    if (profile.role !== 'Platform Admin') {
+    if (!isPlatformAdmin(profile.role)) {
       query = query.eq('hospital_id', profile.hospital_id);
     }
 

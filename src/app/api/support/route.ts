@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth, getAuthUser } from '@/lib/auth';
+import { isPlatformAdmin } from '@/lib/auth-helpers';
 
 // Create a new support ticket
 // POST /api/support
@@ -86,7 +87,7 @@ export async function GET(request: Request) {
       .order('created_at', { ascending: false });
 
     // Platform admin sees everything, hospital admin only sees their own
-    if (profile.role !== 'Platform Admin') {
+    if (!isPlatformAdmin(profile.role)) {
       query = query.eq('hospital_id', profile.hospital_id);
     }
 

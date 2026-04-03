@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
+import { isPlatformAdmin } from '@/lib/auth-helpers';
 
 // Get all site update banners (Admin only)
 // GET /api/site-updates
@@ -13,7 +14,7 @@ export async function GET(request: Request) {
       .from('site_updates')
       .select('*, profiles:created_by(name, email)');
     
-    if (profile.role === 'Platform Admin') {
+    if (isPlatformAdmin(profile.role)) {
       query = query.is('hospital_id', null);
     } else {
       query = query.eq('hospital_id', profile.hospital_id);
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
         text_color: textColor,
         start_date: formattedStartDate,
         end_date: formattedEndDate,
-        hospital_id: profile.role === 'Platform Admin' ? null : profile.hospital_id,
+        hospital_id: isPlatformAdmin(profile.role) ? null : profile.hospital_id,
         created_by: profile?.id
       }])
       .select()

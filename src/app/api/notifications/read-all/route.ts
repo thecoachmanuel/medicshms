@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
+import { isPlatformAdmin } from '@/lib/auth-helpers';
 
 export async function PUT(request: Request) {
   const { error: authError, profile } = await withAuth(request);
@@ -14,8 +15,8 @@ export async function PUT(request: Request) {
       .update({ is_read: true, read_at: new Date().toISOString() })
       .eq('is_read', false);
 
-    if (profile.role === 'Platform Admin') {
-      query = query.or(`user_id.eq.${profile.id},and(hospital_id.is.null,role.eq.platform_admin)`);
+    if (isPlatformAdmin(profile.role)) {
+      query = query.or(`user_id.eq.${profile.id},and(hospital_id.is.null,role.in.(platform_admin,super_admin))`);
     } else {
       query = query.or(`user_id.eq.${profile.id},and(hospital_id.eq.${profile.hospital_id},role.eq.${profile.role})`);
     }
