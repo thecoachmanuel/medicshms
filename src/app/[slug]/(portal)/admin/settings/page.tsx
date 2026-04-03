@@ -475,41 +475,44 @@ export default function SettingsPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
                         <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 relative overflow-hidden group">
                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-                              <Database className="w-12 h-12" />
+                              <Globe className="w-12 h-12" />
                            </div>
-                           <h4 className="text-xs font-black uppercase tracking-widest text-slate-900 underline decoration-primary-500 decoration-2 underline-offset-4">Method 1: Nameservers (Recommended)</h4>
-                           <p className="text-xs text-slate-500 leading-relaxed font-medium">Point your entire domain to our high-performance infrastructure for better security and global caching.</p>
+                           <h4 className="text-xs font-black uppercase tracking-widest text-slate-900 underline decoration-primary-500 decoration-2 underline-offset-4">Primary Method: CNAME (Preferred)</h4>
+                           <p className="text-xs text-slate-500 leading-relaxed font-medium">Add a CNAME record in your domain registrar to point your subdomain (e.g. portal.hospital.com) to our platform.</p>
                            <div className="bg-white p-4 rounded-xl space-y-3 shadow-sm border border-slate-100">
-                              <div className="flex justify-between items-center group/ns">
-                                 <code className="text-[10px] font-black text-primary-600">ns1.medicshms.com</code>
-                                 <button onClick={() => { navigator.clipboard.writeText('ns1.medicshms.com'); toast.success('Copied ns1'); }} className="text-[10px] uppercase font-black text-slate-300 hover:text-primary-600 transition-colors">Copy</button>
+                              <div className="flex flex-col gap-1">
+                                 <span className="text-[8px] font-black uppercase text-slate-400">Record Type</span>
+                                 <span className="text-[10px] font-black text-primary-600 uppercase">CNAME</span>
                               </div>
                               <div className="h-px bg-slate-50"></div>
                               <div className="flex justify-between items-center group/ns">
-                                 <code className="text-[10px] font-black text-primary-600">ns2.medicshms.com</code>
-                                 <button onClick={() => { navigator.clipboard.writeText('ns2.medicshms.com'); toast.success('Copied ns2'); }} className="text-[10px] uppercase font-black text-slate-300 hover:text-primary-600 transition-colors">Copy</button>
+                                 <div className="flex flex-col gap-1">
+                                    <span className="text-[8px] font-black uppercase text-slate-400">Target URL</span>
+                                    <code className="text-[10px] font-black text-primary-600 tracking-tight">medicshms.vercel.app</code>
+                                 </div>
+                                 <button onClick={() => { navigator.clipboard.writeText('medicshms.vercel.app'); toast.success('Copied CNAME target'); }} className="text-[10px] uppercase font-black text-slate-300 hover:text-primary-600 transition-colors">Copy</button>
                               </div>
                            </div>
                         </div>
 
                         <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 relative overflow-hidden group">
                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-                              <Hospital className="w-12 h-12" />
+                              <RefreshCw className="w-12 h-12" />
                            </div>
-                           <h4 className="text-xs font-black uppercase tracking-widest text-slate-900 underline decoration-emerald-500 decoration-2 underline-offset-4">Method 2: CNAME Record</h4>
-                           <p className="text-xs text-slate-500 leading-relaxed font-medium">Use a subdomain (e.g. portal.hospital.com) by adding a CNAME record in your existing DNS provider.</p>
+                           <h4 className="text-xs font-black uppercase tracking-widest text-slate-900 underline decoration-emerald-500 decoration-2 underline-offset-4">Method 2: A Record (Apex Domain)</h4>
+                           <p className="text-xs text-slate-500 leading-relaxed font-medium">Use this for your main domain (e.g. yourclinic.com) without a subdomain. Point an A record to our server IP.</p>
                            <div className="bg-white p-4 rounded-xl space-y-3 shadow-sm border border-slate-100">
                               <div className="flex flex-col gap-1">
-                                 <span className="text-[8px] font-black uppercase text-slate-400">Type / Record</span>
-                                 <span className="text-[10px] font-black text-emerald-600 uppercase">CNAME @</span>
+                                 <span className="text-[8px] font-black uppercase text-slate-400">Record Type</span>
+                                 <span className="text-[10px] font-black text-emerald-600 uppercase">A Record @</span>
                               </div>
                               <div className="h-px bg-slate-50"></div>
                               <div className="flex justify-between items-center group/ns">
                                  <div className="flex flex-col gap-1">
-                                    <span className="text-[8px] font-black uppercase text-slate-400">Value</span>
-                                    <code className="text-[10px] font-black text-emerald-600">app.medicshms.com</code>
+                                    <span className="text-[8px] font-black uppercase text-slate-400">Value (IP Address)</span>
+                                    <code className="text-[10px] font-black text-emerald-600">[Contact Support for IP]</code>
                                  </div>
-                                 <button onClick={() => { navigator.clipboard.writeText('app.medicshms.com'); toast.success('Copied CNAME'); }} className="text-[10px] uppercase font-black text-slate-300 hover:text-emerald-600 transition-colors">Copy</button>
+                                 <button onClick={() => { navigator.clipboard.writeText('Please provide server IP'); toast.success('Help text copied'); }} className="text-[10px] uppercase font-black text-slate-300 hover:text-emerald-600 transition-colors">Support</button>
                               </div>
                            </div>
                         </div>
