@@ -134,19 +134,32 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({
-      _id: profile.id,
-      name: profile.name,
-      email: profile.email,
-      phone: profile.phone,
-      role: profile.role,
-      hospital_id: profile.hospital_id,
-      hospital_slug: hospitalSlug,
-      subscription_status: subscriptionStatus,
-      trial_end_date: trialEndDate,
-      token: data.session.access_token,
+      success: true,
+      message: 'Authentication successful',
+      data: {
+        token: data.session.access_token,
+        user: {
+          _id: profile.id,
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          phone: profile.phone,
+          role: profile.role === 'platform_admin' ? 'Platform Admin' : profile.role,
+          isActive: profile.is_active ?? true,
+          hospital_id: profile.hospital_id,
+          hospital_slug: hospitalSlug,
+          subscription_status: subscriptionStatus,
+          trial_end_date: trialEndDate,
+          profilePhoto: profile.profile_photo,
+          doctorProfileId: profile.doctor_profile_id
+        }
+      }
     });
   } catch (error: any) {
     console.error('[Login API] Critical Catch Error:', error);
-    return NextResponse.json({ message: 'Internal Server Error: ' + error.message }, { status: 500 });
+    return NextResponse.json({ 
+      success: false,
+      message: 'Internal Server Error: ' + error.message 
+    }, { status: 500 });
   }
 }

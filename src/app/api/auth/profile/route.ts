@@ -12,9 +12,15 @@ export async function GET(request: Request) {
     }
 
     const fullProfile = await buildProfileResponse(profile.id);
-    return NextResponse.json(fullProfile);
+    return NextResponse.json({
+      success: true,
+      data: fullProfile
+    });
   } catch (error: any) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    return NextResponse.json({ 
+      success: false, 
+      message: error.message 
+    }, { status: 500 });
   }
 }
 
@@ -49,8 +55,15 @@ export async function PUT(request: Request) {
     // For now, we only update name and phone as requested by the profile UI.
 
     const updatedProfile = await buildProfileResponse(profile.id);
-    return NextResponse.json(updatedProfile);
+    return NextResponse.json({
+      success: true,
+      data: updatedProfile,
+      message: 'Profile updated successfully'
+    });
   } catch (error: any) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    return NextResponse.json({ 
+      success: false, 
+      message: error.message 
+    }, { status: 500 });
   }
 }
