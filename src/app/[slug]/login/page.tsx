@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useSiteSettings } from '@/context/SettingsContext';
+import { isPlatformAdmin } from '@/lib/auth-helpers';
 import HospitalLogo from '@/components/common/HospitalLogo';
 import { Mail, Lock, Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -26,9 +27,8 @@ export default function HospitalLoginPage({ params }: { params: Promise<{ slug: 
     if (!authLoading && user) {
       const roleName = user.role || '';
       const normalizedRole = roleName.toLowerCase();
-      const roleSlug = normalizedRole.replace(/\s+/g, '-');
-
-      if (normalizedRole === 'platform admin' || normalizedRole === 'super_admin') {
+      const roleSlug = normalizedRole.replace(/[\s_]+/g, '-');
+      if (isPlatformAdmin(user.role)) {
         router.push('/platform-admin/dashboard');
       } else {
         const authorizedSlug = user.hospital_slug || slug;

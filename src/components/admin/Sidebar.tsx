@@ -34,6 +34,7 @@ import {
   Scan,
   ImageIcon
 } from 'lucide-react';
+import { isPlatformAdmin } from '@/lib/auth-helpers';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -54,8 +55,8 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const parts = pathname.split('/');
-  const isPlatformAdmin = pathname.startsWith('/platform-admin');
-  const slug = (!isPlatformAdmin && parts.length > 1 && parts[1] !== 'login' && parts[1] !== 'admin' && parts[1] !== 'doctor' && parts[1] !== 'receptionist') 
+  const isPlatformRoute = pathname.startsWith('/platform-admin');
+  const slug = (!isPlatformRoute && parts.length > 1 && parts[1] !== 'login' && parts[1] !== 'admin' && parts[1] !== 'doctor' && parts[1] !== 'receptionist') 
     ? parts[1] 
     : '';
 
@@ -63,7 +64,7 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
     const role = user?.role;
     const base = slug ? `/${slug}` : '';
 
-    if (role === 'Platform Admin') {
+    if (isPlatformAdmin(role)) {
       return [
         { icon: LayoutDashboard, label: 'Super Admin', path: '/platform-admin/dashboard' },
         { icon: Building2, label: 'Hospitals', path: '/platform-admin/dashboard' },

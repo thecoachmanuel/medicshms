@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useSiteSettings } from '@/context/SettingsContext';
+import { isPlatformAdmin } from '@/lib/auth-helpers';
 import HospitalLogo from '@/components/common/HospitalLogo';
 import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -23,9 +24,8 @@ function LoginForm() {
     if (!loading && user) {
       const roleName = user.role || '';
       const normalizedRole = roleName.toLowerCase();
-      const roleSlug = normalizedRole.replace(/\s+/g, '-');
-
-      if (normalizedRole === 'platform admin' || normalizedRole === 'super_admin') {
+      const roleSlug = normalizedRole.replace(/[\s_]+/g, '-');
+      if (isPlatformAdmin(user.role)) {
         router.push('/platform-admin/dashboard');
       } else {
         const targetSlug = user.hospital_slug || slug;
@@ -49,7 +49,7 @@ function LoginForm() {
     try {
       const result = await login({ identifier, password });
       if (result.success) {
-        if (result.role !== 'Platform Admin' && result.role !== 'super_admin') {
+        if (!isPlatformAdmin(result.role)) {
           toast.error('This portal is for Platform Administrators only. Redirecting to your hospital...');
           // Redirection will be handled by useEffect, but we've shown the error
         } else {

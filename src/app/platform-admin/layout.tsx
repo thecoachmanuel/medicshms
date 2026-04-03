@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/admin/Sidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import { isPlatformAdmin } from '@/lib/auth-helpers';
 
 export default function PlatformAdminLayout({
   children,
@@ -19,9 +20,9 @@ export default function PlatformAdminLayout({
     if (!loading) {
       if (!user) {
         router.push('/login');
-      } else if (user.role !== 'Platform Admin') {
+      } else if (!isPlatformAdmin(user.role)) {
         // If they are a tenant user, redirect to their own login or dashboard
-        const slug = (user as any).hospital?.slug || '';
+        const slug = (user as any).hospital?.slug || user.hospital_slug || '';
         if (slug) {
           router.push(`/${slug}/login`);
         } else {
@@ -39,7 +40,7 @@ export default function PlatformAdminLayout({
     );
   }
 
-  if (!user || user.role !== 'Platform Admin') return null;
+  if (!user || !isPlatformAdmin(user.role)) return null;
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">

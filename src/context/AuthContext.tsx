@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authAPI } from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import { isPlatformAdmin } from '@/lib/auth-helpers';
 
 import { User } from '@/types';
 
@@ -94,8 +95,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
       
-      const roleSlug = loginUser.role.toLowerCase().replace(/\s+/g, '-');
-      if (loginUser.role === 'Platform Admin' || loginUser.role === 'super_admin') {
+      const roleSlug = loginUser.role.toLowerCase().replace(/[\s_]+/g, '-');
+      if (isPlatformAdmin(loginUser.role)) {
         router.push('/platform-admin/dashboard');
       } else if (loginUser.hospital_slug) {
         router.push(`/${loginUser.hospital_slug}/${roleSlug}/dashboard`);
@@ -116,9 +117,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     const pathname = window.location.pathname;
     const parts = pathname.split('/');
-    const isPlatformAdmin = pathname.startsWith('/platform-admin');
+    const isPlatformRoute = pathname.startsWith('/platform-admin');
     const portalRoles = ['login', 'admin', 'doctor', 'receptionist', 'nurse', 'lab-scientist', 'pharmacist', 'radiologist'];
-    const slug = (!isPlatformAdmin && parts.length > 1 && !portalRoles.includes(parts[1])) 
+    const slug = (!isPlatformRoute && parts.length > 1 && !portalRoles.includes(parts[1])) 
       ? parts[1] 
       : '';
 
