@@ -100,7 +100,7 @@ export default function EditInvoiceModal({ billId, appointment, onClose, onUpdat
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose}></div>
       <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
-        <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
               <Edit2 className="w-5 h-5 text-emerald-600" />
@@ -115,7 +115,7 @@ export default function EditInvoiceModal({ billId, appointment, onClose, onUpdat
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-8 py-8 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto px-8 py-8 custom-scrollbar overscroll-behavior-contain">
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-[10px] font-black text-gray-900 uppercase tracking-widest pl-1">Line Items</h3>

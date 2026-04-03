@@ -25,6 +25,7 @@ export default function InvoiceTemplatePage() {
     emailAddress: 'billing@modernlife.com',
     websiteUrl: 'www.modernlife.com',
     gstNumber: 'GSTIN1234567890',
+    cinNumber: 'CIN1234567890',
     logoUrl: '',
     footerNote: 'Thank you for choosing Modern Life Hospital. Get well soon!',
     termsAndConditions: '1. All payments are final. 2. Insurance claims subject to approval.'
@@ -46,6 +47,7 @@ export default function InvoiceTemplatePage() {
           emailAddress: res.data.email_address || '',
           websiteUrl: res.data.website_url || '',
           gstNumber: res.data.gst_number || '',
+          cinNumber: res.data.cin_number || '',
           logoUrl: res.data.hospital_logo || '',
           footerNote: res.data.footer_note || '',
           termsAndConditions: res.data.terms_and_conditions || ''
@@ -111,8 +113,18 @@ export default function InvoiceTemplatePage() {
                   <input type="text" value={template.contactNumber} onChange={e => setTemplate({...template, contactNumber: e.target.value})} className="input py-3" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">GST Number</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">GST/TAX Number</label>
                   <input type="text" value={template.gstNumber} onChange={e => setTemplate({...template, gstNumber: e.target.value})} className="input py-3" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">CIN/REG Number</label>
+                  <input type="text" value={template.cinNumber} onChange={e => setTemplate({...template, cinNumber: e.target.value})} className="input py-3" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Website URL</label>
+                  <input type="text" value={template.websiteUrl} onChange={e => setTemplate({...template, websiteUrl: e.target.value})} className="input py-3" placeholder="www.hospital.com" />
                 </div>
               </div>
               <div className="space-y-4">
@@ -183,8 +195,8 @@ export default function InvoiceTemplatePage() {
 
                <div className="pt-10 space-y-4">
                   <div className="flex justify-between items-center text-gray-400">
-                    <p className="text-[10px] font-black uppercase tracking-widest">Hospital GST</p>
-                    <p className="text-[10px] font-bold">{template.gstNumber || 'N/A'}</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest">Tax (GST) / Reg (CIN)</p>
+                    <p className="text-[10px] font-bold">{template.gstNumber || 'N/A'} {template.cinNumber && ` / ${template.cinNumber}`}</p>
                   </div>
                   <div className="h-0.5 bg-gray-900 mb-2"></div>
                   <div className="p-4 bg-gray-50 rounded-xl">

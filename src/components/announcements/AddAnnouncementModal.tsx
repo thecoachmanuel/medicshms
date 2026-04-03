@@ -49,8 +49,8 @@ export default function AddAnnouncementModal({ onClose, onSuccess }: AddAnnounce
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+      <div className="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-600">
               <Megaphone className="w-4 h-4" />
@@ -62,7 +62,7 @@ export default function AddAnnouncementModal({ onClose, onSuccess }: AddAnnounce
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
           <div className="space-y-1.5">
             <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Title</label>
             <input

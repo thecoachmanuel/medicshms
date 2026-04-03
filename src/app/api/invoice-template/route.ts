@@ -80,7 +80,7 @@ export async function PUT(request: Request) {
     if (termsAndConditions !== undefined) updateData.terms_and_conditions = termsAndConditions;
     if (body.logoUrl !== undefined) updateData.hospital_logo = body.logoUrl;
 
-    const { data: updated, error } = await supabase
+    const { data: updated, error } = await (supabaseAdmin || supabase)
       .from('invoice_templates')
       .update(updateData)
       .eq('id', template.id)

@@ -216,7 +216,7 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose}></div>
       <div className="relative bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
-        <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="w-5 h-5 text-emerald-600" />
             <h2 className="text-xl font-bold text-gray-900">Invoice {bill.billNumber}</h2>
@@ -232,7 +232,7 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 overflow-y-auto custom-scrollbar overscroll-behavior-contain">
           <div className="p-10" ref={printRef}>
             <div className="flex justify-between items-start mb-12">
               <div className="flex items-center gap-6">

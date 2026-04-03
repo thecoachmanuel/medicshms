@@ -64,7 +64,7 @@ export default function EditPatientModal({ isOpen, onClose, onSuccess, patient }
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose}></div>
       <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
               <User className="w-5 h-5 text-orange-600" />
@@ -79,7 +79,7 @@ export default function EditPatientModal({ isOpen, onClose, onSuccess, patient }
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-8 py-8 space-y-6">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-8 py-8 space-y-6 custom-scrollbar overscroll-behavior-contain">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Full Name */}
             <div className="space-y-2">
@@ -214,7 +214,7 @@ export default function EditPatientModal({ isOpen, onClose, onSuccess, patient }
           </div>
         </form>
 
-        <div className="px-8 py-6 border-t border-gray-100 bg-gray-50/50 flex items-center justify-end gap-3">
+        <div className="px-8 py-6 border-t border-gray-100 bg-gray-50/50 flex items-center justify-end gap-3 shrink-0">
           <button
             onClick={onClose}
             className="px-6 py-2.5 text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors"
