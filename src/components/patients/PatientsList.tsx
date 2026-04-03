@@ -81,7 +81,7 @@ export default function PatientsList({ role }: Props) {
     try {
       toast.loading('Preparing download...');
       const res = await patientsAPI.download();
-      const records = res.data || [];
+      const records = res.data?.data || [];
       
       if (!records.length) {
         toast.dismiss();
