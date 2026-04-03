@@ -88,6 +88,7 @@ export interface Patient {
   hospital_id?: string;
   lastVisit?: string;
   is_active?: boolean;
+  appointments?: Appointment[];
 }
 
 export interface APIResponse<T> {

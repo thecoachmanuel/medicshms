@@ -69,7 +69,7 @@ export default function PatientsList({ role }: Props) {
     setAppointmentsLoading(true);
     try {
       const res = await patientsAPI.getById(patient.patient_id || patient.patientId || patient._id);
-      setAppointments(res.data?.appointments || []);
+      setAppointments(res.data.data?.appointments || []);
     } catch (err) {
       toast.error('Failed to load patient history');
     } finally {
