@@ -17,7 +17,7 @@ export async function GET(request: Request) {
 
     if (error) throw error;
 
-    return NextResponse.json({ data: plans });
+    return NextResponse.json({ success: true, data: plans });
   } catch (error: any) {
     console.error('Plans fetch error:', error);
     return NextResponse.json({ message: error.message }, { status: 500 });
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 
     if (error) throw error;
 
-    return NextResponse.json(plan);
+    return NextResponse.json({ success: true, data: plan });
   } catch (error: any) {
     console.error('Plan creation error:', error);
     return NextResponse.json({ message: error.message }, { status: 500 });

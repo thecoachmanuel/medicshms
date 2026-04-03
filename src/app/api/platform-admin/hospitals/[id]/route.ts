@@ -33,7 +33,7 @@ export async function PATCH(
       .single();
 
     if (error) throw error;
-    return NextResponse.json(hospital);
+    return NextResponse.json({ success: true, data: hospital });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

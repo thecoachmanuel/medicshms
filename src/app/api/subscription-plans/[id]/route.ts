@@ -24,7 +24,7 @@ export async function PUT(
 
     if (error) throw error;
 
-    return NextResponse.json(plan);
+    return NextResponse.json({ success: true, data: plan });
   } catch (error: any) {
     console.error('Plan update error:', error);
     return NextResponse.json({ message: error.message }, { status: 500 });

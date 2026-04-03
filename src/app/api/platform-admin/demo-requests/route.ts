@@ -17,7 +17,7 @@ export async function GET(request: Request) {
 
     if (error) throw error;
 
-    return NextResponse.json({ data });
+    return NextResponse.json({ success: true, data });
   } catch (error: any) {
     console.error('Demo requests fetch error:', error);
     return NextResponse.json({ message: error.message }, { status: 500 });
@@ -42,7 +42,7 @@ export async function PUT(request: Request) {
 
     if (error) throw error;
 
-    return NextResponse.json(data);
+    return NextResponse.json({ success: true, data });
   } catch (error: any) {
     console.error('Demo request update error:', error);
     return NextResponse.json({ message: error.message }, { status: 500 });

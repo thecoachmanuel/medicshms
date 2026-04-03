@@ -28,7 +28,7 @@ export async function GET(request: Request) {
       suspended: hospitals.filter(h => h.subscription_status === 'suspended').length
     };
 
-    return NextResponse.json({ hospitals, stats });
+    return NextResponse.json({ success: true, data: { hospitals, stats } });
   } catch (error: any) {
     console.error('Platform admin fetch error:', error);
     return NextResponse.json({ message: error.message }, { status: 500 });
@@ -128,7 +128,7 @@ export async function POST(request: Request) {
       console.error('Failed to initialize site settings:', settingsError);
     }
 
-    return NextResponse.json(hospital);
+    return NextResponse.json({ success: true, data: hospital });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
