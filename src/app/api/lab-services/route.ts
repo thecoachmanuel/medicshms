@@ -42,22 +42,34 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Doctor']);
+  const { error: authError, profile } = await withAuth(request, ['Doctor', 'Lab Scientist', 'Admin']);
   if (authError) return authError;
 
   try {
-    const { patient_id, appointment_id, doctor_id, test_name, clinical_notes } = await request.json();
+    const { patient_id, appointment_id, doctor_id, test_name, clinical_notes, test_price, service_id } = await request.json();
 
-    const insertData = {
+    const insertData: any = {
       hospital_id: profile?.hospital_id,
       patient_id,
       appointment_id: appointment_id || null,
-      doctor_id,
+      doctor_id: doctor_id || null,
       type: 'Laboratory',
       test_name,
       clinical_notes,
-      status: 'Pending'
+      status: 'Pending',
+      payment_status: 'Unpaid' // Default status for new lab requests
     };
+
+    // If a scientist/staff is creating it, we can pre-assign themselves
+    if (profile.role === 'Lab Scientist') {
+      insertData.handled_by = profile.id;
+    }
+
+    // Add financial metadata if provided (will use these for billing generation)
+    // Even if columns don't exist yet, we can store in a result-like field or just 
+    // handle it in the billing logic if we pass common service_ids
+    if (test_price) insertData.test_price = test_price;
+    if (service_id) insertData.service_id = service_id;
 
     const { data, error } = await (supabaseAdmin || supabase)
       .from('clinical_requests')

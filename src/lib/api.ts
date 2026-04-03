@@ -153,6 +153,13 @@ export const departmentsAPI = {
   delete: (id: string) => api.delete<APIResponse<void>>(`/departments/${id}`),
 };
 
+export const servicesAPI = {
+  getAll: (params?: any) => api.get<APIResponse<any[]>>('/services', { params }),
+  create: (data: any) => api.post<APIResponse<any>>('/services', data),
+  update: (id: string, data: any) => api.put<APIResponse<any>>(`/services/${id}`, data),
+  delete: (id: string) => api.delete<APIResponse<void>>(`/services/${id}`),
+};
+
 export const doctorsAPI = {
   getAll: () => api.get<APIResponse<User[]>>('/doctors'),
   getById: (id: string) => api.get<APIResponse<User>>(`/doctors/${id}`),
@@ -168,6 +175,7 @@ export const billingAPI = {
   update: (id: string, data: any) => api.put(`/bills/${id}`, data),
   getInsights: (params: any) => api.get('/bills/insights', { params }),
   download: (params?: any) => api.get('/bills/download', { params }),
+  generateForLab: (requestId: string, data: any) => api.post(`/bills/generate-lab/${requestId}`, data),
 };
 
 export const dashboardAPI = {
