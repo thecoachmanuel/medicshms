@@ -1,11 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
 
 // Generate a bill for a specific Lab Request ID
 // POST /api/bills/generate-lab/[requestId]
 export async function POST(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ requestId: string }> }
 ) {
   const { error: authError, profile: userProfile } = await withAuth(request, ['Admin', 'Lab Scientist', 'Receptionist']);
