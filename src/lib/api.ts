@@ -244,6 +244,11 @@ export const platformAdminAPI = {
   updateHospital: (id: string, data: any) => api.patch(`/platform-admin/hospitals/${id}`, data),
 };
 
+export const demoRequestsAPI = {
+  getAll: () => api.get('/platform-admin/demo-requests'),
+  update: (data: any) => api.put('/platform-admin/demo-requests', data),
+};
+
 export const subscriptionPlansAPI = {
   getPublic: () => api.get('/subscription-plans/public'),
   getAll: () => api.get('/subscription-plans'),

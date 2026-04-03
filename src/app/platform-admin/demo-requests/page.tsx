@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { cn } from '@/lib/utils';
+import { demoRequestsAPI } from '@/lib/api';
 
 interface DemoRequest {
   id: string;
@@ -36,11 +37,11 @@ export default function DemoRequestsPage() {
 
   const fetchRequests = async () => {
     try {
-      const res = await fetch('/api/platform-admin/demo-requests');
-      const data = await res.json();
-      setRequests(data.data || []);
-    } catch (error) {
-      toast.error('Failed to fetch demo requests');
+      setLoading(true);
+      const res = await demoRequestsAPI.getAll() as any;
+      setRequests(res.data || []);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to fetch demo requests');
     } finally {
       setLoading(false);
     }
@@ -48,16 +49,11 @@ export default function DemoRequestsPage() {
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      const res = await fetch('/api/platform-admin/demo-requests', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status }),
-      });
-      if (!res.ok) throw new Error();
+      await demoRequestsAPI.update({ id, status });
       toast.success(`Request status updated to ${status}`);
       fetchRequests();
-    } catch (error) {
-      toast.error('Failed to update status');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to update status');
     }
   };
 

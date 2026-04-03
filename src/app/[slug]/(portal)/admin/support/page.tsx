@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { Headphones, Search, Filter, MessageSquare, User, Calendar, Clock, ChevronRight, CheckCircle2, AlertCircle, Loader2, X, ExternalLink, Mail, Phone, Hash, ShieldCheck, Send } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { supportAPI, siteSettingsAPI } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -14,6 +15,7 @@ function cn(...inputs: ClassValue[]) {
 
 export default function SupportTicketsPage() {
   const { slug } = useParams() as { slug: string };
+  const { user } = useAuth();
   const [tickets, setTickets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
@@ -54,12 +56,13 @@ export default function SupportTicketsPage() {
     try {
       // Get hospital settings for metadata
       const settingsRes = await siteSettingsAPI.get({ slug });
-      const hospitalName = settingsRes.data?.hospital_name || 'Hospital Tenant';
+      const hospitalName = settingsRes.data?.hospital_name || user?.name || 'Hospital Tenant';
+      const hospitalEmail = settingsRes.data?.contact_email || user?.email || 'admin@tenant.com';
 
       await supportAPI.create({
         ...platformTicket,
         name: hospitalName,
-        email: 'admin@tenant.com', // In reality, get from user profile
+        email: hospitalEmail,
         ticket_type: 'tenant',
         slug
       });

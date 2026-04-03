@@ -51,14 +51,15 @@ export async function GET(request: Request) {
     // 4. Resolve Hospital Defaults from hospitals table (branding only)
     let hospitalDefaults: any = {};
     if (targetHospitalId) {
-      const { data: hData } = await client.from('hospitals').select('name, logo_url, slug, custom_domain').eq('id', targetHospitalId).maybeSingle();
+      const { data: hData } = await client.from('hospitals').select('name, logo_url, slug, custom_domain, email').eq('id', targetHospitalId).maybeSingle();
       if (hData) {
         hospitalDefaults = {
           hospital_name: hData.name,
           logo_url: hData.logo_url,
           hospital_id: targetHospitalId,
           slug: hData.slug,
-          custom_domain: hData.custom_domain
+          custom_domain: hData.custom_domain,
+          contact_email: hData.email
         };
       }
     }

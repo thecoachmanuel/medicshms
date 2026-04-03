@@ -35,16 +35,20 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    // 3. Use supabaseAdmin to bypass RLS for insertion
+    // 3. Prepare data with fallbacks from profile
+    const finalName = name || profile?.name || 'Anonymous';
+    const finalEmail = email || profile?.email || 'no-email@provided.com';
+
+    // 4. Use supabaseAdmin to bypass RLS for insertion
     const { data: ticket, error } = await (supabaseAdmin || supabase)
       .from('support_tickets')
       .insert([{
-        name,
-        email,
+        name: finalName,
+        email: finalEmail,
         phone,
         issue_type: issueType,
         description,
-        ticket_type: ticket_type || 'patient',
+        ticket_type: ticket_type || (profile?.hospital_id ? 'tenant' : 'patient'),
         hospital_id
       }])
       .select()

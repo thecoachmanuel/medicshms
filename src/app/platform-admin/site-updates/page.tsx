@@ -20,6 +20,7 @@ export default function PlatformSiteUpdatesPage() {
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingBanner, setEditingBanner] = useState<any>(null);
 
   // New Banner Form State
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -78,6 +79,21 @@ export default function PlatformSiteUpdatesPage() {
     }
   };
 
+  const handleEdit = (banner: any) => {
+    setEditingBanner(banner);
+    setFormData({
+      message: banner.message,
+      linkText: banner.link_text || '',
+      linkUrl: banner.link_url || '',
+      image_url: banner.image_url || '',
+      backgroundColor: banner.background_color || '#0f172a',
+      textColor: banner.text_color || '#ffffff',
+      startDate: banner.start_date ? new Date(banner.start_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      endDate: banner.end_date ? new Date(banner.end_date).toISOString().split('T')[0] : ''
+    });
+    setShowCreate(true);
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this global banner?')) return;
     try {
@@ -89,15 +105,22 @@ export default function PlatformSiteUpdatesPage() {
     }
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.message) return toast.error('Message is required');
 
     try {
       setSaving(true);
-      await siteUpdateAPI.create(formData);
-      toast.success('Global banner created successfully');
+      if (editingBanner) {
+        await siteUpdateAPI.update(editingBanner._id || editingBanner.id, formData);
+        toast.success('Global banner updated successfully');
+      } else {
+        await siteUpdateAPI.create(formData);
+        toast.success('Global banner created successfully');
+      }
+      
       setShowCreate(false);
+      setEditingBanner(null);
       setFormData({
         message: '',
         linkText: '',
@@ -109,8 +132,8 @@ export default function PlatformSiteUpdatesPage() {
         endDate: ''
       });
       fetchBanners();
-    } catch {
-      toast.error('Failed to create banner');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || `Failed to ${editingBanner ? 'update' : 'create'} banner`);
     } finally {
       setSaving(false);
     }
@@ -139,14 +162,32 @@ export default function PlatformSiteUpdatesPage() {
                <div className="p-3 bg-slate-50 rounded-2xl">
                   <Bell className="w-5 h-5 text-slate-900" />
                </div>
-               <h2 className="text-xl font-bold text-slate-900">New Platform Banner</h2>
+               <h2 className="text-xl font-bold text-slate-900">
+                 {editingBanner ? 'Edit Global Banner' : 'New Platform Banner'}
+               </h2>
             </div>
-            <button onClick={() => setShowCreate(false)} className="p-2 hover:bg-slate-50 rounded-xl transition-colors">
+            <button 
+              onClick={() => {
+                setShowCreate(false);
+                setEditingBanner(null);
+                setFormData({
+                  message: '',
+                  linkText: '',
+                  linkUrl: '',
+                  image_url: '',
+                  backgroundColor: '#0f172a',
+                  textColor: '#ffffff',
+                  startDate: new Date().toISOString().split('T')[0],
+                  endDate: ''
+                });
+              }} 
+              className="p-2 hover:bg-slate-50 rounded-xl transition-colors"
+            >
               <X className="w-5 h-5 text-slate-400" />
             </button>
           </div>
 
-          <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="md:col-span-2 space-y-2">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Banner message</label>
               <textarea 
@@ -255,9 +296,33 @@ export default function PlatformSiteUpdatesPage() {
             </div>
 
             <div className="md:col-span-2 pt-4 flex items-center justify-end gap-3">
-               <button type="button" onClick={() => setShowCreate(false)} className="btn-secondary border-none px-6">Cancel</button>
+               <button 
+                type="button" 
+                onClick={() => {
+                  setShowCreate(false);
+                  setEditingBanner(null);
+                  setFormData({
+                    message: '',
+                    linkText: '',
+                    linkUrl: '',
+                    image_url: '',
+                    backgroundColor: '#0f172a',
+                    textColor: '#ffffff',
+                    startDate: new Date().toISOString().split('T')[0],
+                    endDate: ''
+                  });
+                }} 
+                className="btn-secondary border-none px-6"
+               >
+                 Cancel
+               </button>
                <button type="submit" disabled={saving} className="btn-primary bg-slate-900 hover:bg-slate-800 min-w-[160px] rounded-2xl">
-                 {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-4 h-4" /> Create Banner</>}
+                 {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                   <>
+                     <Save className="w-4 h-4" /> 
+                     {editingBanner ? 'Save Changes' : 'Create Banner'}
+                   </>
+                 )}
                </button>
             </div>
           </form>
@@ -329,6 +394,12 @@ export default function PlatformSiteUpdatesPage() {
                     )}
                   >
                     {banner.is_active ? <ToggleRight className="w-8 h-8" /> : <ToggleLeft className="w-8 h-8" />}
+                  </button>
+                  <button 
+                    onClick={() => handleEdit(banner)}
+                    className="p-4 bg-slate-50 text-slate-400 hover:bg-slate-900 hover:text-white rounded-2xl transition-all active:scale-90 shadow-sm"
+                  >
+                    <Edit2 className="w-5 h-5" />
                   </button>
                   <button onClick={() => handleDelete(banner._id)} className="p-4 bg-rose-50/50 text-rose-300 hover:bg-rose-500 hover:text-white hover:shadow-lg hover:shadow-rose-500/20 rounded-2xl transition-all active:scale-90">
                     <Trash2 className="w-5 h-5" />
