@@ -21,15 +21,18 @@ function LoginForm() {
 
   useEffect(() => {
     if (!loading && user) {
-      const role = user.role.toLowerCase();
-      if (role === 'Platform Admin' || role === 'super_admin') {
+      const roleName = user.role || '';
+      const normalizedRole = roleName.toLowerCase();
+      const roleSlug = normalizedRole.replace(/\s+/g, '-');
+
+      if (normalizedRole === 'platform admin' || normalizedRole === 'super_admin') {
         router.push('/platform-admin/dashboard');
       } else {
         const targetSlug = user.hospital_slug || slug;
         if (targetSlug) {
-          router.push(`/${targetSlug}/${role}/dashboard`);
+          router.push(`/${targetSlug}/${roleSlug}/dashboard`);
         } else {
-          router.push(`/${role}/dashboard`);
+          router.push(`/${roleSlug}/dashboard`);
         }
       }
     }

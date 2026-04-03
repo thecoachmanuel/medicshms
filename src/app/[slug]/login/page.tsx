@@ -24,12 +24,15 @@ export default function HospitalLoginPage({ params }: { params: Promise<{ slug: 
 
   useEffect(() => {
     if (!authLoading && user) {
-      const role = user.role.toLowerCase();
-      if (role === 'Platform Admin') {
+      const roleName = user.role || '';
+      const normalizedRole = roleName.toLowerCase();
+      const roleSlug = normalizedRole.replace(/\s+/g, '-');
+
+      if (normalizedRole === 'platform admin' || normalizedRole === 'super_admin') {
         router.push('/platform-admin/dashboard');
       } else {
         const authorizedSlug = user.hospital_slug || slug;
-        router.push(`/${authorizedSlug}/${role}/dashboard`);
+        router.push(`/${authorizedSlug}/${roleSlug}/dashboard`);
       }
     }
   }, [user, authLoading, router, slug]);

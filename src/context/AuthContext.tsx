@@ -94,12 +94,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
       
-      if (loginUser.role === 'Platform Admin') {
+      const roleSlug = loginUser.role.toLowerCase().replace(/\s+/g, '-');
+      if (loginUser.role === 'Platform Admin' || loginUser.role === 'super_admin') {
         router.push('/platform-admin/dashboard');
       } else if (loginUser.hospital_slug) {
-        router.push(`/${loginUser.hospital_slug}/${loginUser.role.toLowerCase().replace(' ', '-')}/dashboard`);
+        router.push(`/${loginUser.hospital_slug}/${roleSlug}/dashboard`);
       } else {
-        router.push(`/${loginUser.role.toLowerCase().replace(' ', '-')}/dashboard`);
+        router.push(`/${roleSlug}/dashboard`);
       }
       return { success: true, role: loginUser.role };
     } catch (err: any) {
