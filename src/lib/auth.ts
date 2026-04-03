@@ -66,5 +66,26 @@ export async function withAuth(request: Request, roles?: string[]) {
     }
   }
 
+  // Multi-tenant Resolution for Super Admin
+  // If user is platform admin, resolve the site they are currently managing based on slug
+  if (isPlatformAdmin(profile.role)) {
+    const url = new URL(request.url);
+    const slug = url.searchParams.get('slug') || request.headers.get('x-hospital-slug');
+    
+    if (slug) {
+      const { data: hosp } = await (supabaseAdmin || supabase)
+        .from('hospitals')
+        .select('id')
+        .eq('slug', slug)
+        .maybeSingle();
+
+      if (hosp) {
+        // Temporarily assign this hospital_id to the profile so all downstream 
+        // filters like .eq('hospital_id', profile.hospital_id) just work.
+        profile.hospital_id = hosp.id;
+      }
+    }
+  }
+
   return { error: null, profile };
 }

@@ -24,6 +24,17 @@ api.interceptors.request.use(
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+
+      // Add hospital slug for multi-tenant support (especially for Super Admin)
+      const pathParts = window.location.pathname.split('/');
+      const isPlatformAdmin = window.location.pathname.startsWith('/platform-admin');
+      if (!isPlatformAdmin && pathParts.length > 1) {
+        const possibleSlug = pathParts[1];
+        // Simple validation: ignore common non-slug parts or specialized routes
+        if (possibleSlug && !['login', 'register', 'auth', 'platform-admin', 'admin', 'doctor', 'receptionist'].includes(possibleSlug)) {
+          config.headers['x-hospital-slug'] = possibleSlug;
+        }
+      }
     }
     return config;
   },

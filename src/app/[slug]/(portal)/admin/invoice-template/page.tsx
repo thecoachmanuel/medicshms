@@ -20,10 +20,10 @@ export default function InvoiceTemplatePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [template, setTemplate] = useState({
     hospitalName: 'Modern Life Hospital',
-    address: '123 Medical Drive, Health City',
-    phone: '+91 99999 00000',
-    email: 'billing@modernlife.com',
-    website: 'www.modernlife.com',
+    hospitalAddress: '123 Medical Drive, Health City',
+    contactNumber: '+91 99999 00000',
+    emailAddress: 'billing@modernlife.com',
+    websiteUrl: 'www.modernlife.com',
     gstNumber: 'GSTIN1234567890',
     logoUrl: '',
     footerNote: 'Thank you for choosing Modern Life Hospital. Get well soon!',
@@ -91,12 +91,12 @@ export default function InvoiceTemplatePage() {
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Address Line</label>
-                <textarea rows={2} value={template.address} onChange={e => setTemplate({...template, address: e.target.value})} className="input py-3" />
+                <textarea rows={2} value={template.hospitalAddress} onChange={e => setTemplate({...template, hospitalAddress: e.target.value})} className="input py-3" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Contact Phone</label>
-                  <input type="text" value={template.phone} onChange={e => setTemplate({...template, phone: e.target.value})} className="input py-3" />
+                  <input type="text" value={template.contactNumber} onChange={e => setTemplate({...template, contactNumber: e.target.value})} className="input py-3" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">GST Number</label>
@@ -127,7 +127,7 @@ export default function InvoiceTemplatePage() {
                <div className="flex justify-between items-start mb-10">
                  <div>
                    <h3 className="text-xl font-black text-primary-600 tracking-tight uppercase">{template.hospitalName || 'HOSPITAL NAME'}</h3>
-                   <p className="text-[10px] font-bold text-gray-400 mt-1 max-w-[200px] leading-relaxed uppercase">{template.address}</p>
+                   <p className="text-[10px] font-bold text-gray-400 mt-1 max-w-[200px] leading-relaxed uppercase">{template.hospitalAddress}</p>
                  </div>
                  <div className="text-right">
                     <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Tax Invoice</p>
