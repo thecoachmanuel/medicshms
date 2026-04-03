@@ -11,12 +11,13 @@ export async function GET(request: Request) {
     const hospitalId = searchParams.get('hospitalId');
 
     // 1. Try to get hospital_id from auth (for dashboard)
-    const { profile } = await withAuth(request).catch(() => ({ profile: null }));
+    const { profile, supabase: supabaseClient } = await withAuth(request).catch(() => ({ profile: null, supabase: null }));
+    const client = (supabaseAdmin || supabaseClient || supabase);
     let targetHospitalId = profile?.hospital_id || hospitalId;
 
     // 2. If no hospital_id but slug is provided (for public view)
     if (!targetHospitalId && hospitalSlug) {
-      const { data: hosp } = await (supabaseAdmin || supabase)
+      const { data: hosp } = await client
         .from('hospitals')
         .select('id')
         .eq('slug', hospitalSlug)
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ data: [] });
     }
 
-    const { data: doctors, error } = await (supabaseAdmin || supabase)
+    const { data: doctors, error } = await client
       .from('doctors')
       .select('id, user_id, qualifications, experience, fees, profile_photo, profiles:user_id(name, email, phone), department:department_id(name, is_active)')
       .eq('hospital_id', targetHospitalId)
@@ -57,14 +58,17 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ data: doctorsWithPhotos });
   } catch (error: any) {
+    console.error('[Doctors API Error]:', error.message);
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
 
 // Create doctor profile (Admin only)
 export async function POST(request: Request) {
-  const { profile, error: authError } = await withAuth(request, ['Admin']);
+  const { profile, error: authError, supabase: supabaseClient } = await withAuth(request, ['Admin']);
   if (authError) return authError;
+
+  const client = (supabaseAdmin || supabaseClient);
 
   try {
     const { userId, department_id, qualifications, experience, fees, availableSlots } = await request.json();

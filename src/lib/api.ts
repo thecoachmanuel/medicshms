@@ -25,9 +25,13 @@ api.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
 
-      // Add hospital slug for multi-tenant support (especially for Super Admin)
+      // Add hospital slug and host for multi-tenant support (especially for Super Admin)
       const pathParts = window.location.pathname.split('/');
       const isPlatformAdmin = window.location.pathname.startsWith('/platform-admin');
+      
+      // Always send the host for custom domain resolution
+      config.headers['x-hospital-host'] = window.location.hostname;
+
       if (!isPlatformAdmin && pathParts.length > 1) {
         const possibleSlug = pathParts[1];
         // Simple validation: ignore common non-slug parts or specialized routes

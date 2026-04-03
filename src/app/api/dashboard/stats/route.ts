@@ -5,8 +5,10 @@ import { withAuth } from '@/lib/auth';
 // Get dashboard stats overview (Admin, Receptionist, Doctor)
 // GET /api/dashboard/stats
 export async function GET(request: Request) {
-  const { error: authError, profile: userProfile } = await withAuth(request, ['Admin', 'Receptionist']);
+  const { error: authError, profile: userProfile, supabase: supabaseClient } = await withAuth(request, ['Admin', 'Receptionist']);
   if (authError) return authError;
+
+  const client = (supabaseAdmin || supabaseClient);
 
   try {
     const now = new Date();
@@ -26,18 +28,18 @@ export async function GET(request: Request) {
       { count: openTickets },
       { count: activeAnnouncements }
     ] = await Promise.all([
-      (supabaseAdmin || supabase).from('public_appointments').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id),
-      (supabaseAdmin || supabase).from('doctors').select('*', { count: 'exact', head: true }).eq('is_active', true).eq('hospital_id', userProfile?.hospital_id),
-      (supabaseAdmin || supabase).from('departments').select('*', { count: 'exact', head: true }).eq('is_active', true).eq('hospital_id', userProfile?.hospital_id),
+      client.from('public_appointments').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id),
+      client.from('doctors').select('*', { count: 'exact', head: true }).eq('is_active', true).eq('hospital_id', userProfile?.hospital_id),
+      client.from('departments').select('*', { count: 'exact', head: true }).eq('is_active', true).eq('hospital_id', userProfile?.hospital_id),
       // Fetch all appointments for today specifically
-      (supabaseAdmin || supabase).from('public_appointments').select('appointment_date, appointment_status, visit_type, created_at').eq('hospital_id', userProfile?.hospital_id).eq('appointment_date', startOfToday.split('T')[0]),
+      client.from('public_appointments').select('appointment_date, appointment_status, visit_type, created_at').eq('hospital_id', userProfile?.hospital_id).eq('appointment_date', startOfToday.split('T')[0]),
       // Fetch recent appointments for growth calculation
-      (supabaseAdmin || supabase).from('public_appointments').select('appointment_date, appointment_status, visit_type, created_at').eq('hospital_id', userProfile?.hospital_id).gte('created_at', startOfLastMonth),
+      client.from('public_appointments').select('appointment_date, appointment_status, visit_type, created_at').eq('hospital_id', userProfile?.hospital_id).gte('created_at', startOfLastMonth),
       // Fetch all bills for revenue calculation (optimized to necessary fields)
-      (supabaseAdmin || supabase).from('bills').select('total_amount, paid_amount, created_at').eq('hospital_id', userProfile?.hospital_id),
-      (supabaseAdmin || supabase).from('bills').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id).in('payment_status', ['Pending', 'Due', 'Partial']),
-      (supabaseAdmin || supabase).from('support_tickets').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id).in('status', ['Open', 'In Progress']),
-      (supabaseAdmin || supabase).from('announcements').select('*', { count: 'exact', head: true }).eq('is_active', true).eq('hospital_id', userProfile?.hospital_id)
+      client.from('bills').select('total_amount, paid_amount, created_at').eq('hospital_id', userProfile?.hospital_id),
+      client.from('bills').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id).in('payment_status', ['Pending', 'Due', 'Partial']),
+      client.from('support_tickets').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id).in('status', ['Open', 'In Progress']),
+      client.from('announcements').select('*', { count: 'exact', head: true }).eq('is_active', true).eq('hospital_id', userProfile?.hospital_id)
     ]);
 
     // Process Appointment Stats in-memory

@@ -1,4 +1,5 @@
-import { supabase, supabaseAdmin } from "./supabase";
+import { supabase, supabaseAdmin, supabaseUrl, supabaseAnonKey } from "./supabase";
+import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { normalizeRole, isPlatformAdmin } from "./auth-helpers";
 
@@ -47,45 +48,79 @@ export async function withAuth(request: Request, roles?: string[]) {
   const profile = await getAuthUser(request);
 
   if (!profile) {
-    return { error: NextResponse.json({ message: 'Not authorized' }, { status: 401 }), profile: null };
+    return { error: NextResponse.json({ message: 'Not authorized' }, { status: 401 }), profile: null, supabase: null };
   }
+
+  // Create a request-scoped Supabase client that uses the user's own token.
+  // This ensures RLS is respected even if supabaseAdmin is not available.
+  const authHeader = request.headers.get('authorization');
+  const token = authHeader?.split(' ')[1];
+  const supabaseClient = (token && supabaseUrl && supabaseAnonKey)
+    ? createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: `Bearer ${token}` } },
+        auth: { persistSession: false }
+      })
+    : (supabaseAdmin || supabase);
 
   if (roles) {
     const normUserRole = normalizeRole(profile.role);
     const isAuthorized = roles.some(requiredRole => {
-      // 1. If route requires "Platform Admin", allow all platform admin variants
-      if (requiredRole === 'Platform Admin') {
-        return isPlatformAdmin(profile.role);
+      // 1. If route requires "Platform Admin" OR "Admin", allow platform admin variants
+      if (requiredRole === 'Platform Admin' || requiredRole === 'Admin') {
+        if (isPlatformAdmin(profile.role)) return true;
       }
+      
       // 2. Otherwise do a normalized comparison
       return normalizeRole(requiredRole) === normUserRole;
     });
 
     if (!isAuthorized) {
-      return { error: NextResponse.json({ message: 'Forbidden' }, { status: 403 }), profile: null };
+      return { error: NextResponse.json({ message: 'Forbidden' }, { status: 403 }), profile: null, supabase: null };
     }
   }
 
   // Multi-tenant Resolution for Super Admin
-  // If user is platform admin, resolve the site they are currently managing based on slug
+  // If user is platform admin, resolve the site they are currently managing 
   if (isPlatformAdmin(profile.role)) {
     const url = new URL(request.url);
+    const host = request.headers.get('host') || '';
     const slug = url.searchParams.get('slug') || request.headers.get('x-hospital-slug');
     
-    if (slug) {
-      const { data: hosp } = await (supabaseAdmin || supabase)
-        .from('hospitals')
-        .select('id')
-        .eq('slug', slug)
-        .maybeSingle();
+    // DEBUG: Log the context we are seeing
+    console.log(`[Auth Resolving] User: ${profile.email}, Role: ${profile.role}, Slug: ${slug}, Host: ${host}`);
+
+    if (slug || host) {
+      // Resolve hospital ID
+      // We use supabaseAdmin if available to bypass RLS during resolution, 
+      // otherwise fallback to our request-scoped client (which now has is_platform_admin RLS support)
+      const query = (supabaseAdmin || supabaseClient).from('hospitals').select('id, slug');
+      
+      if (slug) {
+        query.eq('slug', slug);
+      } else if (host && !host.includes('localhost') && !host.includes('vercel.app')) {
+        // Only try custom domain resolution on non-local/non-preview domains
+        query.eq('custom_domain', host);
+      } else {
+        // Fallback for local dev if slug is missing but we're on a hospital route
+        // This is a safety net
+      }
+
+      const { data: hosp, error: resolveError } = await query.maybeSingle();
+
+      if (resolveError) {
+        console.error('[Auth Resolve Error]:', resolveError.message);
+      }
 
       if (hosp) {
+        console.log(`[Auth Resolved] Hospital: ${hosp.slug}, ID: ${hosp.id}`);
         // Temporarily assign this hospital_id to the profile so all downstream 
         // filters like .eq('hospital_id', profile.hospital_id) just work.
         profile.hospital_id = hosp.id;
+      } else {
+        console.log(`[Auth Resolve] No hospital matched slug: ${slug} or host: ${host}`);
       }
     }
   }
 
-  return { error: null, profile };
+  return { error: null, profile, supabase: supabaseClient };
 }
