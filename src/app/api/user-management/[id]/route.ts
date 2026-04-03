@@ -7,7 +7,7 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { error: authError, profile: adminProfile } = await withAuth(request, ['Admin']);
+  const { error: authError, profile: adminProfile, supabase: supabaseClient } = await withAuth(request, ['Admin']);
   if (authError) return authError;
 
   if (!supabaseAdmin) {
@@ -16,6 +16,7 @@ export async function PUT(
 
   const { id } = await params;
 
+  try {
     const client = (supabaseAdmin || supabaseClient);
 
     const { name, email, phone, isActive, departmentId } = await request.json();

@@ -4,7 +4,7 @@ import { withAuth } from '@/lib/auth';
 
 // Create a new user (Post)
 export async function POST(request: Request) {
-  const { error: authError, profile: adminProfile } = await withAuth(request, ['Admin']);
+  const { error: authError, profile: adminProfile, supabase: supabaseClient } = await withAuth(request, ['Admin']);
   if (authError) return authError;
 
   if (!supabaseAdmin) {
