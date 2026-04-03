@@ -42,8 +42,8 @@ export default function ProfilePage() {
     setLoading(true);
     try {
       const res = await authAPI.updateProfile(formData);
-      if (res.data.data) {
-        updateUser(res.data.data);
+      if (res.data) {
+        updateUser(res.data);
         toast.success('Profile updated successfully');
       }
     } catch (error: any) {
@@ -63,8 +63,8 @@ export default function ProfilePage() {
     setLoading(true);
     try {
       const res = await authAPI.uploadPhoto(formData);
-      if (res.data.data?.url) {
-        updateUser({ profilePhoto: res.data.data.url });
+      if (res.data?.url) {
+        updateUser({ profilePhoto: res.data.url });
         toast.success('Photo updated');
       }
     } catch (error: any) {

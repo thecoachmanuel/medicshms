@@ -49,7 +49,7 @@ export default function StaffManagement() {
     try {
       const promises = roles.map(role => 
         usersAPI.getUsersByRole(role)
-          .then((res) => res.data.data || [])
+          .then((res) => res.data || [])
           .catch(() => [])
       );
       const results = await Promise.all(promises);

@@ -42,7 +42,7 @@ export default function DoctorManagement() {
   const fetchDepartments = async () => {
     try {
       const res = await departmentsAPI.getAdminAll();
-      setDepartments(res.data.data || []);
+      setDepartments(res.data || []);
     } catch (err: any) {
       console.error('Failed to fetch departments:', err);
       toast.error(err.response?.data?.message || err.message || 'Failed to fetch departments');
@@ -53,7 +53,7 @@ export default function DoctorManagement() {
     try {
       setLoading(true);
       const res = await usersAPI.getUsersByRole('Doctor');
-      setDoctors(res.data.data || []);
+      setDoctors(res.data || []);
     } catch {
       toast.error('Failed to fetch doctors');
     } finally {
@@ -141,7 +141,7 @@ export default function DoctorManagement() {
     setDetailLoading(true);
     try {
       const res = await usersAPI.getProfile(doctor._id);
-      setDetailData(res.data.data);
+      setDetailData(res.data);
     } catch {
       toast.error('Failed to fetch doctor details');
       setShowDetailModal(false);

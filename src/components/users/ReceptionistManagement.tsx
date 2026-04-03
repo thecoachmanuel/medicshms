@@ -41,7 +41,7 @@ export default function ReceptionistManagement() {
     try {
       setLoading(true);
       const res = await usersAPI.getUsersByRole('Receptionist');
-      setReceptionists(res.data.data || []);
+      setReceptionists(res.data || []);
     } catch {
       toast.error('Failed to fetch receptionists');
     } finally {
@@ -128,7 +128,7 @@ export default function ReceptionistManagement() {
     setDetailLoading(true);
     try {
       const res = await usersAPI.getProfile(receptionist._id);
-      setDetailData(res.data.data);
+      setDetailData(res.data);
     } catch {
       toast.error('Failed to fetch receptionist details');
       setShowDetailModal(false);

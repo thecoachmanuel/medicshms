@@ -42,7 +42,7 @@ export default function DepartmentsPage() {
     try {
       setLoading(true);
       const res = await departmentAPI.getAdminAll();
-      setDepartments(res.data.data || []);
+      setDepartments(res.data || []);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to fetch departments');
     } finally {
