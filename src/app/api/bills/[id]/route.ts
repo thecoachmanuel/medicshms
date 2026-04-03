@@ -7,16 +7,17 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { error: authError } = await withAuth(request);
+  const { profile: userProfile, error: authError } = await withAuth(request);
   if (authError) return authError;
 
   const { id } = await params;
 
   try {
-    const { data: bill, error } = await supabase
+    const { data: bill, error } = await (supabaseAdmin || supabase)
       .from('bills')
       .select('*, public_appointments!public_appointment_id(*, doctors!doctor_assigned_id(*, profiles!user_id(name, email), department:departments!department_id(name)))')
       .eq('id', id)
+      .eq('hospital_id', userProfile?.hospital_id)
       .single();
 
     if (error || !bill) {
@@ -66,7 +67,7 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { error: authError } = await withAuth(request, ['Admin', 'Receptionist']);
+  const { profile: userProfile, error: authError } = await withAuth(request, ['Admin', 'Receptionist']);
   if (authError) return authError;
 
   const { id } = await params;
@@ -74,10 +75,11 @@ export async function PUT(
   try {
     const { services, discount, roundOff, paidAmount, paymentMethod, transactionId, notes, paymentStatus } = await request.json();
 
-    const { data: bill, error: fetchError } = await supabase
+    const { data: bill, error: fetchError } = await (supabaseAdmin || supabase)
       .from('bills')
       .select('*')
       .eq('id', id)
+      .eq('hospital_id', userProfile?.hospital_id)
       .single();
 
     if (fetchError || !bill) {
@@ -123,10 +125,11 @@ export async function PUT(
       }
     }
 
-    const { data: updatedBill, error: updateError } = await supabase
+    const { data: updatedBill, error: updateError } = await (supabaseAdmin || supabase)
       .from('bills')
       .update(updateData)
       .eq('id', id)
+      .eq('hospital_id', userProfile?.hospital_id)
       .select()
       .single();
 
