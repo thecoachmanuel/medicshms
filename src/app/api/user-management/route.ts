@@ -63,20 +63,22 @@ export async function POST(request: Request) {
     if (profileError) return NextResponse.json({ message: profileError.message }, { status: 400 });
 
     // 3. Auto-create role-specific profile
+    const specializationData = { user_id: user.id, hospital_id: adminProfile?.hospital_id, department_id: body.departmentId };
+    
     if (role === 'Doctor') {
-      await (supabaseAdmin || supabase).from('doctors').insert([{ user_id: user.id, hospital_id: adminProfile?.hospital_id }]);
+      await (supabaseAdmin || supabase).from('doctors').insert([specializationData]);
     } else if (role === 'Receptionist') {
-      await (supabaseAdmin || supabase).from('receptionists').insert([{ user_id: user.id, hospital_id: adminProfile?.hospital_id }]);
+      await (supabaseAdmin || supabase).from('receptionists').insert([specializationData]);
     } else if (role === 'Admin') {
-      await (supabaseAdmin || supabase).from('admins').insert([{ user_id: user.id, hospital_id: adminProfile?.hospital_id }]);
+      await (supabaseAdmin || supabase).from('admins').insert([specializationData]);
     } else if (role === 'Nurse') {
-      await (supabaseAdmin || supabase).from('nurses').insert([{ user_id: user.id, hospital_id: adminProfile?.hospital_id }]);
+      await (supabaseAdmin || supabase).from('nurses').insert([specializationData]);
     } else if (role === 'Lab Scientist') {
-      await (supabaseAdmin || supabase).from('lab_scientists').insert([{ user_id: user.id, hospital_id: adminProfile?.hospital_id }]);
+      await (supabaseAdmin || supabase).from('lab_scientists').insert([specializationData]);
     } else if (role === 'Pharmacist') {
-      await (supabaseAdmin || supabase).from('pharmacists').insert([{ user_id: user.id, hospital_id: adminProfile?.hospital_id }]);
+      await (supabaseAdmin || supabase).from('pharmacists').insert([specializationData]);
     } else if (role === 'Radiologist') {
-      await (supabaseAdmin || supabase).from('radiologists').insert([{ user_id: user.id, hospital_id: adminProfile?.hospital_id }]);
+      await (supabaseAdmin || supabase).from('radiologists').insert([specializationData]);
     }
 
     return NextResponse.json({

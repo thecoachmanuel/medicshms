@@ -28,27 +28,37 @@ export async function GET(
 
     if (error) return NextResponse.json({ message: error.message }, { status: 500 });
 
-    // If fetching doctors, join with doctors table info
-    if (role === 'Doctor') {
-      const { data: doctors, error: docError } = await (supabaseAdmin || supabase)
-        .from('doctors')
+    // Fetch role-specific details (including department)
+    let specializationTable = '';
+    switch (role) {
+      case 'Doctor': specializationTable = 'doctors'; break;
+      case 'Nurse': specializationTable = 'nurses'; break;
+      case 'Lab Scientist': specializationTable = 'lab_scientists'; break;
+      case 'Pharmacist': specializationTable = 'pharmacists'; break;
+      case 'Radiologist': specializationTable = 'radiologists'; break;
+      case 'Receptionist': specializationTable = 'receptionists'; break;
+      case 'Admin': specializationTable = 'admins'; break;
+    }
+
+    if (specializationTable) {
+      const { data: details } = await (supabaseAdmin || supabase)
+        .from(specializationTable)
         .select('*, department:department_id(name)')
         .eq('hospital_id', adminProfile?.hospital_id)
         .in('user_id', users.map(u => u.id));
 
-      const usersWithInfo = users.map(user => {
-        const doctor = doctors?.find(d => d.user_id === user.id);
+      const usersWithDetails = users.map(user => {
+        const detail = details?.find(d => d.user_id === user.id);
         return {
           ...user,
           _id: user.id,
           isActive: user.is_active,
-          doctorInfo: doctor ? {
-            primaryDepartment: doctor.department,
-            departmentId: doctor.department_id
-          } : null
+          department: detail?.department?.name || 'Unassigned',
+          departmentId: detail?.department_id,
+          specializationInfo: detail
         };
       });
-      return NextResponse.json({ data: usersWithInfo });
+      return NextResponse.json({ data: usersWithDetails });
     }
 
     return NextResponse.json({ data: users.map(u => ({ ...u, _id: u.id, isActive: u.is_active })) });

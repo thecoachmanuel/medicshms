@@ -6,8 +6,8 @@ import {
   Power, Trash2, X, AlertCircle, Phone, Mail, CheckCircle2
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { usersAPI } from '@/lib/api';
-import { User } from '@/types';
+import { usersAPI, departmentAPI } from '@/lib/api';
+import { User, Department } from '@/types';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -16,22 +16,33 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export default function StaffManagement() {
-  const [staffList, setStaffList] = useState<User[]>([]);
+  const [staffList, setStaffList] = useState<any[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('All');
   
   const [showModal, setShowModal] = useState(false);
-  const [editingStaff, setEditingStaff] = useState<User | null>(null);
+  const [editingStaff, setEditingStaff] = useState<any | null>(null);
   const [formData, setFormData] = useState({ 
-    name: '', email: '', phone: '', role: 'Nurse' as User['role'], isActive: true 
+    name: '', email: '', phone: '', role: 'Nurse' as User['role'], departmentId: '', isActive: true 
   });
 
   const roles: User['role'][] = ['Nurse', 'Lab Scientist', 'Pharmacist', 'Radiologist', 'Receptionist'];
 
   useEffect(() => {
+    fetchDepartments();
     fetchAllStaff();
   }, []);
+
+  const fetchDepartments = async () => {
+    try {
+      const res = await departmentAPI.getAdminAll();
+      if (res.data) setDepartments(res.data);
+    } catch (err) {
+      console.error('Failed to fetch departments');
+    }
+  };
 
   const fetchAllStaff = async () => {
     setLoading(true);
@@ -100,13 +111,14 @@ export default function StaffManagement() {
     }
   };
 
-  const handleEdit = (staff: User) => {
+  const handleEdit = (staff: any) => {
     setEditingStaff(staff);
     setFormData({ 
       name: staff.name, 
       email: staff.email, 
       phone: staff.phone || '',
       role: staff.role,
+      departmentId: staff.departmentId || '',
       isActive: staff.isActive 
     });
     setShowModal(true);
@@ -115,7 +127,7 @@ export default function StaffManagement() {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingStaff(null);
-    setFormData({ name: '', email: '', phone: '', role: 'Nurse', isActive: true });
+    setFormData({ name: '', email: '', phone: '', role: 'Nurse', departmentId: '', isActive: true });
   };
 
   const filteredStaff = staffList.filter(s => {
@@ -169,7 +181,8 @@ export default function StaffManagement() {
             <thead>
               <tr className="bg-gray-50/30 border-b border-gray-100/50">
                 <th className="px-10 py-6 text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">Identity</th>
-                <th className="px-10 py-6 text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">Department</th>
+                <th className="px-10 py-6 text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">Job Role</th>
+                <th className="px-10 py-6 text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">Unit/Department</th>
                 <th className="px-10 py-6 text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">Connectivity</th>
                 <th className="px-10 py-6 text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">Status</th>
                 <th className="px-10 py-6 text-[11px] font-black text-gray-400 uppercase tracking-[0.25em] text-right">Actions</th>
@@ -179,12 +192,12 @@ export default function StaffManagement() {
               {loading ? (
                 [...Array(4)].map((_, i) => (
                   <tr key={i} className="animate-pulse">
-                    <td colSpan={5} className="px-10 py-10 h-24 bg-gray-50/10"></td>
+                    <td colSpan={6} className="px-10 py-10 h-24 bg-gray-50/10"></td>
                   </tr>
                 ))
               ) : filteredStaff.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-10 py-32 text-center text-gray-400">
+                  <td colSpan={6} className="px-10 py-32 text-center text-gray-400">
                     <Users className="w-16 h-16 mx-auto mb-4 opacity-10" />
                     <p className="font-bold text-sm uppercase tracking-widest">No active staff records found</p>
                   </td>
@@ -205,6 +218,11 @@ export default function StaffManagement() {
                   <td className="px-10 py-6">
                     <span className="inline-flex items-center px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-white border border-gray-100 text-gray-600 shadow-sm group-hover:border-emerald-200 group-hover:text-emerald-700 transition-colors">
                       {staff.role}
+                    </span>
+                  </td>
+                  <td className="px-10 py-6">
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                      {staff.department || 'General'}
                     </span>
                   </td>
                   <td className="px-10 py-6">
@@ -285,14 +303,28 @@ export default function StaffManagement() {
                   <input required type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full mt-3 px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="+00 000 000" />
                 </div>
                 {!editingStaff && (
-                  <div className="col-span-2">
-                    <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Departmental Slot</label>
-                    <div className="relative mt-3">
-                      <select required value={formData.role} onChange={e => setFormData({...formData, role: e.target.value as User['role']})} className="w-full appearance-none px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-gray-700 focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all cursor-pointer">
-                        {roles.map(r => <option key={r} value={r}>{r}</option>)}
-                      </select>
-                      <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
-                        <Users className="w-5 h-5" />
+                  <div className="grid grid-cols-2 gap-8 col-span-2">
+                    <div>
+                      <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Professional Role</label>
+                      <div className="relative mt-3">
+                        <select required value={formData.role} onChange={e => setFormData({...formData, role: e.target.value as User['role']})} className="w-full appearance-none px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-gray-700 focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all cursor-pointer">
+                          {roles.map(r => <option key={r} value={r}>{r}</option>)}
+                        </select>
+                        <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
+                          <Users className="w-5 h-5" />
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Clinical Unit</label>
+                      <div className="relative mt-3">
+                        <select required value={formData.departmentId} onChange={e => setFormData({...formData, departmentId: e.target.value})} className="w-full appearance-none px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-gray-700 focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all cursor-pointer">
+                          <option value="">Select Unit</option>
+                          {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                        </select>
+                        <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
+                          <Users className="w-5 h-5" />
+                        </div>
                       </div>
                     </div>
                   </div>

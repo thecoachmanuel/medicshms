@@ -35,27 +35,30 @@ export async function PUT(
 
     if (error) return NextResponse.json({ message: error.message }, { status: 400 });
 
-    // Handle role-specific updates (e.g. Doctor's department)
-    if (profile.role === 'Doctor') {
-      const docUpdate: any = {};
-      if (departmentId) docUpdate.department_id = departmentId;
-      if (isActive !== undefined) docUpdate.is_active = isActive;
+    // Handle role-specific updates (including department for all clinical staff)
+    const specializationUpdate: any = {};
+    if (departmentId) specializationUpdate.department_id = departmentId;
+    if (isActive !== undefined) specializationUpdate.is_active = isActive;
 
-      if (Object.keys(docUpdate).length > 0) {
+    if (Object.keys(specializationUpdate).length > 0) {
+      let specializationTable = '';
+      switch (profile.role) {
+        case 'Doctor': specializationTable = 'doctors'; break;
+        case 'Nurse': specializationTable = 'nurses'; break;
+        case 'Lab Scientist': specializationTable = 'lab_scientists'; break;
+        case 'Pharmacist': specializationTable = 'pharmacists'; break;
+        case 'Radiologist': specializationTable = 'radiologists'; break;
+        case 'Receptionist': specializationTable = 'receptionists'; break;
+        case 'Admin': specializationTable = 'admins'; break;
+      }
+
+      if (specializationTable) {
         await (supabaseAdmin || supabase)
-          .from('doctors')
-          .update(docUpdate)
+          .from(specializationTable)
+          .update(specializationUpdate)
           .eq('user_id', id)
           .eq('hospital_id', adminProfile?.hospital_id);
       }
-    } else if (profile.role === 'Receptionist') {
-       if (isActive !== undefined) {
-         await (supabaseAdmin || supabase).from('receptionists').update({ is_active: isActive }).eq('user_id', id).eq('hospital_id', adminProfile?.hospital_id);
-       }
-    } else if (profile.role === 'Admin') {
-       if (isActive !== undefined) {
-         await (supabaseAdmin || supabase).from('admins').update({ is_active: isActive }).eq('user_id', id).eq('hospital_id', adminProfile?.hospital_id);
-       }
     }
 
     // If email changed, also update it in Supabase Auth
