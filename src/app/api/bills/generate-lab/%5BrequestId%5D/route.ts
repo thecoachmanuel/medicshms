@@ -6,12 +6,12 @@ import { withAuth } from '@/lib/auth';
 // POST /api/bills/generate-lab/[requestId]
 export async function POST(
   request: Request,
-  { params }: { params: { requestId: string } }
+  { params }: { params: Promise<{ requestId: string }> }
 ) {
   const { error: authError, profile: userProfile } = await withAuth(request, ['Admin', 'Lab Scientist', 'Receptionist']);
   if (authError) return authError;
 
-  const { requestId } = params;
+  const { requestId } = await params;
 
   try {
     const client = (supabaseAdmin || supabase);
