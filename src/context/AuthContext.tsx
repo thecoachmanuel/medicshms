@@ -33,20 +33,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           // Verify token and get latest profile
           const response: any = await authAPI.getProfile();
+          const userProfile = response.data; // Unwrap APIResponse
+          
           const latestUser: User = {
-            _id: response.id || response._id,
-            id: response.id || response._id,
-            name: response.name,
-            email: response.email,
-            role: response.role,
-            isActive: response.isActive ?? true,
-            hospital_id: response.hospital_id,
-            hospital_slug: response.hospital_slug,
-            subscription_status: response.subscription_status,
-            trial_end_date: response.trial_end_date,
-            phone: response.phone,
-            profilePhoto: response.profilePhoto || response.profile_photo,
-            doctorProfileId: response.doctor_profile_id || response.doctorProfileId
+            _id: userProfile.id || userProfile._id,
+            id: userProfile.id || userProfile._id,
+            name: userProfile.name,
+            email: userProfile.email,
+            role: userProfile.role,
+            isActive: userProfile.isActive ?? true,
+            hospital_id: userProfile.hospital_id,
+            hospital_slug: userProfile.hospital_slug,
+            subscription_status: userProfile.subscription_status,
+            trial_end_date: userProfile.trial_end_date,
+            phone: userProfile.phone,
+            profilePhoto: userProfile.profilePhoto || userProfile.profile_photo,
+            doctorProfileId: userProfile.doctor_profile_id || userProfile.doctorProfileId
           };
           localStorage.setItem('user', JSON.stringify(latestUser));
           setUser(latestUser);
@@ -69,35 +71,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setError(null);
       const response: any = await authAPI.login(credentials);
+      const authData = response.data; // Unwrap APIResponse
+      const loginUser = authData.user;
       
       const userData: User = {
-        _id: response._id,
-        id: response._id,
-        name: response.name,
-        email: response.email,
-        role: response.role,
-        isActive: response.isActive ?? true,
-        hospital_id: response.hospital_id,
-        hospital_slug: response.hospital_slug,
-        subscription_status: response.subscription_status,
-        trial_end_date: response.trial_end_date,
-        phone: response.phone,
-        profilePhoto: response.profilePhoto || response.profile_photo,
-        doctorProfileId: response.doctor_id || response.doctorProfileId
+        _id: loginUser._id || loginUser.id,
+        id: loginUser._id || loginUser.id,
+        name: loginUser.name,
+        email: loginUser.email,
+        role: loginUser.role,
+        isActive: loginUser.isActive ?? true,
+        hospital_id: loginUser.hospital_id,
+        hospital_slug: loginUser.hospital_slug,
+        subscription_status: loginUser.subscription_status,
+        trial_end_date: loginUser.trial_end_date,
+        phone: loginUser.phone,
+        profilePhoto: loginUser.profilePhoto || loginUser.profile_photo,
+        doctorProfileId: loginUser.doctor_id || loginUser.doctorProfileId
       };
 
-      localStorage.setItem('token', response.token);
+      localStorage.setItem('token', authData.token);
       localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
       
-      if (response.role === 'Platform Admin') {
+      if (loginUser.role === 'Platform Admin') {
         router.push('/platform-admin/dashboard');
-      } else if (response.hospital_slug) {
-        router.push(`/${response.hospital_slug}/${response.role.toLowerCase().replace(' ', '-')}/dashboard`);
+      } else if (loginUser.hospital_slug) {
+        router.push(`/${loginUser.hospital_slug}/${loginUser.role.toLowerCase().replace(' ', '-')}/dashboard`);
       } else {
-        router.push(`/${response.role.toLowerCase().replace(' ', '-')}/dashboard`);
+        router.push(`/${loginUser.role.toLowerCase().replace(' ', '-')}/dashboard`);
       }
-      return { success: true, role: response.role };
+      return { success: true, role: loginUser.role };
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Login failed';
       setError(msg);

@@ -64,9 +64,17 @@ export default function PlatformAdminDashboard() {
   const fetchHospitals = async () => {
     try {
       setLoading(true);
-      const data = await platformAdminAPI.getHospitals() as any;
-      setHospitals(data.hospitals);
-      setStats(data.stats);
+      const res = await platformAdminAPI.getHospitals() as any;
+      const data = res.data; // Unwrap APIResponse
+      setHospitals(data.hospitals || []);
+      setStats(data.stats || {
+        total: 0,
+        active: 0,
+        trial: 0,
+        expired: 0,
+        paused: 0,
+        suspended: 0
+      });
     } catch (error: any) {
       toast.error(error.response?.data?.message || error.message);
     } finally {
