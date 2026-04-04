@@ -271,6 +271,11 @@ export default function RadiologyRequestsPage() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-50/20 via-transparent to-white -z-10" />
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.015] -z-10" />
 
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Imaging Matrix</h1>
+          <p className="text-gray-500 text-sm font-medium mt-1">Manage and authorized clinical radiology studies.</p>
+        </div>
         <div className="flex items-center gap-4">
           <div className="relative group w-full md:w-80">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-600 transition-all" />

@@ -38,7 +38,7 @@ export async function middleware(request: NextRequest) {
 
     // Call Supabase directly via REST to avoid heavy client initialization in middleware
     const response = await fetch(
-      `${supabaseUrl}/rest/v1/hospitals?custom_domain=eq.${hostname}&select=slug`,
+      `${supabaseUrl}/rest/v1/hospitals?custom_domain=eq.${hostname}&select=slug,status,subscription_status`,
       {
         headers: {
           'apikey': supabaseKey,
@@ -50,12 +50,19 @@ export async function middleware(request: NextRequest) {
     const data = await response.json();
 
     if (data && data.length > 0) {
-      const slug = data[0].slug;
+      const { slug, status, subscription_status } = data[0];
       
+      // 3. Subscription & Status Enforcement
+      const isRestricted = status === 'inactive' || ['suspended', 'paused', 'expired'].includes(subscription_status);
+      const isAlreadyOnLockout = url.pathname.startsWith('/subscription-lockout');
+
+      if (isRestricted && !isAlreadyOnLockout) {
+        // Redirect to a unified lockout screen
+        return NextResponse.redirect(new URL('/subscription-lockout', request.url));
+      }
+
       // If we are at the root, rewrite to the hospital's landing page
       // e.g., hospital-a.com/ -> medicshms.com/hospital-a
-      // If we are at /about, rewrite to /hospital-a/about
-      
       return NextResponse.rewrite(new URL(`/${slug}${url.pathname}`, request.url));
     }
   } catch (error) {

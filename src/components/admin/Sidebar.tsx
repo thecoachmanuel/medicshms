@@ -101,6 +101,7 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
         { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/receptionist/dashboard` },
         { icon: Calendar, label: 'Appointments', path: `${base}/receptionist/appointments` },
         { icon: FileText, label: 'Patients', path: `${base}/receptionist/patients` },
+        { icon: TestTubes, label: 'Lab Services', path: `${base}/receptionist/lab-requests` },
         { icon: DollarSign, label: 'Billing', path: `${base}/receptionist/billing` },
         { icon: CalendarClock, label: 'Slot Management', path: `${base}/receptionist/slot-management` },
         { icon: User, label: 'My Profile', path: `${base}/receptionist/profile` },

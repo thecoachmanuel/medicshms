@@ -2,12 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { labAPI } from '@/lib/api';
+import { labAPI, usersAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { TestTubes, Search, CheckCircle, UploadCloud, Printer, Download, Eye, FileText, Clock, User, ChevronRight, X, AlertCircle } from 'lucide-react';
+import { TestTubes, Search, CheckCircle, UploadCloud, Printer, Download, Eye, FileText, Clock, User, ChevronRight, X, AlertCircle, Info } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useSearchParams } from 'next/navigation';
+import CreateLabRequestModal from '@/components/clinical/CreateLabRequestModal';
+import LabResultEntryModal from '@/components/lab/LabResultEntryModal';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -18,30 +20,23 @@ export default function LabRequestsPage() {
   const searchParams = useSearchParams();
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'Pending' | 'Completed'>('Pending');
+  const [activeTab, setActiveTab] = useState<'Pending' | 'Collected' | 'Completed'>('Pending');
   
   // Modal State
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [resultText, setResultText] = useState('');
+  const [minRange, setMinRange] = useState<string>('');
+  const [maxRange, setMaxRange] = useState<string>('');
+  const [unit, setUnit] = useState<string>('');
+  const [isCritical, setIsCritical] = useState(false);
   const [fileUrl, setFileUrl] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
 
   // New Request State
   const [showNewModal, setShowNewModal] = useState(false);
-  const [patients, setPatients] = useState<any[]>([]);
-  const [labServices, setLabServices] = useState<any[]>([]);
-  const [departments, setDepartments] = useState<any[]>([]);
-  const [selectedDept, setSelectedDept] = useState<string>('All');
-  const [newRequest, setNewRequest] = useState({
-    patient_id: '',
-    test_name: '',
-    service_id: '',
-    test_price: 0,
-    clinical_notes: ''
-  });
-  const [isCreating, setIsCreating] = useState(false);
   const [globalSearch, setGlobalSearch] = useState('');
-  const [patientSearchTerm, setPatientSearchTerm] = useState('');
+  const [assignedUnits, setAssignedUnits] = useState<any[]>([]);
+  const [selectedUnitId, setSelectedUnitId] = useState<string>('all');
 
   const filteredRequests = (requests || []).filter(req => {
     const searchLow = globalSearch.toLowerCase();
@@ -52,89 +47,35 @@ export default function LabRequestsPage() {
     );
   });
 
-  const filteredPatients = (patients || []).filter(p => {
-    const s = patientSearchTerm.toLowerCase();
-    return p.full_name?.toLowerCase().includes(s) || p.patient_id?.toLowerCase().includes(s);
-  });
-
   useEffect(() => {
+    fetchAssignments();
     fetchRequests(activeTab);
-  }, [activeTab]);
+  }, [activeTab, selectedUnitId]);
+
+  const fetchAssignments = async () => {
+    if (!user?.id) return;
+    try {
+      const res = await labAPI.getAssignments({ scientist_id: user.id }) as any;
+      setAssignedUnits(res.data || []);
+    } catch (e) { console.error('Failed to fetch assignments'); }
+  };
 
   const fetchRequests = async (status: string) => {
     setLoading(true);
     try {
-      const response: any = await labAPI.getRequests({ status });
+      const params: any = { status };
+      if (selectedUnitId !== 'all') {
+        params.unit_id = selectedUnitId;
+      } else if (assignedUnits.length > 0 && activeTab === 'Pending') {
+        // Default to assigned units for pending jobs if not "All"
+        // params.unit_ids = assignedUnits.map(a => a.unit_id).join(',');
+      }
+      const response: any = await labAPI.getRequests(params);
       setRequests(response.data || []);
     } catch (error) {
       toast.error('Failed to load lab requests');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchMetadata = async () => {
-    try {
-      // Use imported APIs directly as they are available globally or imported
-      const { patientsAPI, servicesAPI } = await import('@/lib/api');
-      const [patientsRes, servicesRes] = await Promise.all([
-        patientsAPI.getAll(),
-        servicesAPI.getAll()
-      ]) as any;
-      setPatients(patientsRes.data || patientsRes || []);
-      // Filter for laboratory services
-      const allServices = (servicesRes.data || servicesRes || []).map((s: any) => ({
-        ...s,
-        deptName: s.department?.name || 'General Diagnostics'
-      }));
-      setLabServices(allServices.filter((s: any) => 
-        s.name.toLowerCase().includes('test') || 
-        s.category?.toLowerCase() === 'laboratory' ||
-        s.deptName.toLowerCase().includes('lab')
-      ));
-
-      // Extract unique departments
-      const depts = Array.from(new Set(allServices.map((s: any) => s.deptName)));
-      setDepartments(depts);
-
-      // Handle Deep-Links from Patients Hub
-      const patientId = searchParams.get('patientId');
-      const search = searchParams.get('search');
-      
-      if (patientId) {
-        setNewRequest(prev => ({ ...prev, patient_id: patientId }));
-        const patient = patientsRes.data?.find((p: any) => p.id === patientId);
-        if (patient) setPatientSearchTerm(patient.full_name);
-        setShowNewModal(true);
-      }
-
-      if (search) {
-        setGlobalSearch(search);
-      }
-    } catch (error) {
-      console.error('Metadata fetch error:', error);
-    }
-  };
-
-  useEffect(() => {
-    if (showNewModal) fetchMetadata();
-  }, [showNewModal]);
-
-  const handleCreateRequest = async () => {
-    if (!newRequest.patient_id || !newRequest.test_name) {
-      return toast.error('Patient and Test Name are required');
-    }
-    setIsCreating(true);
-    try {
-      await labAPI.createRequest(newRequest);
-      toast.success('Lab request assigned successfully');
-      setShowNewModal(false);
-      setNewRequest({ patient_id: '', test_name: '', service_id: '', test_price: 0, clinical_notes: '' });
-      fetchRequests(activeTab);
-    } catch (error) {
-      toast.error('Failed to assign test');
-    } finally {
-      setIsCreating(false);
     }
   };
 
@@ -152,7 +93,25 @@ export default function LabRequestsPage() {
   const handleOpenUpdate = (req: any) => {
     setSelectedRequest(req);
     setResultText(req.results || '');
+    setMinRange(req.min_range?.toString() || '');
+    setMaxRange(req.max_range?.toString() || '');
+    setUnit(req.unit || '');
+    setIsCritical(req.is_critical || false);
     setFileUrl(req.file_url || '');
+  };
+
+  const handleMarkCollected = async (requestId: string) => {
+    try {
+      await labAPI.updateResult({
+        request_id: requestId,
+        status: 'Collected',
+        collected_at: new Date().toISOString()
+      });
+      toast.success('Specimen marked as collected - analysis in progress');
+      fetchRequests(activeTab);
+    } catch (error) {
+      toast.error('Failed to update specimen status');
+    }
   };
 
   const handleUpdateSubmit = async () => {
@@ -166,6 +125,10 @@ export default function LabRequestsPage() {
         request_id: selectedRequest.id,
         status: 'Completed',
         results: resultText,
+        min_range: minRange ? parseFloat(minRange) : undefined,
+        max_range: maxRange ? parseFloat(maxRange) : undefined,
+        unit: unit || undefined,
+        is_critical: isCritical,
         file_url: fileUrl
       });
       toast.success('Lab result updated successfully');
@@ -252,8 +215,30 @@ export default function LabRequestsPage() {
 
             <div class="results-section">
               <div class="watermark">CERTIFIED RESULT</div>
-              <p class="label" style="margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">Clinical Observations</p>
-              <div class="results-content">${req.results || 'Investigation successful. Refer to digital attachments for quantitative parameters.'}</div>
+              <p class="label" style="margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">Clinical Observations & quantitative metrics</p>
+              <div class="results-content">
+                ${(() => {
+                  if (req.results?.includes('METRIC_DATA:')) {
+                    const parts = req.results.split('METRIC_DATA:');
+                    const notes = parts[0].trim();
+                    let metrics = {};
+                    try { metrics = JSON.parse(parts[1]); } catch(e) {}
+                    
+                    return `
+                      <div style="margin-bottom: 30px;">${notes}</div>
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #fcfcfc; padding: 25px; border-radius: 12px; border: 1px solid #f1f5f9;">
+                        ${Object.entries(metrics).map(([k, v]) => `
+                          <div style="border-bottom: 1px dotted #e2e8f0; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-end;">
+                            <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">${k}</span>
+                            <span style="font-size: 14px; font-weight: 900; color: #1e293b;">${v}</span>
+                          </div>
+                        `).join('')}
+                      </div>
+                    `;
+                  }
+                  return req.results || 'Investigation successful. Refer to digital attachments for quantitative parameters.';
+                })()}
+              </div>
             </div>
 
             <div class="footer">
@@ -283,14 +268,42 @@ export default function LabRequestsPage() {
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.015] -z-10" />
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center border border-blue-100/50 shadow-sm shadow-blue-100/20">
-              <TestTubes className="w-6 h-6 text-blue-600" />
+        <div className="flex flex-col gap-4">
+          <div>
+            <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center border border-blue-100/50 shadow-sm shadow-blue-100/20">
+                <TestTubes className="w-6 h-6 text-blue-600" />
+              </div>
+              Diagnostics Hub
+            </h1>
+            <p className="text-gray-500 font-medium mt-1 ml-15">Advanced laboratory matrix for clinical investigation.</p>
+          </div>
+          
+          {assignedUnits.length > 0 && (
+            <div className="flex gap-2 p-1 bg-white/50 border border-gray-100 rounded-2xl w-fit ml-15 shadow-sm">
+              <button 
+                onClick={() => setSelectedUnitId('all')}
+                className={cn(
+                  "px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
+                  selectedUnitId === 'all' ? "bg-gray-900 text-white shadow-lg" : "text-gray-400 hover:text-gray-600"
+                )}
+              >
+                Global Queue
+              </button>
+              {assignedUnits.map(a => (
+                <button 
+                  key={a.unit_id}
+                  onClick={() => setSelectedUnitId(a.unit_id)}
+                  className={cn(
+                    "px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
+                    selectedUnitId === a.unit_id ? "bg-blue-600 text-white shadow-lg shadow-blue-100" : "text-gray-400 hover:text-gray-600"
+                  )}
+                >
+                  {a.unit?.name}
+                </button>
+              ))}
             </div>
-            Diagnostics Hub
-          </h1>
-          <p className="text-gray-500 font-medium mt-1 ml-15">Advanced laboratory matrix for clinical investigation.</p>
+          )}
         </div>
         <div className="flex items-center gap-4">
           <div className="relative group w-full md:w-80">
@@ -314,7 +327,7 @@ export default function LabRequestsPage() {
       </div>
 
       <div className="card bg-white/70 backdrop-blur-xl border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.04)] overflow-hidden">
-        <div className="flex p-2 gap-2 bg-gray-50/50 border-b border-gray-100">
+        <div className="flex p-2 gap-2 bg-gray-50/50 border-b border-gray-100 no-scrollbar overflow-x-auto">
           <button 
             onClick={() => setActiveTab('Pending')}
             className={cn(
@@ -324,7 +337,18 @@ export default function LabRequestsPage() {
                 : "text-gray-400 hover:text-gray-600 hover:bg-white/50"
             )}
           >
-            Awaiting Verification
+            Awaiting Specimen
+          </button>
+          <button 
+            onClick={() => setActiveTab('Collected')}
+            className={cn(
+              "flex-1 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] rounded-xl transition-all duration-300",
+              activeTab === 'Collected' 
+                ? "bg-white text-amber-600 shadow-sm border border-amber-100/50" 
+                : "text-gray-400 hover:text-gray-600 hover:bg-white/50"
+            )}
+          >
+            In Analysis
           </button>
           <button 
             onClick={() => setActiveTab('Completed')}
@@ -355,7 +379,8 @@ export default function LabRequestsPage() {
                 <thead>
                   <tr className="bg-gray-50/20 border-b border-gray-100">
                     <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Patient Profile</th>
-                    <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Requested Analysis</th>
+                    <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Investigation Definition</th>
+                    <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Priority & Specimen</th>
                     <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Financials</th>
                     <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Timestamp</th>
                     <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] text-right">Operations</th>
@@ -368,7 +393,9 @@ export default function LabRequestsPage() {
                         <div className="flex items-center gap-4">
                           <div className={cn(
                             "w-10 h-10 rounded-[1rem] flex items-center justify-center border shadow-sm transition-all duration-300 font-black text-xs",
-                            activeTab === 'Pending' ? "bg-blue-50 border-blue-100 text-blue-600" : "bg-emerald-50 border-emerald-100 text-emerald-600"
+                            activeTab === 'Pending' ? "bg-blue-50 border-blue-100 text-blue-600" : 
+                            activeTab === 'Collected' ? "bg-amber-50 border-amber-100 text-amber-600" :
+                            "bg-emerald-50 border-emerald-100 text-emerald-600"
                           )}>
                             {req.patient?.full_name?.[0] || 'P'}
                           </div>
@@ -381,13 +408,31 @@ export default function LabRequestsPage() {
                       <td className="px-6 py-5 text-sm">
                         <div className="space-y-1.5">
                           <p className="font-black text-gray-900 tracking-tight">{req.test_name}</p>
-                          {req.clinical_notes && (
-                            <div className="flex items-start gap-2 text-[10px] text-amber-600 font-bold leading-relaxed bg-amber-50/50 px-2 py-1 rounded-lg border border-amber-100/20 max-w-xs">
-                              <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" />
-                              <span className="italic">"{req.clinical_notes}"</span>
-                            </div>
-                          )}
+                          <div className="flex flex-wrap gap-2">
+                             {req.unit?.name && (
+                               <span className="text-[9px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 uppercase tracking-tighter">{req.unit.name}</span>
+                             )}
+                             {req.clinical_notes && (
+                               <div className="flex items-start gap-2 text-[10px] text-blue-600 font-bold leading-relaxed bg-blue-50/50 px-2 py-1 rounded-lg border border-blue-100/20 max-w-xs">
+                                 <Info className="w-3 h-3 mt-0.5 shrink-0" />
+                                 <span className="italic">"{req.clinical_notes}"</span>
+                               </div>
+                             )}
+                          </div>
                         </div>
+                      </td>
+                      <td className="px-6 py-5">
+                         <div className="flex flex-col gap-2">
+                           <span className={cn(
+                             "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider w-fit border",
+                             req.priority === 'Stat' ? "bg-rose-50 text-rose-600 border-rose-100 animate-pulse" :
+                             req.priority === 'Urgent' ? "bg-amber-50 text-amber-600 border-amber-100" :
+                             "bg-blue-50 text-blue-600 border-blue-100"
+                           )}>
+                             {req.priority || 'Routine'}
+                           </span>
+                           <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest ml-1">{req.specimen_type || 'Venous Blood'}</p>
+                         </div>
                       </td>
                       <td className="px-6 py-5">
                         <div className="flex flex-col gap-1.5">
@@ -402,8 +447,13 @@ export default function LabRequestsPage() {
                           ) : (
                             <div className="flex items-center gap-2">
                               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-100/50 text-[10px] font-black uppercase tracking-wider">
-                                Unpaid
+                                UNPAID
                               </span>
+                              {req.is_critical && (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-600 text-white border border-rose-700 text-[10px] font-black uppercase tracking-wider animate-pulse">
+                                  CRITICAL
+                                </span>
+                              )}
                               <button 
                                 onClick={() => handleGenerateBill(req)}
                                 className="p-1.5 hover:bg-white rounded-lg transition-all text-gray-400 hover:text-blue-600 hover:shadow-sm border border-transparent hover:border-gray-100"
@@ -426,12 +476,22 @@ export default function LabRequestsPage() {
                       </td>
                       <td className="px-6 py-5 text-right">
                         {activeTab === 'Pending' ? (
-                          <button 
-                            onClick={() => handleOpenUpdate(req)}
-                            className="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg shadow-gray-200 active:scale-95"
-                          >
-                            Add Analysis
-                          </button>
+                          <div className="flex justify-end gap-2">
+                            <button 
+                              onClick={() => handleMarkCollected(req.id)}
+                              className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100 active:scale-95 flex items-center gap-2"
+                            >
+                              <TestTubes className="w-3.5 h-3.5" />
+                              Receive Sample
+                            </button>
+                          </div>
+                        ) : activeTab === 'Collected' ? (
+                            <button 
+                              onClick={() => handleOpenUpdate(req)}
+                              className="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg shadow-gray-200 active:scale-95"
+                            >
+                              Input Result
+                            </button>
                         ) : (
                           <div className="flex items-center justify-end gap-3 transition-all duration-300 group-hover:translate-x-[-4px]">
                             {req.file_url && (
@@ -464,268 +524,21 @@ export default function LabRequestsPage() {
         </div>
       </div>
 
-      {/* Report Validation Modal */}
+      {/* Specialized Diagnostic Workstation */}
       {selectedRequest && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setSelectedRequest(null)}></div>
-          <div className="relative bg-white rounded-[2.5rem] max-w-2xl w-full p-10 shadow-2xl overflow-hidden border border-white/20">
-            <div className="flex justify-between items-center mb-10">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center border border-blue-100/50">
-                  <FileText className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-black text-gray-900 tracking-tight">Report Validation</h2>
-                  <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mt-0.5">Certificate of Clinical Findings</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setSelectedRequest(null)} 
-                className="p-3 bg-gray-50 rounded-xl text-gray-400 hover:text-rose-500 hover:rotate-90 transition-all duration-300"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="bg-gray-50 p-6 rounded-[2rem] mb-10 grid grid-cols-2 gap-8 border border-gray-100">
-              <div>
-                <p className="text-[10px] text-gray-400 uppercase font-black tracking-[0.2em] mb-2">Subject</p>
-                <p className="font-black text-gray-900">{selectedRequest.patient?.full_name}</p>
-                <p className="text-xs text-gray-500 mt-1">Ref: #{selectedRequest.patient?.patient_id}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-gray-400 uppercase font-black tracking-[0.2em] mb-2">Analysis Protocol</p>
-                <p className="font-black text-blue-600">{selectedRequest.test_name}</p>
-              </div>
-            </div>
-
-            <div className="space-y-8">
-              <div className="group">
-                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] ml-1 mb-2">Structured Results & Clinical Commentary</label>
-                <textarea 
-                  rows={5} 
-                  className="w-full bg-gray-50 border border-gray-200/50 rounded-[1.5rem] p-5 focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-medium text-gray-800 shadow-inner" 
-                  placeholder="Record precise quantitative metrics and qualitative analysis..."
-                  value={resultText}
-                  onChange={(e) => setResultText(e.target.value)}
-                />
-              </div>
-              
-              <div className="group">
-                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] ml-1 mb-2">Authenticated Attachment Protocol (BETA)</label>
-                <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-white flex items-center justify-center border border-gray-100 shadow-sm">
-                    <UploadCloud className="w-4 h-4 text-blue-500" />
-                  </div>
-                  <input 
-                    type="text" 
-                    className="w-full pl-16 pr-6 py-4 bg-gray-50 border border-gray-200/50 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-gray-900 shadow-inner" 
-                    placeholder="Input Secure Cloud Resource URI..."
-                    value={fileUrl}
-                    onChange={(e) => setFileUrl(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-12 flex justify-end gap-4">
-              <button 
-                onClick={handleUpdateSubmit}
-                disabled={isUpdating}
-                className="w-full py-4 rounded-[1.25rem] font-black text-white bg-gray-900 hover:bg-emerald-600 hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gray-200 hover:shadow-emerald-100 flex items-center justify-center gap-3 disabled:opacity-30 disabled:hover:bg-gray-900 group"
-              >
-                {isUpdating ? <Clock className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5 group-hover:animate-bounce" />}
-                <span className="uppercase tracking-[0.2em] text-xs">{isUpdating ? 'Verifying Integrity...' : 'Authorize & Release Result'}</span>
-              </button>
-            </div>
-          </div>
-        </div>
+        <LabResultEntryModal 
+          request={selectedRequest}
+          onClose={() => setSelectedRequest(null)}
+          onSuccess={() => fetchRequests(activeTab)}
+        />
       )}
 
-      {/* New Lab Request Modal */}
-      {showNewModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-gray-900/80 backdrop-blur-md" onClick={() => setShowNewModal(false)}></div>
-          <div className="relative bg-white rounded-[3rem] max-w-2xl w-full p-12 shadow-[0_32px_128px_rgba(0,0,0,0.1)] border border-white/20 overflow-hidden">
-            <div className="flex justify-between items-center mb-12">
-              <div className="flex items-center gap-5">
-                <div className="w-14 h-14 rounded-[1.5rem] bg-blue-600 flex items-center justify-center shadow-xl shadow-blue-200">
-                  <UploadCloud className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-3xl font-black text-gray-900 tracking-tight">Assign New Job</h2>
-                  <p className="text-[11px] text-gray-400 font-black uppercase tracking-[0.3em] mt-1">Diagnostic Protocol Initiation</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setShowNewModal(false)}
-                className="p-4 bg-gray-50 rounded-[1.25rem] text-gray-400 hover:text-rose-500 hover:rotate-90 transition-all duration-500"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="space-y-10">
-              {/* Patient Selection */}
-              <div className="space-y-4">
-                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Identify Subject</label>
-                <div className="relative">
-                  <div className="relative group">
-                    <div className="absolute left-5 top-[22px] text-gray-400 group-focus-within:text-blue-600 transition-colors z-10">
-                      <Search className="w-5 h-5" />
-                    </div>
-                    <input 
-                      type="text"
-                      className="w-full pl-14 pr-6 py-5 bg-gray-50/50 border border-gray-100 rounded-[1.5rem] focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-black text-gray-900 shadow-inner"
-                      placeholder="Search patient name or ID..."
-                      value={patientSearchTerm}
-                      onChange={(e) => setPatientSearchTerm(e.target.value)}
-                    />
-                  </div>
-                  
-                  {filteredPatients.length > 0 && (patientSearchTerm || newRequest.patient_id) && !newRequest.patient_id && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-[2rem] border border-gray-100 shadow-2xl p-3 z-50 max-h-60 overflow-y-auto">
-                      {filteredPatients.map(p => (
-                        <button 
-                          key={p.id}
-                          onClick={() => {
-                            setNewRequest({...newRequest, patient_id: p.id});
-                            setPatientSearchTerm(p.full_name);
-                          }}
-                          className="w-full flex items-center gap-4 p-4 hover:bg-blue-50/50 rounded-2xl transition-all text-left group"
-                        >
-                          <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover:border-blue-100 group-hover:bg-white font-black text-xs text-blue-600 transition-all">
-                            {p.full_name?.[0]}
-                          </div>
-                          <div>
-                            <p className="text-sm font-black text-gray-900 leading-tight">{p.full_name}</p>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">#{p.patient_id}</p>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {newRequest.patient_id && (
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pr-2">
-                       <button 
-                         onClick={() => {
-                            setNewRequest({...newRequest, patient_id: ''});
-                            setPatientSearchTerm('');
-                         }}
-                         className="p-1.5 hover:bg-rose-50 rounded-lg text-rose-500 transition-all border border-transparent hover:border-rose-100"
-                       >
-                         <X className="w-4 h-4" />
-                       </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Department Filter */}
-              <div className="flex gap-2 p-1 bg-gray-50/50 rounded-2xl border border-gray-100 overflow-x-auto no-scrollbar">
-                <button 
-                  onClick={() => setSelectedDept('All')}
-                  className={cn(
-                    "px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
-                    selectedDept === 'All' ? "bg-white text-blue-600 shadow-sm border border-blue-100/50" : "text-gray-400 hover:text-gray-600"
-                  )}
-                >
-                  All Depts
-                </button>
-                {departments.map(dept => (
-                  <button 
-                    key={dept}
-                    onClick={() => setSelectedDept(dept)}
-                    className={cn(
-                      "px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
-                      selectedDept === dept ? "bg-white text-blue-600 shadow-sm border border-blue-100/50" : "text-gray-400 hover:text-gray-600"
-                    )}
-                  >
-                    {dept}
-                  </button>
-                ))}
-              </div>
-
-              {/* Test Selection */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-4">
-                  <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Investigation Protocol</label>
-                  <select 
-                    className="w-full px-6 py-5 bg-gray-50/50 border border-gray-100 rounded-[1.5rem] focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-black text-gray-900 appearance-none shadow-inner"
-                    value={newRequest.service_id}
-                    onChange={(e) => {
-                      const service = labServices.find(s => s._id === e.target.value);
-                      setNewRequest({
-                        ...newRequest, 
-                        service_id: e.target.value,
-                        test_name: service?.name || '',
-                        test_price: service?.price || 0
-                      });
-                    }}
-                  >
-                    <option value="">Standard Panels...</option>
-                    {labServices.filter(s => selectedDept === 'All' || s.deptName === selectedDept).map(s => (
-                      <option key={s._id} value={s._id}>{s.name} - ₦ {s.price.toLocaleString()}</option>
-                    ))}
-                    <option value="custom">Custom Test</option>
-                  </select>
-                </div>
-                <div className="space-y-4">
-                  <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Technical Title</label>
-                  <input 
-                    type="text"
-                    className="w-full px-6 py-5 bg-gray-50/50 border border-gray-100 rounded-[1.5rem] focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-black text-gray-900 shadow-inner"
-                    placeholder="E.g. Full Blood Count"
-                    value={newRequest.test_name}
-                    onChange={(e) => setNewRequest({...newRequest, test_name: e.target.value})}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Investigation Cost (₦)</label>
-                <div className="relative group">
-                   <div className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-blue-600">₦</div>
-                   <input 
-                      type="number"
-                      className="w-full pl-12 pr-6 py-5 bg-gray-50/50 border border-gray-100 rounded-[1.5rem] focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-black text-gray-900 shadow-inner"
-                      placeholder="Enter amount..."
-                      value={newRequest.test_price}
-                      onChange={(e) => setNewRequest({...newRequest, test_price: parseFloat(e.target.value) || 0})}
-                    />
-                </div>
-              </div>
-
-              {/* Notes */}
-              <div className="space-y-4">
-                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Investigation Notes</label>
-                <textarea 
-                  rows={3}
-                  className="w-full px-6 py-5 bg-gray-50/50 border border-gray-100 rounded-[1.5rem] focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-medium text-gray-800 shadow-inner"
-                  placeholder="Primary clinical indications..."
-                  value={newRequest.clinical_notes}
-                  onChange={(e) => setNewRequest({...newRequest, clinical_notes: e.target.value})}
-                />
-              </div>
-            </div>
-
-            <div className="mt-12 flex items-center justify-between p-2 bg-blue-50/30 rounded-[2rem] border border-blue-100/20">
-              <div className="px-6 py-2">
-                <p className="text-[10px] text-blue-600 font-black uppercase tracking-[0.2em]">Estimated Val.</p>
-                <p className="text-xl font-black text-gray-900">₦ {newRequest.test_price.toLocaleString()}</p>
-              </div>
-              <button 
-                onClick={handleCreateRequest}
-                disabled={isCreating}
-                className="btn-primary bg-gray-900 hover:bg-blue-600 text-white px-10 py-5 rounded-[1.75rem] text-xs font-black uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-95 disabled:opacity-50"
-              >
-                {isCreating ? 'Synchronizing...' : 'Authorize Request'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Unified New Lab Request Modal */}
+      <CreateLabRequestModal 
+        isOpen={showNewModal} 
+        onClose={() => setShowNewModal(false)}
+        onSuccess={() => fetchRequests(activeTab)}
+      />
     </div>
   );
 }

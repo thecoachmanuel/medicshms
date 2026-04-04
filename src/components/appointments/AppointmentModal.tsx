@@ -4,11 +4,12 @@ import React, { useState } from 'react';
 import { 
   X, User, Mail, Phone, Calendar, Clock, Stethoscope, 
   CheckCircle2, AlertCircle, Printer, Save, Loader2, UserPlus, XCircle,
-  Eye, Edit2, Building2, FileText
+  Eye, Edit2, Building2, FileText, Plus
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { appointmentAPI, labAPI, radiologyAPI, pharmacyAPI } from '@/lib/api';
+import { appointmentAPI, pharmacyAPI } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+import CreateLabRequestModal from '@/components/clinical/CreateLabRequestModal';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -34,6 +35,8 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
   const [completePrescription, setCompletePrescription] = useState('');
   const [labRequest, setLabRequest] = useState('');
   const [radiologyRequest, setRadiologyRequest] = useState('');
+  const [showLabModal, setShowLabModal] = useState(false);
+  const [showRadiologyModal, setShowRadiologyModal] = useState(false);
   const [editData, setEditData] = useState({
     fullName: appointment?.fullName || appointment?.patientName || '',
     mobileNumber: appointment?.mobileNumber || '',
@@ -77,22 +80,6 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
 
         const pId = appointment.patient_id || appointment.patientId;
         
-        if (labRequest && pId) {
-           await labAPI.createRequest({
-             patient_id: pId,
-             appointment_id: appointment._id || appointment.id,
-             doctor_id: user?.id,
-             test_name: labRequest,
-           }).catch(e => console.error(e));
-        }
-        if (radiologyRequest && pId) {
-           await radiologyAPI.createRequest({
-             patient_id: pId,
-             appointment_id: appointment._id || appointment.id,
-             doctor_id: user?.id,
-             test_name: radiologyRequest,
-           }).catch(e => console.error(e));
-        }
         if (completePrescription && pId) {
            await pharmacyAPI.createPrescription({
              patient_id: pId,
@@ -180,25 +167,27 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
                     />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Order Lab Tests</label>
-                      <input 
-                        type="text"
-                        className="input w-full py-3 text-sm" 
-                        placeholder="e.g. Complete Blood Count (CBC)"
-                        value={labRequest}
-                        onChange={e => setLabRequest(e.target.value)}
-                      />
+                    <div className="space-y-2">
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pathology & Laboratory</label>
+                      <button 
+                        type="button"
+                        onClick={() => setShowLabModal(true)}
+                        className="w-full h-[54px] bg-white border border-gray-100 rounded-2xl flex items-center justify-between px-6 hover:border-indigo-200 hover:bg-indigo-50 transition-all group"
+                      >
+                        <span className="text-xs font-bold text-gray-400 group-hover:text-indigo-600 italic">Order Clinical Investigations...</span>
+                        <Plus className="w-4 h-4 text-gray-300 group-hover:text-indigo-600" />
+                      </button>
                     </div>
-                    <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Order Radiology Scans</label>
-                      <input 
-                        type="text"
-                        className="input w-full py-3 text-sm" 
-                        placeholder="e.g. Chest X-Ray"
-                        value={radiologyRequest}
-                        onChange={e => setRadiologyRequest(e.target.value)}
-                      />
+                    <div className="space-y-2">
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Radiology & Imaging</label>
+                      <button 
+                        type="button"
+                        onClick={() => setShowRadiologyModal(true)}
+                        className="w-full h-[54px] bg-white border border-gray-100 rounded-2xl flex items-center justify-between px-6 hover:border-blue-200 hover:bg-blue-50 transition-all group"
+                      >
+                        <span className="text-xs font-bold text-gray-400 group-hover:text-blue-600 italic">Order Diagnostic Imaging...</span>
+                        <Plus className="w-4 h-4 text-gray-300 group-hover:text-blue-600" />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -446,6 +435,12 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
           )}
         </div>
       </div>
+      {/* Clinical Sub-Modules */}
+      <CreateLabRequestModal 
+        isOpen={showLabModal}
+        onClose={() => setShowLabModal(false)}
+        initialPatientId={appointment.patient_id || appointment.patientId}
+      />
     </div>
   );
 }

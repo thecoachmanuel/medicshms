@@ -54,21 +54,44 @@ export default function LabScientistDashboard({ params }: { params: Promise<{ sl
     </div>;
   }
 
+  const stats = React.useMemo(() => {
+    const pending = requests.filter(r => r.status === 'Pending').length;
+    const completedToday = requests.filter(r => r.status === 'Completed' && new Date(r.completed_at).toDateString() === new Date().toDateString()).length;
+    const collected = requests.filter(r => ['Collected', 'In Progress', 'Completed'].includes(r.status)).length;
+    const critical = requests.filter(r => r.is_critical).length;
+    
+    // Calculate TAT (Turnaround Time) in Minutes
+    const completedRequests = requests.filter(r => r.completed_at && r.requested_at);
+    const avgTAT = completedRequests.length > 0 
+      ? Math.round(completedRequests.reduce((acc, curr) => {
+          const diff = new Date(curr.completed_at).getTime() - new Date(curr.requested_at).getTime();
+          return acc + (diff / (1000 * 60));
+        }, 0) / completedRequests.length)
+      : 0;
+
+    return { pending, completedToday, collected, critical, avgTAT };
+  }, [requests]);
+
   const statCards = [
-    { label: "Pending Tests", value: requests.filter((r) => r.status === 'Pending').length || 14, icon: Clock, color: 'amber', description: 'Tests awaiting processing' },
-    { label: 'Completed Today', value: requests.filter((r) => r.status === 'Completed').length || 42, icon: CheckCircle2, color: 'emerald', description: 'Results successfully delivered' },
-    { label: 'Samples Collected', value: 38, icon: TestTube2, color: 'blue', description: 'Total biological samples today' },
-    { label: 'Critical Results', value: 3, icon: AlertCircle, color: 'rose', description: 'Priority abnormal findings' },
+    { label: "Pending Tests", value: stats.pending, icon: Clock, color: 'amber', description: 'Tests awaiting specimen collection' },
+    { label: 'Avg Turnaround', value: `${stats.avgTAT}m`, icon: Activity, color: 'indigo', description: 'Average time to result delivery' },
+    { label: 'Samples Collected', value: stats.collected, icon: TestTube2, color: 'blue', description: 'Total specimens in laboratory' },
+    { label: 'Critical Results', value: stats.critical, icon: AlertCircle, color: 'rose', description: 'Priority abnormal findings' },
   ];
 
-  // Mock bar chart data for tests volume
-  const chartData = [
-    { name: 'Hematology', tests: 45 },
-    { name: 'Biochemistry', tests: 32 },
-    { name: 'Microbiology', tests: 18 },
-    { name: 'Immunology', tests: 24 },
-  ];
-  const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ec4899'];
+  // Group by Test Name for Volume Chart
+  const chartData = React.useMemo(() => {
+    const counts: Record<string, number> = {};
+    requests.forEach(r => {
+      counts[r.test_name] = (counts[r.test_name] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([name, tests]) => ({ name, tests }))
+      .sort((a, b) => b.tests - a.tests)
+      .slice(0, 5);
+  }, [requests]);
+
+  const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
 
   return (
     <div className="relative min-h-screen space-y-6 pb-12">

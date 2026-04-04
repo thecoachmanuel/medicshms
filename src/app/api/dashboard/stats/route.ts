@@ -16,6 +16,7 @@ export async function GET(request: Request) {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59).toISOString();
+    const startOfSixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString();
 
     const [
       { count: totalPatients },
@@ -31,28 +32,24 @@ export async function GET(request: Request) {
       client.from('public_appointments').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id),
       client.from('doctors').select('*', { count: 'exact', head: true }).eq('is_active', true).eq('hospital_id', userProfile?.hospital_id),
       client.from('departments').select('*', { count: 'exact', head: true }).eq('is_active', true).eq('hospital_id', userProfile?.hospital_id),
-      // Fetch all appointments for today specifically
       client.from('public_appointments').select('appointment_date, appointment_status, visit_type, created_at').eq('hospital_id', userProfile?.hospital_id).eq('appointment_date', startOfToday.split('T')[0]),
-      // Fetch recent appointments for growth calculation
       client.from('public_appointments').select('appointment_date, appointment_status, visit_type, created_at').eq('hospital_id', userProfile?.hospital_id).gte('created_at', startOfLastMonth),
-      // Fetch bills from the start of last month onwards to ensure exact monthly and growth calculation
-      // Increased limit to 5000 to handle hospitals with high transaction volume
       client.from('bills')
-        .select('total_amount, paid_amount, created_at')
+        .select(`
+          total_amount, 
+          paid_amount, 
+          created_at,
+          appointment:public_appointment_id(department)
+        `)
         .eq('hospital_id', userProfile?.hospital_id)
-        .gte('created_at', startOfLastMonth)
-        .limit(5000),
+        .gte('created_at', startOfSixMonthsAgo)
+        .limit(10000),
       client.from('bills').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id).in('payment_status', ['Pending', 'Due', 'Partial']),
       client.from('support_tickets').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id).in('status', ['Open', 'In Progress']),
       client.from('announcements').select('*', { count: 'exact', head: true }).eq('is_active', true).eq('hospital_id', userProfile?.hospital_id)
     ]);
 
-    // Calculate total revenue from ALL bills (fallback to a separate count or aggregate if possible, 
-    // but for the dashboard stats, we'll sum what we fetched plus a base if needed)
-    // To be truly exact for 'totalRevenueVal', we'd need an RPC. 
-    // For now, we sum the fetched records which cover the last 60 days.
-
-    // Process Appointment Stats in-memory
+    // Process Appointment Stats
     const apts = appointmentStatsData || [];
     const todayApts = todayAppointmentsData || [];
     const todayAppointments = todayApts.filter(a => ['Pending', 'Confirmed'].includes(a.appointment_status)).length;
@@ -67,14 +64,45 @@ export async function GET(request: Request) {
     const newPatientsThisMonth = apts.filter(a => a.visit_type === 'New Patient' && a.created_at >= startOfMonth).length;
     const newPatientsLastMonth = apts.filter(a => a.visit_type === 'New Patient' && a.created_at >= startOfLastMonth && a.created_at <= endOfLastMonth).length;
 
-    // Process Revenue Stats in-memory
+    // Process Financial Intelligence
     const bills = revenueData || [];
     const totalRevenueVal = bills.reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
+    
+    // Monthly Aggregates
     const monthRevenueData = bills.filter(b => b.created_at >= startOfMonth);
     const monthRevenueVal = monthRevenueData.reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
     const monthPaidVal = monthRevenueData.reduce((sum, b) => sum + Number(b.paid_amount || 0), 0);
+    
     const lastMonthRevenueVal = bills.filter(b => b.created_at >= startOfLastMonth && b.created_at <= endOfLastMonth)
                                      .reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
+
+    // Velocity Projection
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const dayOfMonth = now.getDate() || 1;
+    const projectedRevenue = Math.round((monthRevenueVal / dayOfMonth) * daysInMonth);
+
+    // Trending Logic (6 Months)
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const revenueTrend: any[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const mStart = d.toISOString();
+      const mEnd = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59).toISOString();
+      const monthBills = bills.filter(b => b.created_at >= mStart && b.created_at <= mEnd);
+      revenueTrend.push({
+        month: monthNames[d.getMonth()],
+        revenue: monthBills.reduce((sum, b) => sum + Number(b.total_amount || 0), 0),
+        paid: monthBills.reduce((sum, b) => sum + Number(b.paid_amount || 0), 0),
+      });
+    }
+
+    const revenueByDept: Record<string, number> = {};
+    bills.forEach((b: any) => {
+      if (b.created_at >= startOfMonth) {
+        const dept = b.appointment?.department || 'General';
+        revenueByDept[dept] = (revenueByDept[dept] || 0) + Number(b.total_amount || 0);
+      }
+    });
 
     const calcChange = (current: number | null, previous: number | null) => {
       const cur = current || 0;
@@ -82,6 +110,10 @@ export async function GET(request: Request) {
       if (prev === 0) return cur > 0 ? 100 : 0;
       return Math.round(((cur - prev) / prev) * 100);
     };
+
+    const departmentRevenue = Object.entries(revenueByDept)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
 
     return NextResponse.json({
       cards: {
@@ -92,7 +124,9 @@ export async function GET(request: Request) {
           value: monthRevenueVal,
           change: calcChange(monthRevenueVal, lastMonthRevenueVal),
           totalRevenue: totalRevenueVal,
+          projected: projectedRevenue,
           paid: monthPaidVal,
+          collectionRate: monthRevenueVal > 0 ? Math.round((monthPaidVal / monthRevenueVal) * 100) : 0
         },
         newPatients: { value: newPatientsThisMonth || 0, change: calcChange(newPatientsThisMonth, newPatientsLastMonth) },
         pendingBills: { value: pendingBills || 0 },
@@ -106,6 +140,8 @@ export async function GET(request: Request) {
         cancelled: cancelledAppointments || 0,
         total: totalPatients || 0,
       },
+      departmentRevenue,
+      revenueTrend
     });
   } catch (error: any) {
     console.error('Dashboard stats error:', error);

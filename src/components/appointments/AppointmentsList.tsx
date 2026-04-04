@@ -92,15 +92,18 @@ export default function AppointmentsList({ role }: Props) {
         const reason = prompt('Reason for cancellation?');
         if (!reason) return;
         await appointmentAPI.updateStatus(id, status, reason);
+      } else if (status === 'Arrived') {
+        await appointmentAPI.updateStatus(id, status);
+        toast.success('Patient checked in & queued for triage');
       } else if (status === 'Completed' && isDoctor) {
         await appointmentAPI.doctorComplete(id);
       } else {
         await appointmentAPI.updateStatus(id, status);
       }
-      toast.success(`Appointment ${status}`);
+      toast.success(`Appointment status synchronized`);
       fetchAppointments();
     } catch (err) {
-      toast.error('Failed to update appointment');
+      toast.error('Uplink failed: protocol mismatch');
     }
   };
 
@@ -114,7 +117,9 @@ export default function AppointmentsList({ role }: Props) {
     const styles: Record<string, string> = {
       'Pending': 'bg-amber-50 text-amber-600 border-amber-100/50 shadow-sm shadow-amber-100/20',
       'Confirmed': 'bg-indigo-50 text-indigo-600 border-indigo-100/50 shadow-sm shadow-indigo-100/20',
-      'Completed': 'bg-emerald-50 text-emerald-600 border-emerald-100/50 shadow-sm shadow-emerald-100/20',
+      'Arrived': 'bg-sky-50 text-sky-600 border-sky-100/50 shadow-sm shadow-sky-100/20 animate-pulse',
+      'Triaged': 'bg-emerald-50 text-emerald-600 border-emerald-100/50 shadow-sm shadow-emerald-100/20',
+      'Completed': 'bg-emerald-100 text-emerald-900 border-emerald-200/50 shadow-sm shadow-emerald-200/20',
       'Cancelled': 'bg-rose-50 text-rose-600 border-rose-100/50 shadow-sm shadow-rose-100/20',
     };
     return styles[status] || 'bg-gray-50 text-gray-600 border-gray-100 shadow-sm';
@@ -338,6 +343,15 @@ export default function AppointmentsList({ role }: Props) {
                           title="Verify Appointment"
                         >
                           <Check className="w-4.5 h-4.5" />
+                        </button>
+                      )}
+                      {role === 'Receptionist' && apt.appointmentStatus === 'Confirmed' && (
+                        <button 
+                          onClick={() => handleStatusUpdate(apt._id, 'Arrived')}
+                          className="p-2.5 bg-sky-50 rounded-xl shadow-sm text-sky-600 hover:bg-sky-600 hover:text-white transition-all border border-sky-100/50 group/checkin"
+                          title="Patient Check-In"
+                        >
+                          <Clock className="w-4.5 h-4.5 group-hover:animate-spin" />
                         </button>
                       )}
                       <button 

@@ -306,8 +306,43 @@ export const vitalsAPI = {
 
 export const labAPI = {
   getRequests: (params?: any) => api.get<APIResponse<any[]>>('/lab-services', { params }),
-  createRequest: (data: any) => api.post<APIResponse<any>>('/lab-services', data),
-  updateResult: (data: any) => api.put<APIResponse<any>>('/lab-services', data),
+  createRequest: (data: {
+    patient_id: string;
+    test_name: string;
+    service_id?: string;
+    unit_id?: string;
+    test_price?: number;
+    clinical_notes?: string;
+    specimen_type?: string;
+    priority?: 'Routine' | 'Urgent' | 'Stat';
+    patient_preparation?: string;
+    collection_instructions?: string;
+  }) => api.post<APIResponse<any>>('/lab-services', data),
+  updateResult: (data: { 
+    request_id: string; 
+    status: string; 
+    results?: string; 
+    file_url?: string;
+    collected_at?: string;
+    min_range?: number;
+    max_range?: number;
+    is_critical?: boolean;
+    unit?: string;
+  }) => api.put<APIResponse<any>>('/lab-services', data),
+
+  // Lab Matrix & Catalog
+  getUnits: () => api.get<APIResponse<any[]>>('/lab-management/units'),
+  createUnit: (data: any) => api.post<APIResponse<any>>('/lab-management/units', data),
+  updateUnit: (id: string, data: any) => api.put<APIResponse<any>>(`/lab-management/units/${id}`, data),
+  deleteUnit: (id: string) => api.delete<APIResponse<void>>(`/lab-management/units/${id}`),
+
+  getCatalog: (params?: any) => api.get<APIResponse<any[]>>('/lab-management/catalog', { params }),
+  upsertCatalogItem: (data: any) => api.post<APIResponse<any>>('/lab-management/catalog', data),
+  deleteCatalogItem: (id: string) => api.delete<APIResponse<void>>(`/lab-management/catalog/${id}`),
+
+  getAssignments: (params?: any) => api.get<APIResponse<any[]>>('/lab-management/assignments', { params }),
+  assignScientist: (data: { unit_id: string; scientist_id: string }) => api.post<APIResponse<any>>('/lab-management/assignments', data),
+  removeAssignment: (id: string) => api.delete<APIResponse<void>>(`/lab-management/assignments/${id}`),
 };
 
 export const pharmacyAPI = {

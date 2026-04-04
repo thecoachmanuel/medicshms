@@ -2,19 +2,20 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { radiologyAPI } from '@/lib/api';
+import { labAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { 
-  ImageIcon, 
+  Microscope, 
   Search, 
   Printer, 
   Eye, 
-  Link as LinkIcon, 
   Calendar, 
-  User, 
-  Scan,
-  Filter,
-  ArrowRight
+  Filter, 
+  ArrowRight,
+  ClipboardCheck,
+  Activity,
+  User,
+  FlaskConical
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -23,31 +24,30 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-function RadiologyReportsContent() {
+function LabResultsContent() {
   const { user } = useAuth();
-  const [reports, setReports] = useState<any[]>([]);
+  const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
 
   useEffect(() => {
-    fetchVerifiedReports();
+    fetchVerifiedResults();
   }, []);
 
-  const fetchVerifiedReports = async () => {
+  const fetchVerifiedResults = async () => {
     setLoading(true);
     try {
-      // Fetch only completed scans for the archive
-      const response: any = await radiologyAPI.getRequests({ status: 'Completed' });
-      setReports(response.data || []);
+      const response: any = await labAPI.getRequests({ status: 'Completed' });
+      setResults(response.data || []);
     } catch (error) {
-      toast.error('Failed to synchronize reporting archive');
+      toast.error('Failed to synchronize laboratory archive');
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredReports = reports.filter(req => {
+  const filteredResults = results.filter(req => {
     const s = searchTerm.toLowerCase();
     const matchesSearch = (
       req.test_name?.toLowerCase().includes(s) ||
@@ -71,7 +71,7 @@ function RadiologyReportsContent() {
       printWindow.document.write(`
         <html>
           <head>
-            <title>Radiology Report - ${req.patient?.full_name}</title>
+            <title>Lab Report - ${req.patient?.full_name}</title>
             <style>
               @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
               body { font-family: 'Inter', sans-serif; padding: 50px; color: #1e293b; max-width: 900px; margin: 0 auto; background: #fff; }
@@ -96,55 +96,55 @@ function RadiologyReportsContent() {
           <body>
             <div class="header">
               <div class="hospital-info">
-                 \${settings.hospital_logo ? \`<img src="\${settings.hospital_logo}" style="height: 60px; margin-bottom: 15px;" />\` : ''}
-                 <h1>\${settings.hospital_name || 'Radiology Imaging Center'}</h1>
-                 <p>\${settings.address || 'Medical Plaza, East Wing'}</p>
-                 <p>Contact: \${settings.contact_email || 'radiology@hospital.com'}</p>
-                 \${settings.cin_number ? \`<p>CIN: \${settings.cin_number}</p>\` : ''}
+                 ${settings.hospital_logo ? `<img src="${settings.hospital_logo}" style="height: 60px; margin-bottom: 15px;" />` : ''}
+                 <h1>${settings.hospital_name || 'Laboratory Diagnostic Hub'}</h1>
+                 <p>${settings.address || 'Clinic HQ Sector 4'}</p>
+                 <p>Contact: ${settings.contact_email || 'diagnostics@hospital.com'}</p>
+                 ${settings.cin_number ? `<p>CIN: ${settings.cin_number}</p>` : ''}
               </div>
               <div style="text-align: right;">
-                 <div class="value" style="font-size: 12px; color: #64748b;">ACCESSION #</div>
-                 <div class="value" style="font-size: 18px;">\${req.id.slice(-8).toUpperCase()}</div>
+                 <div class="value" style="font-size: 12px; color: #64748b;">SPECIMEN #</div>
+                 <div class="value" style="font-size: 18px;">#${req.id.slice(-8).toUpperCase()}</div>
               </div>
             </div>
 
             <div class="report-title">
-              <h2>Diagnostic Imaging Interpretation</h2>
+              <h2>Verified Laboratory Certificate</h2>
             </div>
             
             <div class="details-grid">
               <div class="detail-item">
                 <p class="label">Patient Profile</p>
-                <p class="value">\${req.patient?.full_name || 'N/A'}</p>
-                <p class="value" style="font-size: 12px; color: #94a3b8;">ID: \${req.patient?.patient_id || 'N/A'}</p>
+                <p class="value">${req.patient?.full_name || 'N/A'}</p>
+                <p class="value" style="font-size: 12px; color: #94a3b8;">ID: ${req.patient?.patient_id || 'N/A'}</p>
               </div>
               <div class="detail-item">
-                <p class="label">Imaging Protocol</p>
-                <p class="value" style="color: #4f46e5;">\${req.test_name}</p>
+                <p class="label">Investigation Protocol</p>
+                <p class="value" style="color: #059669;">${req.test_name}</p>
               </div>
               <div class="detail-item">
-                <p class="label">Study Timestamp</p>
-                <p class="value">\${new Date(req.requested_at).toLocaleString()}</p>
+                <p class="label">Inception Date</p>
+                <p class="value">${new Date(req.requested_at).toLocaleString()}</p>
               </div>
               <div class="detail-item">
-                <p class="label">Interpretation Date</p>
-                <p class="value">\${new Date(req.completed_at || req.updated_at).toLocaleString()}</p>
+                <p class="label">Verification Date</p>
+                <p class="value">${new Date(req.completed_at || req.updated_at).toLocaleString()}</p>
               </div>
             </div>
 
             <div class="results-section">
-              <div class="watermark">CERTIFIED RADIOLOGY</div>
-              <p class="label" style="margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">Findings & Impressions</p>
-              <div class="results-content">\${req.results || 'Study successful. Refer to DICOM archive for imaging slices.'}</div>
+              <div class="watermark">LAB VERIFIED</div>
+              <p class="label" style="margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">Clinical Observations & Parameters</p>
+              <div class="results-content">${req.results || 'No interpretive data recorded for this specimen.'}</div>
             </div>
 
             <div class="footer">
               <div style="font-size: 11px; color: #94a3b8; max-width: 300px;">
-                This radiology study has been interpreted and authorized using high-resolution PACS modalities. Verified by the hospital's radiology informatics department.
+                This laboratory investigation has been verified and authorized by the department of clinical pathology. Verified using standardized diagnostic protocols.
               </div>
               <div class="signature-box">
-                <div class="signature-line">Authorized Radiologist</div>
-                <p style="font-size: 14px; font-weight: 900; color: #1e293b; margin-top: 5px;">\${req.handled_by_profile?.name || user?.name || 'Medical Officer'}</p>
+                <div class="signature-line">Authorized Scientist</div>
+                <p style="font-size: 14px; font-weight: 900; color: #1e293b; margin-top: 5px;">${req.handled_by_profile?.name || user?.name || 'Medical Scientist'}</p>
               </div>
             </div>
 
@@ -155,7 +155,7 @@ function RadiologyReportsContent() {
             </script>
           </body>
         </html>
-      \`);
+      `);
       printWindow.document.close();
     }
   };
@@ -163,28 +163,28 @@ function RadiologyReportsContent() {
   return (
     <div className="relative min-h-[calc(100vh-10rem)] space-y-8 pb-12">
       {/* Background Decor */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-50/20 via-transparent to-white -z-10" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-50/20 via-transparent to-white -z-10" />
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.015] -z-10" />
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100/50 shadow-sm shadow-indigo-100/20">
-              <ImageIcon className="w-6 h-6 text-indigo-600" />
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center border border-emerald-100/50 shadow-sm shadow-emerald-100/20">
+              <Microscope className="w-6 h-6 text-emerald-600" />
             </div>
-            Imaging Archives
+            Clinical Archives
           </h1>
-          <p className="text-gray-500 font-medium mt-1 ml-15">Historical clinical imaging reports and verified diagnostic data.</p>
+          <p className="text-gray-500 font-medium mt-1 ml-15">Historical laboratory investigation records and verified results.</p>
         </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-5 bg-white/70 backdrop-blur-xl p-6 rounded-[2.5rem] shadow-sm border border-white/50">
         <div className="relative flex-1 group">
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-emerald-600 transition-colors" />
           <input 
             type="text" 
-            placeholder="Search verified subjects or imaging logs..." 
-            className="w-full pl-12 pr-6 py-4 bg-gray-50/50 border border-gray-100/50 rounded-2xl text-xs focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all placeholder:text-gray-400 font-black uppercase tracking-widest"
+            placeholder="Search verified subjects or diagnostic logs..." 
+            className="w-full pl-12 pr-6 py-4 bg-gray-50/50 border border-gray-100/50 rounded-2xl text-xs focus:ring-8 focus:ring-emerald-500/5 outline-none transition-all placeholder:text-gray-400 font-black uppercase tracking-widest"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -206,7 +206,7 @@ function RadiologyReportsContent() {
                onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
              />
           </div>
-          <button className="p-4 bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-indigo-600 hover:border-indigo-100 transition-all active:scale-95 shadow-sm">
+          <button className="p-4 bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-emerald-600 hover:border-emerald-100 transition-all active:scale-95 shadow-sm">
             <Filter className="w-5 h-5" />
           </button>
         </div>
@@ -215,49 +215,43 @@ function RadiologyReportsContent() {
       <div className="bg-white/70 backdrop-blur-xl rounded-[2.5rem] overflow-hidden shadow-sm border border-white/50">
         <div className="p-8">
           {loading ? (
-             <div className="text-center py-20 animate-pulse font-black uppercase tracking-widest text-gray-400 text-xs">Querying Verified Imaging Archive...</div>
-          ) : filteredReports.length === 0 ? (
+             <div className="text-center py-20 animate-pulse font-black uppercase tracking-widest text-gray-400 text-xs">Querying Laboratory Archive...</div>
+          ) : filteredResults.length === 0 ? (
             <div className="text-center py-32 text-gray-400">
-              <Scan className="w-16 h-16 mx-auto mb-6 opacity-10" />
-              <p className="font-black uppercase tracking-widest text-[10px]">No historical records found in this segment</p>
+              <FlaskConical className="w-16 h-16 mx-auto mb-6 opacity-10" />
+              <p className="font-black uppercase tracking-widest text-[10px]">No historical investigations found in this segment</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredReports.map(req => (
-                <div key={req.id} className="group bg-white border border-gray-100 rounded-3xl p-6 hover:shadow-2xl hover:shadow-indigo-500/5 transition-all duration-500 relative overflow-hidden">
-                   <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50/50 rounded-bl-[4rem] group-hover:bg-indigo-600 transition-colors duration-500 flex items-center justify-center -mr-4 -mt-4 pb-4 pl-4">
-                      <Scan className="w-6 h-6 text-indigo-200 group-hover:text-white transition-colors" />
+              {filteredResults.map(req => (
+                <div key={req.id} className="group bg-white border border-gray-100 rounded-3xl p-6 hover:shadow-2xl hover:shadow-emerald-500/5 transition-all duration-500 relative overflow-hidden">
+                   <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50/50 rounded-bl-[4rem] group-hover:bg-emerald-600 transition-colors duration-500 flex items-center justify-center -mr-4 -mt-4 pb-4 pl-4">
+                      <Microscope className="w-6 h-6 text-emerald-200 group-hover:text-white transition-colors" />
                    </div>
                    
                    <div className="mb-6">
                       <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Subject</p>
-                      <h3 className="font-black text-gray-900 group-hover:text-indigo-600 transition-colors uppercase truncate pr-16">{req.patient?.full_name}</h3>
+                      <h3 className="font-black text-gray-900 group-hover:text-emerald-600 transition-colors uppercase truncate pr-16">{req.patient?.full_name}</h3>
                       <p className="text-[10px] font-bold text-gray-500">#{req.patient?.patient_id}</p>
                    </div>
 
-                   <div className="p-4 bg-gray-50 rounded-2xl mb-6 group-hover:bg-indigo-50/30 transition-colors">
+                   <div className="p-4 bg-gray-50 rounded-2xl mb-6 group-hover:bg-emerald-50/30 transition-colors">
                       <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Protocol Verified</p>
                       <p className="text-sm font-black text-gray-800">{req.test_name}</p>
                    </div>
 
                    <div className="flex items-center justify-between">
                       <div className="space-y-1">
-                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Date Reported</p>
+                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Date Verified</p>
                          <p className="text-xs font-bold text-gray-700">{new Date(req.completed_at || req.updated_at).toLocaleDateString()}</p>
                       </div>
-                      <div className="flex gap-2">
-                        {req.dicom_url && (
-                          <a href={req.dicom_url} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-gray-100 flex items-center justify-center text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all">
-                            <LinkIcon className="w-4 h-4" />
-                          </a>
-                        )}
-                        <button 
-                          onClick={() => handlePrint(req)}
-                          className="w-10 h-10 rounded-xl border border-gray-100 flex items-center justify-center text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all"
-                        >
-                          <Printer className="w-4 h-4" />
-                        </button>
-                      </div>
+                      <button 
+                        onClick={() => handlePrint(req)}
+                        className="w-12 h-12 rounded-xl bg-gray-900 flex items-center justify-center text-white hover:bg-emerald-600 transition-all shadow-lg active:scale-95"
+                        title="Print Certified Certificate"
+                      >
+                        <Printer className="w-5 h-5" />
+                      </button>
                    </div>
                 </div>
               ))}
@@ -269,10 +263,10 @@ function RadiologyReportsContent() {
   );
 }
 
-export default function RadiologyReportsPage() {
+export default function LabResultsPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center animate-pulse font-black uppercase tracking-widest text-xs text-gray-400">Loading Archives...</div>}>
-      <RadiologyReportsContent />
+    <Suspense fallback={<div className="p-8 text-center animate-pulse font-black uppercase tracking-widest text-xs text-gray-400">Loading Laboratory Informatics...</div>}>
+      <LabResultsContent />
     </Suspense>
   );
 }

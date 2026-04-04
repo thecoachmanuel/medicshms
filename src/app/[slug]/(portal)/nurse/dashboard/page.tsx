@@ -35,19 +35,27 @@ export default function NurseDashboard({ params }: { params: Promise<{ slug: str
   const { slug } = use(params);
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [appointments, setAppointments] = useState<any[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [stats, setStats] = useState({ arrived: 0, triaged: 0, total: 0 });
 
   const fetchAll = useCallback(async () => {
     try {
       setRefreshing(true);
-      // Fetch today's appointments as proxy for patients waiting for vitals
-      const res = (await appointmentsAPI.getAll({ 
-        date: new Date().toISOString().split('T')[0] 
-      })) as any;
-      setAppointments(res?.appointments || []);
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Fetch today's appointments to derive nursing stats
+      const res = (await appointmentsAPI.getAll({ date: today, limit: 100 })) as any;
+      const allToday = res?.data || [];
+      
+      setAppointments(allToday.filter((a: any) => a.appointmentStatus === 'Arrived'));
+      setStats({
+        arrived: allToday.filter((a: any) => a.appointmentStatus === 'Arrived').length,
+        triaged: allToday.filter((a: any) => a.appointmentStatus === 'Triaged').length,
+        total: allToday.length
+      });
     } catch (err) {
-      console.error('Nurse dashboard fetch error:', err);
+      console.error('Nursing Uplink Failure:', err);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -56,6 +64,8 @@ export default function NurseDashboard({ params }: { params: Promise<{ slug: str
 
   useEffect(() => {
     fetchAll();
+    const interval = setInterval(fetchAll, 30000); // Auto-sync every 30s
+    return () => clearInterval(interval);
   }, [fetchAll]);
 
   if (loading) {
@@ -68,10 +78,10 @@ export default function NurseDashboard({ params }: { params: Promise<{ slug: str
   }
 
   const statCards = [
-    { label: "Today's Clinic", value: appointments.length || 24, icon: Calendar, color: 'blue', description: 'Appointments scheduled today' },
-    { label: 'Vitals Triaged', value: Math.floor((appointments.length || 24) * 0.7), icon: HeartPulse, color: 'emerald', description: 'Patients processed today' },
-    { label: 'Pending Queue', value: Math.ceil((appointments.length || 24) * 0.3), icon: UsersIcon, color: 'amber', description: 'Waiting for preliminary checks' },
-    { label: 'Critical Alerts', value: 2, icon: Activity, color: 'rose', description: 'Require immediate attention' },
+    { label: "Today's Clinical Volume", value: stats.total, icon: Calendar, color: 'blue', description: 'Total encounters scheduled today' },
+    { label: 'Successfully Triaged', value: stats.triaged, icon: HeartPulse, color: 'emerald', description: 'Patients verified for consultation' },
+    { label: 'Awaiting Triage', value: stats.arrived, icon: UsersIcon, color: 'amber', description: 'Patients in checked-in queue' },
+    { label: 'Critical Overwatch', value: 0, icon: Activity, color: 'rose', description: 'Requiring immediate intervention' },
   ];
 
   return (
@@ -125,25 +135,34 @@ export default function NurseDashboard({ params }: { params: Promise<{ slug: str
             <span className="px-2 py-1 bg-amber-50 text-amber-600 text-xs font-bold rounded-lg uppercase">Action Needed</span>
           </div>
           
-          <div className="space-y-4 flex-1 overflow-y-auto pr-2">
-            {[1, 2, 3, 4].map((_, i) => (
-              <div key={i} className="p-4 bg-white/60 backdrop-blur-md rounded-xl border border-white hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group cursor-pointer">
+          <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+            {appointments.length === 0 ? (
+               <div className="flex-1 flex flex-col items-center justify-center text-center py-12 opacity-40">
+                  <UserCheck className="w-10 h-10 mb-3" />
+                  <p className="text-[10px] font-black uppercase tracking-widest leading-relaxed">Queue Synchronized • No Pending Triage</p>
+               </div>
+            ) : appointments.map((apt) => (
+              <Link 
+                key={apt._id} 
+                href={`/${slug}/nurse/vitals?patientId=${apt.patientId}&appointmentId=${apt._id}`}
+                className="block p-4 bg-white/60 backdrop-blur-md rounded-xl border border-white hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group cursor-pointer"
+              >
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h4 className="text-sm font-bold text-gray-900">Patient #{1024 + i}</h4>
-                    <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">Dr. Consultation</p>
+                    <h4 className="text-sm font-black text-gray-900 group-hover:text-emerald-600 transition-colors">{apt.fullName}</h4>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">{apt.department} • {apt.appointmentTime}</p>
                   </div>
-                  <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                    <Thermometer className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                    <Thermometer className="w-4 h-4 animate-bounce" />
                   </div>
                 </div>
                 <div className="flex items-center gap-2 mt-3">
-                  <span className="flex items-center gap-1 text-[10px] font-bold text-gray-400">
+                  <span className="flex items-center gap-1 text-[10px] font-black text-gray-400 group-hover:text-gray-600">
                     <ClipboardList className="w-3 h-3" />
-                    Waiting Form
+                    Ref: {apt.appointmentId}
                   </span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
           

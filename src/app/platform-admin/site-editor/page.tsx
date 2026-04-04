@@ -31,6 +31,7 @@ export default function PlatformSiteEditorPage() {
   const [uploading, setUploading] = useState<string | null>(null);
   const [activePage, setActivePage] = useState('home');
   const [content, setContent] = useState<any[]>([]);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
 
   const pages = [
     { id: 'home', icon: Home, label: 'Home Page' },
@@ -47,6 +48,7 @@ export default function PlatformSiteEditorPage() {
   const fetchContent = async () => {
     try {
       setLoading(true);
+      setValidationErrors({});
       // Fetch platform-level content (hospital_id is null)
       const res = await contentAPI.getByPage(activePage) as any;
       setContent(Array.isArray(res) ? res : res.data || []);
@@ -58,10 +60,61 @@ export default function PlatformSiteEditorPage() {
     }
   };
 
+  const validateContent = () => {
+    const errors: Record<string, string[]> = {};
+    let isValid = true;
+
+    content.forEach(section => {
+      const sectionErrors: string[] = [];
+      const schema = (SECTION_SCHEMAS as any)[section.section_key] || {};
+      
+      // Check required fields
+      Object.keys(schema).forEach(field => {
+        const value = section.content[field];
+        if (schema[field] !== 'list') {
+          if (!value || (typeof value === 'string' && value.trim() === '')) {
+            sectionErrors.push(`Field "${field.split('_').join(' ')}" is required.`);
+            isValid = false;
+          }
+        } else {
+          // Check list items
+          const listItems = Array.isArray(value) ? value : [];
+          if (listItems.length === 0) {
+            sectionErrors.push(`List "${field.split('_').join(' ')}" must have at least one item.`);
+            isValid = false;
+          } else {
+            const listSchema = (LIST_ITEM_SCHEMAS as any)[section.section_key] || {};
+            listItems.forEach((item, idx) => {
+              Object.keys(listSchema).forEach(k => {
+                if (!item[k] || (typeof item[k] === 'string' && item[k].trim() === '')) {
+                  sectionErrors.push(`Item #${idx + 1}: "${k.split('_').join(' ')}" is missing.`);
+                  isValid = false;
+                }
+              });
+            });
+          }
+        }
+      });
+
+      if (sectionErrors.length > 0) {
+        errors[section.section_key] = sectionErrors;
+      }
+    });
+
+    setValidationErrors(errors);
+    return isValid;
+  };
+
   const handleUpdateSection = (sectionKey: string, newData: any) => {
     setContent(prev => prev.map(item => 
       item.section_key === sectionKey ? { ...item, content: newData } : item
     ));
+    // Clear errors for this section if any
+    if (validationErrors[sectionKey]) {
+      const newErrors = { ...validationErrors };
+      delete newErrors[sectionKey];
+      setValidationErrors(newErrors);
+    }
   };
 
   const handleFileUpload = async (file: File, sectionKey: string, fieldKey: string, currentContent: any) => {
@@ -84,6 +137,11 @@ export default function PlatformSiteEditorPage() {
   };
 
   const handleSave = async () => {
+    if (!validateContent()) {
+      toast.error('Please resolve validation errors before publishing.');
+      return;
+    }
+
     try {
       setSaving(true);
       // Ensure we explicitly mark hospital_id as null for platform content
@@ -346,12 +404,26 @@ export default function PlatformSiteEditorPage() {
                                 </span>
                             </div>
 
-                            <div className="grid grid-cols-1 gap-6">
+                            {validationErrors[section.section_key] && (
+                                <div className="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start gap-3 animate-in slide-in-from-top-2 duration-300">
+                                    <AlertCircle className="w-5 h-5 text-rose-500 mt-0.5 shrink-0" />
+                                    <div>
+                                        <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">Validation Errors</p>
+                                        <ul className="text-xs text-rose-500 font-medium list-disc list-inside space-y-0.5">
+                                            {validationErrors[section.section_key].map((err, i) => (
+                                                <li key={i}>{err}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-1 gap-6 text-sm">
                                 {Object.keys(section.content).map((key) => (
                                     renderField(section.section_key, key, section.content[key], section.content)
                                 ))}
                                 {Object.keys(section.content).length === 0 && (
-                                    <p className="text-gray-400 text-xs italic">Section exists but has no editable fields yet.</p>
+                                    <p className="text-gray-400 text-[10px] italic font-bold uppercase tracking-widest">Section exists but has no editable fields yet.</p>
                                 )}
                             </div>
                         </div>

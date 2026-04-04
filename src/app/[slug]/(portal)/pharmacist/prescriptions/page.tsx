@@ -14,25 +14,33 @@ function cn(...inputs: ClassValue[]) {
 
 export default function PrescriptionsPage() {
   const { user } = useAuth();
+  // State
   const [prescriptions, setPrescriptions] = useState<any[]>([]);
+  const [inventory, setInventory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'Pending' | 'Dispensed'>('Pending');
   
-  // Action state
+  // Fulfillment Console State
   const [selectedPrescription, setSelectedPrescription] = useState<any>(null);
   const [isDispensing, setIsDispensing] = useState(false);
+  const [fulfillmentMapping, setFulfillmentMapping] = useState<Record<number, string>>({});
 
   useEffect(() => {
-    fetchPrescriptions(activeTab);
+    fetchInitialData();
   }, [activeTab]);
 
-  const fetchPrescriptions = async (status: string) => {
+  const fetchInitialData = async () => {
     setLoading(true);
     try {
-      const response: any = await pharmacyAPI.getPrescriptions({ status });
-      setPrescriptions(response.data || []);
+      const [prescRes, invRes] = await Promise.all([
+        pharmacyAPI.getPrescriptions({ status: activeTab }),
+        pharmacyAPI.getInventory({ status: 'In Stock' })
+      ]) as any;
+      
+      setPrescriptions(prescRes.data || []);
+      setInventory(invRes.data || []);
     } catch (error) {
-      toast.error('Failed to load prescriptions');
+      toast.error('Failed to synchronize pharmaceutical data');
     } finally {
       setLoading(false);
     }
@@ -40,20 +48,32 @@ export default function PrescriptionsPage() {
 
   const handleDispense = async () => {
     if (!selectedPrescription) return;
+    
+    // Validate mapping
+    const deductions = selectedPrescription.medications.map((med: any, idx: number) => {
+      const inventoryId = fulfillmentMapping[idx];
+      if (!inventoryId) return null;
+      return { id: inventoryId, quantity: med.quantity || 1 };
+    }).filter(Boolean);
+
+    if (deductions.length < selectedPrescription.medications.length) {
+      toast.error('Clinical Mismatch: All prescribed items must be mapped to inventory');
+      return;
+    }
+
     setIsDispensing(true);
     try {
-      // In a full implementation, we'd map the requested medications to specific inventory IDs here.
-      // For this MVP, we proceed with acknowledging the dispensing action.
       await pharmacyAPI.updatePrescription({
         prescription_id: selectedPrescription.id,
         status: 'Dispensed',
-        inventory_deductions: [] // Place for deduction logic 
+        inventory_deductions: deductions
       });
-      toast.success('Prescription marked as dispensed');
+      toast.success('Clinical Fulfillment Protocol Complete');
       setSelectedPrescription(null);
-      fetchPrescriptions(activeTab);
+      setFulfillmentMapping({});
+      fetchInitialData();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to dispense');
+      toast.error(error.response?.data?.message || 'Dispense synchronization failed');
     } finally {
       setIsDispensing(false);
     }
@@ -202,38 +222,93 @@ export default function PrescriptionsPage() {
 
       {selectedPrescription && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setSelectedPrescription(null)}></div>
-          <div className="relative bg-white rounded-[2.5rem] max-w-lg w-full p-10 shadow-2xl overflow-hidden border border-white/20">
+          <div className="absolute inset-0 bg-gray-950/40 backdrop-blur-md" onClick={() => !isDispensing && setSelectedPrescription(null)}></div>
+          <div className="relative bg-white rounded-[3rem] max-w-2xl w-full p-10 shadow-2xl overflow-hidden border border-white/20 animate-in zoom-in-95 duration-300">
             <div className="flex items-center gap-4 mb-8">
               <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center border border-amber-100/50">
-                <AlertCircle className="w-6 h-6 text-amber-600" />
+                <BriefcaseMedical className="w-6 h-6 text-amber-600" />
               </div>
               <div>
-                <h2 className="text-2xl font-black text-gray-900 tracking-tight">Fulfillment Verification</h2>
-                <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mt-0.5">Dispensing Protocol Auth</p>
+                <h2 className="text-2xl font-black text-gray-900 tracking-tight">Fulfillment Console</h2>
+                <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mt-0.5">Clinical Order: #{selectedPrescription.id.slice(-8).toUpperCase()}</p>
               </div>
             </div>
 
-            <p className="text-sm font-medium text-gray-500 leading-relaxed mb-10">
-              Handover validation required for <strong className="text-gray-900 font-black">{selectedPrescription.patient?.full_name}</strong>. 
-              Confirm that all substances have been cross-checked for contraindications and delivered to subject.
-            </p>
+            <div className="space-y-6 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar mb-10">
+              {selectedPrescription.medications.map((med: any, idx: number) => {
+                const selectedInventoryId = fulfillmentMapping[idx];
+                const selectedInvItem = inventory.find(i => i.id === selectedInventoryId);
+                
+                return (
+                  <div key={idx} className="p-6 bg-gray-50/50 rounded-[2rem] border border-gray-100">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Prescribed Agent</p>
+                        <h4 className="font-black text-gray-900 tracking-tight">{med.item_name}</h4>
+                        <div className="flex gap-2 mt-2">
+                           <span className="text-[9px] font-black bg-white px-2 py-1 rounded-md border border-gray-100 uppercase text-gray-500">{med.dosage}</span>
+                           <span className="text-[9px] font-black bg-white px-2 py-1 rounded-md border border-gray-100 uppercase text-gray-500">{med.frequency}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                         <p className="text-[10px] font-black text-gray-400 uppercase mb-1">Target Qty</p>
+                         <p className="text-xl font-black text-gray-900">{med.quantity || 1}</p>
+                      </div>
+                    </div>
+
+                    <div className="relative group">
+                      <select 
+                        className={cn(
+                          "w-full pl-6 pr-12 py-4 bg-white border rounded-2xl text-[11px] font-black uppercase tracking-widest focus:ring-8 outline-none transition-all appearance-none cursor-pointer",
+                          selectedInventoryId ? "border-emerald-200 text-emerald-700 bg-emerald-50/20 ring-emerald-500/5" : "border-gray-100 text-gray-400 focus:ring-gray-500/5"
+                        )}
+                        value={selectedInventoryId || ''}
+                        onChange={(e) => setFulfillmentMapping(prev => ({ ...prev, [idx]: e.target.value }))}
+                      >
+                        <option value="">Map to Inventory Node...</option>
+                        {inventory.map(inv => (
+                          <option key={inv.id} value={inv.id}>
+                            {inv.item_name} (STOCK: {inv.quantity} {inv.unit || 'Units'}) - ₦{inv.unit_price}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronRight className="absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 pointer-events-none group-hover:translate-x-1 transition-transform" />
+                    </div>
+
+                    {selectedInvItem && (
+                      <div className="mt-4 flex items-center justify-between text-[9px] font-black uppercase tracking-[0.1em]">
+                        <div className="flex items-center gap-2 text-gray-400">
+                          <Clock className="w-3.5 h-3.5" />
+                          EXPIRY: {new Date(selectedInvItem.expiry_date).toLocaleDateString()}
+                        </div>
+                        <div className={cn(
+                          "px-3 py-1 rounded-lg border",
+                          selectedInvItem.quantity < (med.quantity || 1) ? "bg-rose-50 text-rose-600 border-rose-100" : "bg-emerald-50 text-emerald-600 border-emerald-100"
+                        )}>
+                          {selectedInvItem.quantity < (med.quantity || 1) ? 'Insufficient Stock Protocol' : 'Availability Verified'}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
 
             <div className="flex gap-4">
               <button 
                 onClick={() => setSelectedPrescription(null)}
-                className="flex-1 py-4 rounded-[1.25rem] font-black text-[10px] uppercase tracking-[0.2em] text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-all"
+                className="flex-1 py-4 rounded-[1.25rem] font-black text-[10px] uppercase tracking-[0.2em] text-gray-400 hover:text-gray-600 transition-all"
                 disabled={isDispensing}
               >
                 Abort
               </button>
               <button 
                 onClick={handleDispense}
-                disabled={isDispensing}
-                className="flex-[2] py-4 rounded-[1.25rem] font-black text-white bg-gray-900 hover:bg-emerald-600 hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gray-200 hover:shadow-emerald-100 flex items-center justify-center gap-3 disabled:opacity-30 disabled:hover:bg-gray-900 group"
+                disabled={isDispensing || Object.keys(fulfillmentMapping).length < selectedPrescription.medications.length}
+                className="flex-[2] py-4 rounded-[1.25rem] font-black text-white bg-gray-900 hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-100 transition-all flex items-center justify-center gap-3 disabled:opacity-30 group"
               >
                 {isDispensing ? <Clock className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5 group-hover:animate-bounce" />}
-                <span className="uppercase tracking-[0.2em] text-xs">{isDispensing ? 'Syncing...' : 'Authorize Dispense'}</span>
+                <span className="uppercase tracking-[0.2em] text-xs leading-none">{isDispensing ? 'Processing...' : 'Authorize Fulfillment'}</span>
               </button>
             </div>
           </div>

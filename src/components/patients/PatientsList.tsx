@@ -4,8 +4,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Search, User, Mail, Phone, FileText, Download, Filter, 
   RefreshCw, ChevronLeft, ChevronRight, X, Loader2, 
-  Calendar, Clock, CheckCircle, XCircle, AlertCircle, Stethoscope
+  Calendar, Clock, CheckCircle, XCircle, AlertCircle, Stethoscope, 
+  History, Activity 
 } from 'lucide-react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { patientsAPI } from '@/lib/api';
 import { clsx, type ClassValue } from 'clsx';
@@ -23,6 +26,9 @@ interface Props {
 }
 
 export default function PatientsList({ role }: Props) {
+  const params = useParams();
+  const slug = params?.slug as string;
+  const portalRole = role.toLowerCase();
   const isDoctor = role === 'Doctor';
   const isAdminOrReceptionist = role === 'Admin' || role === 'Receptionist';
   const [patients, setPatients] = useState<any[]>([]);
@@ -252,13 +258,22 @@ export default function PatientsList({ role }: Props) {
                     </div>
                   </td>
                   <td className="px-6 py-5 text-center">
-                    <button 
-                      onClick={() => handleViewAppointments(patient)}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold text-primary-600 shadow-sm hover:shadow-md hover:bg-primary-50 hover:border-primary-100 transition-all active:scale-95"
-                    >
-                      <FileText className="w-3.5 h-3.5" />
-                      History ({patient.totalAppointments || 0})
-                    </button>
+                    <div className="flex flex-col items-center gap-2">
+                       <Link 
+                        href={`/${slug}/${portalRole}/patients/${patient.patientId || patient._id}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 border border-indigo-500 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:shadow-indigo-200 transition-all active:scale-95 w-full justify-center"
+                      >
+                        <History className="w-3.5 h-3.5" />
+                        360 History
+                      </Link>
+                      <button 
+                        onClick={() => handleViewAppointments(patient)}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-indigo-600 hover:border-indigo-100 transition-all w-full justify-center"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        Encounters
+                      </button>
+                    </div>
                   </td>
                   {isAdminOrReceptionist && (
                     <td className="px-6 py-5 text-right">

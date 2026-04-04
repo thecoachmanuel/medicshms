@@ -253,8 +253,8 @@ export default function PlatformAdminDashboard() {
                           h.subscription_status === 'suspended' ? 'bg-rose-100 text-rose-700 border border-rose-200' :
                           'bg-rose-50 text-rose-600 border border-rose-100'}`}>
                         {h.subscription_status === 'active' ? <CheckCircle2 className="w-3 h-3" /> : 
-                         h.subscription_status === 'paused' ? <Pause className="w-3 h-3" /> :
-                         <Clock className="w-3 h-3" />}
+                          h.subscription_status === 'paused' ? <Pause className="w-3 h-3" /> :
+                          <Clock className="w-3 h-3" />}
                         {h.subscription_status}
                       </div>
                       <p className={`text-[10px] font-bold uppercase transition-all
@@ -299,6 +299,75 @@ export default function PlatformAdminDashboard() {
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Institution Health & Activity Audit Trail */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="text-xl font-black text-slate-900">Institution Health</h3>
+              <p className="text-slate-500 text-xs font-medium uppercase tracking-widest mt-1">Global Audit Trail</p>
+            </div>
+            <Activity className="w-6 h-6 text-primary-600" />
+          </div>
+
+          <div className="space-y-6 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-px before:bg-slate-100">
+            {[
+              { type: 'onboarding', label: 'New Hospital Onboarded', detail: 'City General Hospital integrated successfully.', time: '2 hours ago', icon: Building2, color: 'bg-emerald-500' },
+              { type: 'subscription', label: 'Subscription Paused', detail: 'Lakeside Medical Center moved to maintenance.', time: '5 hours ago', icon: Pause, color: 'bg-slate-600' },
+              { type: 'domain', label: 'Custom Domain Linked', detail: 'St. Mary Specialized (stmary-specialized.com)', time: 'Yesterday', icon: Globe, color: 'bg-primary-600' },
+              { type: 'security', label: 'Security Audit Completed', detail: 'System-wide policy verification successful.', time: '2 days ago', icon: ShieldCheck, color: 'bg-indigo-600' }
+            ].map((log, i) => (
+              <div key={i} className="relative flex gap-6 group">
+                <div className={`w-10 h-10 rounded-xl ${log.color} flex items-center justify-center shrink-0 z-10 shadow-lg group-hover:scale-110 transition-transform`}>
+                  <log.icon className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1 pb-6 border-b border-slate-50 group-last:border-none">
+                  <div className="flex items-center justify-between mb-1">
+                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">{log.label}</h4>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{log.time}</span>
+                  </div>
+                  <p className="text-sm text-slate-500 font-medium">{log.detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl">
+           <div className="absolute top-0 right-0 w-64 h-64 bg-primary-600/20 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2"></div>
+           <div className="relative z-10 space-y-8">
+              <div>
+                <h3 className="text-xl font-black uppercase tracking-widest">Growth Analytics</h3>
+                <p className="text-slate-400 text-xs mt-1">Tenant Acquisition Rate</p>
+              </div>
+
+              <div className="space-y-6">
+                 {[
+                   { label: 'This Month', val: '+12%', progress: 65, color: 'bg-emerald-500' },
+                   { label: 'Retention', val: '98.5%', progress: 98, color: 'bg-primary-500' },
+                   { label: 'Avg. ARPU', val: '₦4.2M', progress: 45, color: 'bg-amber-500' }
+                 ].map((stat, i) => (
+                   <div key={i} className="space-y-2">
+                     <div className="flex justify-between text-[11px] font-black uppercase tracking-[0.2em]">
+                       <span className="text-slate-400">{stat.label}</span>
+                       <span>{stat.val}</span>
+                     </div>
+                     <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                       <div className={`h-full ${stat.color} transition-all duration-1000`} style={{ width: `${stat.progress}%` }}></div>
+                     </div>
+                   </div>
+                 ))}
+              </div>
+
+              <div className="pt-8 border-t border-white/10">
+                 <button className="w-full py-4 bg-white/10 hover:bg-white/20 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2">
+                    <BarChart3 className="w-4 h-4" /> Comprehensive Report
+                 </button>
+              </div>
+           </div>
         </div>
       </div>
 
@@ -408,7 +477,7 @@ export default function PlatformAdminDashboard() {
             <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <div>
                 <h3 className="text-xl font-black text-slate-900">Manage Subscription</h3>
-                <p className="text-xs text-slate-500 font-medium">{selectedHospital.name}</p>
+                <p className="text-xs text-slate-500 font-medium">{selectedHospital?.name}</p>
               </div>
               <button 
                 onClick={() => setIsSubscriptionModalOpen(false)}

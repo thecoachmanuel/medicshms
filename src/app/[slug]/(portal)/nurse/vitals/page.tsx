@@ -5,7 +5,13 @@ import { useAuth } from '@/context/AuthContext';
 import { useParams } from 'next/navigation';
 import { vitalsAPI, patientsAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Activity, Search, Save, User, Clock, ChevronRight, Scale, Thermometer, Wind, Droplets, HeartPulse } from 'lucide-react';
+import { 
+  Activity, Search, Save, User, Clock, ChevronRight, Scale, 
+  Thermometer, Wind, Droplets, HeartPulse, TrendingUp 
+} from 'lucide-react';
+import {
+  LineChart, Line, ResponsiveContainer, YAxis, XAxis
+} from 'recharts';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -91,12 +97,24 @@ export default function NurseVitalsPage() {
 
     try {
       setSaving(true);
+      
+      // Get search params for appointmentId
+      const urlParams = new URLSearchParams(window.location.search);
+      const appointmentId = urlParams.get('appointmentId');
+
       await vitalsAPI.recordVitals({
         patient_id: selectedPatientId,
+        appointment_id: appointmentId,
         ...formData,
         bmi: calculatedBmi
       });
-      toast.success('Vitals recorded successfully');
+
+      // Workflow Automation: Mark as Triaged
+      if (appointmentId) {
+        await (await import('@/lib/api')).appointmentAPI.updateStatus(appointmentId, 'Triaged');
+      }
+
+      toast.success('Vitals recorded & patient triaged');
       // Reset form
       setFormData({
         blood_pressure: '', heart_rate: '', temperature: '',
@@ -259,67 +277,109 @@ export default function NurseVitalsPage() {
               </div>
             ) : (
               <div className="space-y-6 overflow-y-auto max-h-[700px] pr-2 custom-scrollbar">
-                {vitalsHistory.map((vital, idx) => (
-                  <div key={vital._id || idx} className="relative pl-8 border-l border-emerald-100/50 pb-8 last:pb-0 group">
-                    <div className="absolute -left-[4.5px] top-0 w-2 h-2 rounded-full bg-emerald-500 ring-4 ring-emerald-50 shadow-sm"></div>
-                    <div className="bg-white/60 p-5 rounded-2xl border border-white/80 hover:border-emerald-200 transition-all hover:bg-white hover:shadow-lg hover:shadow-emerald-100/20 group/card">
-                      <div className="flex justify-between items-center mb-4">
-                        <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-lg">
-                          {new Date(vital.recorded_at).toLocaleDateString()}
-                        </span>
-                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{new Date(vital.recorded_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                        {vital.blood_pressure && (
-                          <div className="bg-emerald-50/30 p-2 rounded-xl flex items-center gap-2 border border-emerald-100/20">
-                            <HeartPulse className="w-3.5 h-3.5 text-emerald-600" />
-                            <span className="text-xs font-black text-emerald-900">{vital.blood_pressure}</span>
-                          </div>
-                        )}
-                        {vital.heart_rate && (
-                          <div className="bg-emerald-50/30 p-2 rounded-xl flex items-center gap-2 border border-emerald-100/20">
-                            <Activity className="w-3.5 h-3.5 text-emerald-600" />
-                            <span className="text-xs font-black text-emerald-900">{vital.heart_rate}<span className="text-[9px] font-bold ml-1 opacity-50">bpm</span></span>
-                          </div>
-                        )}
-                        {vital.temperature && (
-                          <div className="bg-amber-50/30 p-2 rounded-xl flex items-center gap-2 border border-amber-100/20">
-                            <Thermometer className="w-3.5 h-3.5 text-amber-600" />
-                            <span className="text-xs font-black text-amber-900">{vital.temperature}°C</span>
-                          </div>
-                        )}
-                        {vital.oxygen_saturation && (
-                          <div className="bg-blue-50/30 p-2 rounded-xl flex items-center gap-2 border border-blue-100/20">
-                            <Droplets className="w-3.5 h-3.5 text-blue-600" />
-                            <span className="text-xs font-black text-blue-900">{vital.oxygen_saturation}%</span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      {vital.bmi && (
-                        <div className="mt-4 pt-4 border-t border-gray-100/50 flex items-center justify-between">
-                          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
-                            <Scale className="w-3.5 h-3.5" /> Body Mass Index
+                {vitalsHistory.map((vital, idx) => {
+                  // Prepare data for sparklines from history
+                  const sparkData = vitalsHistory.slice(0, 5).reverse().map(v => ({ 
+                    bp: parseInt(v.blood_pressure?.split('/')[0]) || 0,
+                    hr: parseInt(v.heart_rate) || 0,
+                    temp: parseFloat(v.temperature) || 0
+                  }));
+
+                  return (
+                    <div key={vital._id || idx} className="relative pl-8 border-l border-emerald-100/50 pb-8 last:pb-0 group">
+                      <div className="absolute -left-[4.5px] top-0 w-2 h-2 rounded-full bg-emerald-500 ring-4 ring-emerald-50 shadow-sm"></div>
+                      <div className="bg-white/60 p-5 rounded-2xl border border-white/80 hover:border-emerald-200 transition-all hover:bg-white hover:shadow-lg hover:shadow-emerald-100/20 group/card">
+                        <div className="flex justify-between items-center mb-4">
+                          <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-lg">
+                            {new Date(vital.recorded_at).toLocaleDateString()}
                           </span>
-                          <span className="text-sm font-black text-gray-900 tracking-tight bg-gray-100 px-3 py-1 rounded-lg border border-gray-200/30">{vital.bmi}</span>
+                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{new Date(vital.recorded_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
-                      )}
-                      
-                      {vital.notes && (
-                        <div className="mt-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100/50 italic text-[11px] text-gray-500 leading-relaxed font-medium">
-                          "{vital.notes}"
+
+                        {/* Sparkline Visuals */}
+                        {idx === 0 && sparkData.length > 1 && (
+                          <div className="mb-6 h-12 w-full opacity-60">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <LineChart data={sparkData}>
+                                <Line type="monotone" dataKey="hr" stroke="#10b981" strokeWidth={2} dot={false} />
+                                <Line type="monotone" dataKey="temp" stroke="#f59e0b" strokeWidth={2} dot={false} />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                          {vital.blood_pressure && (
+                            <div className={cn(
+                              "p-2 rounded-xl flex items-center justify-between border transition-colors",
+                              (parseInt(vital.blood_pressure.split('/')[0]) > 140 || parseInt(vital.blood_pressure.split('/')[1]) > 90) 
+                                ? "bg-rose-50 border-rose-100 text-rose-600" 
+                                : "bg-emerald-50/30 border-emerald-100/20 text-emerald-900"
+                            )}>
+                              <div className="flex items-center gap-2">
+                                <HeartPulse className="w-3.5 h-3.5" />
+                                <span className="text-xs font-black">{vital.blood_pressure}</span>
+                              </div>
+                              {parseInt(vital.blood_pressure.split('/')[0]) > 140 && <TrendingUp className="w-3 h-3 animate-bounce" />}
+                            </div>
+                          )}
+                          {vital.heart_rate && (
+                            <div className={cn(
+                              "p-2 rounded-xl flex items-center gap-2 border",
+                              parseInt(vital.heart_rate) > 100 ? "bg-rose-50 border-rose-100 text-rose-600" : "bg-emerald-50/30 border-emerald-100/20 text-emerald-900"
+                            )}>
+                              <Activity className="w-3.5 h-3.5" />
+                              <span className="text-xs font-black">{vital.heart_rate}<span className="text-[9px] font-bold ml-1 opacity-50">bpm</span></span>
+                            </div>
+                          )}
+                          {vital.temperature && (
+                            <div className={cn(
+                              "p-2 rounded-xl flex items-center gap-2 border",
+                              parseFloat(vital.temperature) > 37.5 ? "bg-amber-50 border-amber-100 text-amber-600" : "bg-emerald-50/30 border-emerald-100/20 text-emerald-900"
+                            )}>
+                              <Thermometer className="w-3.5 h-3.5" />
+                              <span className="text-xs font-black">{vital.temperature}°C</span>
+                            </div>
+                          )}
+                          {vital.oxygen_saturation && (
+                            <div className={cn(
+                              "p-2 rounded-xl flex items-center gap-2 border",
+                              parseInt(vital.oxygen_saturation) < 94 ? "bg-rose-50 border-rose-100 text-rose-600" : "bg-emerald-50/30 border-emerald-100/20 text-emerald-900"
+                            )}>
+                              <Droplets className="w-3.5 h-3.5" />
+                              <span className="text-xs font-black">{vital.oxygen_saturation}%</span>
+                            </div>
+                          )}
                         </div>
-                      )}
-                      
-                      <div className="mt-4 pt-4 border-t border-gray-100/50 flex items-center gap-2">
-                        <div className="w-5 h-5 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-400">
-                          {vital.recorded_by_profile?.name?.[0] || 'N'}
+                        
+                        {vital.bmi && (
+                          <div className="mt-4 pt-4 border-t border-gray-100/50 flex items-center justify-between">
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                              <Scale className="w-3.5 h-3.5" /> Body Mass Index
+                            </span>
+                            <span className={cn(
+                              "text-sm font-black tracking-tight px-3 py-1 rounded-lg border",
+                              parseFloat(vital.bmi) > 25 ? "bg-amber-50 text-amber-600 border-amber-200/30" : "bg-gray-100 text-gray-900 border-gray-200/30"
+                            )}>{vital.bmi}</span>
+                          </div>
+                        )}
+                        
+                        {vital.notes && (
+                          <div className="mt-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100/50 italic text-[11px] text-gray-500 leading-relaxed font-medium">
+                            "{vital.notes}"
+                          </div>
+                        )}
+                        
+                        <div className="mt-4 pt-4 border-t border-gray-100/50 flex items-center gap-2">
+                          <div className="w-5 h-5 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-400">
+                            {vital.recorded_by_profile?.name?.[0] || 'N'}
+                          </div>
+                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{vital.recorded_by_profile?.name || 'Staff Nurse'}</span>
                         </div>
-                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{vital.recorded_by_profile?.name || 'Staff Nurse'}</span>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
