@@ -39,6 +39,8 @@ export function DashboardCard({
     amber: { glow: 'bg-amber-500', icon: 'group-hover:bg-amber-50 group-hover:text-amber-600' },
     rose: { glow: 'bg-rose-500', icon: 'group-hover:bg-rose-50 group-hover:text-rose-600' },
     cyan: { glow: 'bg-cyan-500', icon: 'group-hover:bg-cyan-50 group-hover:text-cyan-600' },
+    indigo: { glow: 'bg-indigo-500', icon: 'group-hover:bg-indigo-50 group-hover:text-indigo-600' },
+    blue: { glow: 'bg-blue-500', icon: 'group-hover:bg-blue-50 group-hover:text-blue-600' },
   };
 
   const colors = (colorMap as any)[color] || colorMap.primary;

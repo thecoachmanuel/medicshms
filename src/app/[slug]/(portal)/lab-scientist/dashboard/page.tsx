@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { labAPI } from '@/lib/api';
 import { DashboardCard } from '@/components/admin/DashboardCard';
 import { 
-  Microscope, TestTube2, AlertCircle, CheckCircle2, 
+  Microscope, TestTube, AlertCircle, CheckCircle, 
   RefreshCw, ClipboardList, Clock, Activity, User
 } from 'lucide-react';
 import {
@@ -59,7 +59,16 @@ export default function LabScientistDashboard({ params }: { params: Promise<{ sl
   const stats = React.useMemo(() => {
     const safeRequests = Array.isArray(requests) ? requests : [];
     const pending = safeRequests.filter(r => r?.status === 'Pending').length;
-    const completedToday = safeRequests.filter(r => r?.status === 'Completed' && new Date(r.completed_at || r.updated_at).toDateString() === new Date().toDateString()).length;
+    const completedToday = safeRequests.filter(r => {
+      if (r?.status !== 'Completed') return false;
+      const dateStr = r.completed_at || r.updated_at;
+      if (!dateStr) return false;
+      try {
+        return new Date(dateStr).toDateString() === new Date().toDateString();
+      } catch (e) {
+        return false;
+      }
+    }).length;
     const collected = safeRequests.filter(r => ['Collected', 'In Progress', 'Completed', 'Verified'].includes(r?.status)).length;
     const critical = safeRequests.filter(r => r?.is_critical).length;
     
@@ -67,18 +76,31 @@ export default function LabScientistDashboard({ params }: { params: Promise<{ sl
     const completedRequests = safeRequests.filter(r => r?.completed_at && r?.requested_at);
     const avgTAT = completedRequests.length > 0 
       ? Math.round(completedRequests.reduce((acc, curr) => {
-          const diff = new Date(curr.completed_at).getTime() - new Date(curr.requested_at).getTime();
-          return acc + (diff / (1000 * 60));
+          try {
+            const end = new Date(curr.completed_at).getTime();
+            const start = new Date(curr.requested_at).getTime();
+            if (isNaN(end) || isNaN(start)) return acc;
+            const diff = end - start;
+            return acc + (diff / (1000 * 60));
+          } catch (e) {
+            return acc;
+          }
         }, 0) / completedRequests.length)
       : 0;
 
-    return { pending, completedToday, collected, critical, avgTAT };
+    return { 
+      pending, 
+      completedToday, 
+      collected, 
+      critical, 
+      avgTAT: isNaN(avgTAT) ? 0 : avgTAT 
+    };
   }, [requests]);
 
   const statCards = [
     { label: "Pending Tests", value: stats.pending, icon: Clock, color: 'amber', description: 'Tests awaiting specimen collection' },
     { label: 'Avg Turnaround', value: `${stats.avgTAT}m`, icon: Activity, color: 'indigo', description: 'Average time to result delivery' },
-    { label: 'Samples Collected', value: stats.collected, icon: TestTube2, color: 'blue', description: 'Total specimens in laboratory' },
+    { label: 'Samples Collected', value: stats.collected, icon: TestTube, color: 'blue', description: 'Total specimens in laboratory' },
     { label: 'Critical Results', value: stats.critical, icon: AlertCircle, color: 'rose', description: 'Priority abnormal findings' },
   ];
 
@@ -177,7 +199,7 @@ export default function LabScientistDashboard({ params }: { params: Promise<{ sl
             {requests.length === 0 ? (
                <div className="h-full flex flex-col items-center justify-center text-center py-12">
                   <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center border border-gray-100 mb-4 opacity-50">
-                    <TestTube2 className="w-8 h-8 text-gray-300" />
+                    <TestTube className="w-8 h-8 text-gray-300" />
                   </div>
                   <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest leading-relaxed">System Idle<br/>No active investigations</p>
                </div>
@@ -186,9 +208,9 @@ export default function LabScientistDashboard({ params }: { params: Promise<{ sl
                 <div key={req.id || i} className="p-4 bg-white border border-gray-50 rounded-2xl hover:border-indigo-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group cursor-pointer flex justify-between items-center gap-4">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 mb-1.5">
-                       <TestTube2 className={cn(
+                       <TestTube className={cn(
                          "w-4 h-4 transition-colors",
-                         req.status === 'Pending' ? "text-amber-500" : "text-indigo-500"
+                         req?.status === 'Pending' ? "text-amber-500" : "text-indigo-500"
                        )} />
                        <h4 className="text-xs font-black text-gray-900 truncate uppercase tracking-tight">{req.test_name}</h4>
                     </div>

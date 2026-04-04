@@ -6,7 +6,7 @@ import { calculateAge } from '@/lib/utils';
 // GET all patients
 export async function GET(request: Request) {
   try {
-    const { profile: userProfile, error: authError } = await withAuth(request, ['Admin', 'Receptionist', 'Doctor', 'Nurse']);
+    const { profile: userProfile, error: authError } = await withAuth(request, ['Admin', 'Receptionist', 'Doctor', 'Nurse', 'Lab Scientist', 'Radiologist', 'Pharmacist']);
     if (authError) return authError;
 
     const { searchParams } = new URL(request.url);
