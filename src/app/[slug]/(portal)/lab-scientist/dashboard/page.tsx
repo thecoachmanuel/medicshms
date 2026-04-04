@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { labAPI } from '@/lib/api';
 import { DashboardCard } from '@/components/admin/DashboardCard';
 import { 
-  Microscope, TestTube, AlertCircle, CheckCircle, 
+  Microscope, TestTubes, AlertCircle, CheckCircle, 
   RefreshCw, ClipboardList, Clock, Activity, User
 } from 'lucide-react';
 import {
@@ -100,7 +100,7 @@ export default function LabScientistDashboard({ params }: { params: Promise<{ sl
   const statCards = [
     { label: "Pending Tests", value: stats.pending, icon: Clock, color: 'amber', description: 'Tests awaiting specimen collection' },
     { label: 'Avg Turnaround', value: `${stats.avgTAT}m`, icon: Activity, color: 'indigo', description: 'Average time to result delivery' },
-    { label: 'Samples Collected', value: stats.collected, icon: TestTube, color: 'blue', description: 'Total specimens in laboratory' },
+    { label: 'Samples Collected', value: stats.collected, icon: TestTubes, color: 'blue', description: 'Total specimens in laboratory' },
     { label: 'Critical Results', value: stats.critical, icon: AlertCircle, color: 'rose', description: 'Priority abnormal findings' },
   ];
 
@@ -199,16 +199,18 @@ export default function LabScientistDashboard({ params }: { params: Promise<{ sl
             {requests.length === 0 ? (
                <div className="h-full flex flex-col items-center justify-center text-center py-12">
                   <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center border border-gray-100 mb-4 opacity-50">
-                    <TestTube className="w-8 h-8 text-gray-300" />
+                    <TestTubes className="w-8 h-8 text-gray-300" />
                   </div>
                   <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest leading-relaxed">System Idle<br/>No active investigations</p>
                </div>
             ) : (
-              requests.slice(0, 6).map((req, i) => (
+            (requests || []).slice(0, 6).map((req, i) => {
+                if (!req) return null;
+                return (
                 <div key={req.id || i} className="p-4 bg-white border border-gray-50 rounded-2xl hover:border-indigo-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group cursor-pointer flex justify-between items-center gap-4">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 mb-1.5">
-                       <TestTube className={cn(
+                       <TestTubes className={cn(
                          "w-4 h-4 transition-colors",
                          req?.status === 'Pending' ? "text-amber-500" : "text-indigo-500"
                        )} />
@@ -222,13 +224,14 @@ export default function LabScientistDashboard({ params }: { params: Promise<{ sl
                   <div className={cn(
                     "shrink-0 rounded-xl px-2.5 py-1.5 text-[9px] font-black uppercase tracking-tighter border transition-all group-hover:scale-105",
                     req.status === 'Pending' ? "bg-amber-50 text-amber-600 border-amber-100" :
-                    req.status === 'Completed' ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+                    req.status === 'Completed' ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
                     "bg-indigo-50 text-indigo-600 border-indigo-100"
                   )}>
                     {req.status}
                   </div>
                 </div>
-              ))
+              );
+            })
             )}
           </div>
           
