@@ -32,9 +32,11 @@ export default function LabScientistDashboard({ params }: { params: Promise<{ sl
       setRefreshing(true);
       // Fetch today's lab requests - using standardized response handling
       const res = await labAPI.getRequests() as any;
-      setRequests(res.data || res || []);
+      const data = res?.data || (Array.isArray(res) ? res : []);
+      setRequests(data);
     } catch (err) {
       console.error('Lab dashboard fetch error:', err);
+      setRequests([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -55,13 +57,14 @@ export default function LabScientistDashboard({ params }: { params: Promise<{ sl
   }
 
   const stats = React.useMemo(() => {
-    const pending = requests.filter(r => r.status === 'Pending').length;
-    const completedToday = requests.filter(r => r.status === 'Completed' && new Date(r.completed_at || r.updated_at).toDateString() === new Date().toDateString()).length;
-    const collected = requests.filter(r => ['Collected', 'In Progress', 'Completed', 'Verified'].includes(r.status)).length;
-    const critical = requests.filter(r => r.is_critical).length;
+    const safeRequests = Array.isArray(requests) ? requests : [];
+    const pending = safeRequests.filter(r => r?.status === 'Pending').length;
+    const completedToday = safeRequests.filter(r => r?.status === 'Completed' && new Date(r.completed_at || r.updated_at).toDateString() === new Date().toDateString()).length;
+    const collected = safeRequests.filter(r => ['Collected', 'In Progress', 'Completed', 'Verified'].includes(r?.status)).length;
+    const critical = safeRequests.filter(r => r?.is_critical).length;
     
     // Calculate TAT (Turnaround Time) in Minutes
-    const completedRequests = requests.filter(r => r.completed_at && r.requested_at);
+    const completedRequests = safeRequests.filter(r => r?.completed_at && r?.requested_at);
     const avgTAT = completedRequests.length > 0 
       ? Math.round(completedRequests.reduce((acc, curr) => {
           const diff = new Date(curr.completed_at).getTime() - new Date(curr.requested_at).getTime();
