@@ -15,7 +15,7 @@ interface DashboardCardProps {
   icon: LucideIcon;
   trend?: {
     value: number;
-    label: string;
+    label?: string;
     isPositive: boolean;
   };
   color?: string;
