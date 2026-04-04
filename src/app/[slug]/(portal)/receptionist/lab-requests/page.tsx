@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { 
   TestTubes, Search, CheckCircle, UploadCloud, 
   Clock, AlertCircle, RefreshCw, FileText, 
-  ArrowRight, ShieldCheck
+  ArrowRight, ShieldCheck, Info
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';

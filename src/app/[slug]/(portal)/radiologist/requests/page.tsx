@@ -120,7 +120,7 @@ export default function RadiologyRequestsPage() {
     }
     setIsCreating(true);
     try {
-      await radiologyAPI.create(newRequest);
+      await radiologyAPI.createRequest(newRequest);
       toast.success('Radiology study authorized');
       setShowNewModal(false);
       fetchRequests(activeTab);
