@@ -18,7 +18,8 @@ export async function GET(request: Request) {
         patient:patient_id(full_name, patient_id),
         doctor:doctor_id(id),
         doctor_profile:doctor_id(*),
-        handled_by_profile:handled_by(name)
+        handled_by_profile:handled_by(name),
+        unit:unit_id(name)
       `)
       .eq('hospital_id', profile?.hospital_id)
       .eq('type', 'Laboratory')
@@ -46,7 +47,11 @@ export async function POST(request: Request) {
   if (authError) return authError;
 
   try {
-    const { patient_id, appointment_id, doctor_id, test_name, clinical_notes, test_price, service_id } = await request.json();
+    const { 
+      patient_id, appointment_id, doctor_id, test_name, clinical_notes, 
+      test_price, service_id, unit_id, specimen_type, priority, 
+      patient_preparation, collection_instructions 
+    } = await request.json();
 
     const insertData: any = {
       hospital_id: profile?.hospital_id,
@@ -57,7 +62,12 @@ export async function POST(request: Request) {
       test_name,
       clinical_notes,
       status: 'Pending',
-      payment_status: 'Unpaid' // Default status for new lab requests
+      payment_status: 'Unpaid',
+      unit_id: unit_id || null,
+      specimen_type: specimen_type || 'Venous Blood',
+      priority: priority || 'Routine',
+      patient_preparation: patient_preparation || null,
+      collection_instructions: collection_instructions || null
     };
 
     // If a scientist/staff is creating it, we can pre-assign themselves
@@ -90,7 +100,10 @@ export async function PUT(request: Request) {
 
   try {
     const body = await request.json();
-    const { request_id, status, results, file_url } = body;
+    const { 
+      request_id, status, results, file_url, collected_at, 
+      min_range, max_range, is_critical, unit 
+    } = body;
 
     const updateData: any = {
       status,
@@ -99,6 +112,12 @@ export async function PUT(request: Request) {
 
     if (results) updateData.results = results;
     if (file_url) updateData.file_url = file_url;
+    if (collected_at) updateData.collected_at = collected_at;
+    if (min_range !== undefined) updateData.min_range = min_range;
+    if (max_range !== undefined) updateData.max_range = max_range;
+    if (is_critical !== undefined) updateData.is_critical = is_critical;
+    if (unit) updateData.unit = unit;
+    
     if (status === 'Completed') updateData.completed_at = new Date().toISOString();
 
     const { data, error } = await (supabaseAdmin || supabase)
