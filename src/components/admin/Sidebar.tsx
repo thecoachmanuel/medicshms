@@ -122,6 +122,7 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
     } else if (role === 'Lab Scientist') {
       return [
         { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/lab-scientist/dashboard` },
+        { icon: FileText, label: 'Patients', path: `${base}/lab-scientist/patients` },
         { icon: TestTubes, label: 'Lab Requests', path: `${base}/lab-scientist/requests` },
         { icon: Microscope, label: 'Verified Results', path: `${base}/lab-scientist/results` },
         { icon: User, label: 'My Profile', path: `${base}/lab-scientist/profile` },
@@ -136,6 +137,7 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
     } else if (role === 'Radiologist') {
       return [
         { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/radiologist/dashboard` },
+        { icon: FileText, label: 'Patients', path: `${base}/radiologist/patients` },
         { icon: Scan, label: 'Scan Requests', path: `${base}/radiologist/requests` },
         { icon: ImageIcon, label: 'Verified Reports', path: `${base}/radiologist/reports` },
         { icon: User, label: 'My Profile', path: `${base}/radiologist/profile` },
