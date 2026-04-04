@@ -22,7 +22,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 interface Props {
-  role: 'Admin' | 'Doctor' | 'Receptionist';
+  role: 'Admin' | 'Doctor' | 'Receptionist' | 'Lab Scientist' | 'Radiologist' | 'Pharmacist' | 'Nurse';
 }
 
 export default function PatientsList({ role }: Props) {
