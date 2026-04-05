@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { test_name, price, unit_id, description, is_auto_created } = body;
+    const { test_name, price, unit_id, description, is_auto_created, template_schema } = body;
 
     if (!test_name) return NextResponse.json({ message: 'Test name is required' }, { status: 400 });
 
@@ -44,6 +44,7 @@ export async function POST(request: Request) {
       unit_id: unit_id || null,
       description: description || null,
       is_auto_created: is_auto_created || false,
+      template_schema: template_schema || null,
       updated_at: new Date().toISOString()
     };
 
