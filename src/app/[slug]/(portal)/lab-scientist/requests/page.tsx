@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { TestTubes, Search, CheckCircle, UploadCloud, Printer, Download, Eye, FileText, Clock, User, ChevronRight, X, AlertCircle, Info } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { useSearchParams, useParams } from 'next/navigation';
+import { useSearchParams, useParams, useRouter, usePathname } from 'next/navigation';
 import CreateLabRequestModal from '@/components/clinical/CreateLabRequestModal';
 import LabResultEntryModal from '@/components/lab/LabResultEntryModal';
 
@@ -17,12 +17,16 @@ function cn(...inputs: ClassValue[]) {
 
 export default function LabRequestsPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const params = useParams();
   const slug = params?.slug as string;
+  const pathname = usePathname();
+  const currentTab = (searchParams.get('tab') || 'Pending') as 'Pending' | 'Collected' | 'Completed';
+  
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'Pending' | 'Collected' | 'Completed'>('Pending');
+  const activeTab = currentTab;
   
   // Modal State
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
@@ -168,14 +172,14 @@ export default function LabRequestsPage() {
               body { 
                 font-family: 'Plus Jakarta Sans', sans-serif; 
                 margin: 0; 
-                padding: 30px; 
+                padding: 40px; 
                 color: #0f172a; 
                 background: #fff;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
               }
               
-              .container { max-width: 800px; margin: 0 auto; min-height: 900px; display: flex; flex-direction: column; }
+              .container { max-width: 800px; margin: 0 auto; min-height: 1000px; display: flex; flex-direction: column; }
               
               .header { 
                 display: flex; 
@@ -186,28 +190,28 @@ export default function LabRequestsPage() {
                 margin-bottom: 20px; 
               }
               
-              .hospital-brand { display: flex; align-items: center; gap: 20px; }
+              .hospital-brand { display: flex; align-items: center; gap: 15px; }
               .logo-box { 
-                width: 70px; 
-                height: 70px; 
+                width: 60px; 
+                height: 60px; 
                 background: ${settings.primary_color || '#2563eb'}08; 
-                border-radius: 18px; 
+                border-radius: 12px; 
                 display: flex; 
                 align-items: center; 
                 justify-content: center;
                 border: 1px solid ${settings.primary_color || '#2563eb'}15;
               }
-              .logo { max-height: 50px; max-width: 50px; object-fit: contain; }
+              .logo { max-height: 40px; max-width: 40px; object-fit: contain; }
               
               .hospital-details h1 { 
-                font-size: 22px; 
+                font-size: 20px; 
                 font-weight: 800; 
                 color: #0f172a; 
                 margin: 0; 
                 letter-spacing: -0.02em; 
                 text-transform: uppercase;
               }
-              .hospital-details p { font-size: 11px; color: #64748b; margin: 4px 0; font-weight: 600; }
+              .hospital-details p { font-size: 10px; color: #64748b; margin: 2px 0; font-weight: 600; }
               
               .report-type { 
                 text-align: center; 
@@ -215,57 +219,57 @@ export default function LabRequestsPage() {
                 position: relative;
               }
               .report-type h2 { 
-                font-size: 14px; 
+                font-size: 13px; 
                 font-weight: 800; 
                 text-transform: uppercase; 
-                letter-spacing: 0.2em; 
+                letter-spacing: 0.15em; 
                 color: ${settings.primary_color || '#2563eb'}; 
                 background: ${settings.primary_color || '#2563eb'}08; 
                 display: inline-block; 
-                padding: 8px 24px; 
+                padding: 6px 20px; 
                 border-radius: 99px;
               }
               
               .patient-meta { 
                 display: grid; 
                 grid-template-columns: repeat(3, 1fr); 
-                gap: 20px; 
+                gap: 15px; 
                 background: #f8fafc; 
-                padding: 15px 24px; 
-                border-radius: 20px; 
+                padding: 16px; 
+                border-radius: 16px; 
                 margin-bottom: 20px;
                 border: 1px solid #f1f5f9;
               }
-              .meta-item .label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; font-weight: 800; margin-bottom: 6px; }
-              .meta-item .value { font-size: 13px; font-weight: 700; color: #1e293b; }
+              .meta-item .label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; font-weight: 800; margin-bottom: 4px; }
+              .meta-item .value { font-size: 12px; font-weight: 700; color: #1e293b; }
               
-              .results-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+              .results-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
               .results-table th { 
                 text-align: left; 
-                padding: 14px; 
+                padding: 10px 14px; 
                 background: #f1f5f9; 
-                font-size: 10px; 
+                font-size: 9px; 
                 font-weight: 800; 
                 text-transform: uppercase; 
                 color: #64748b;
                 letter-spacing: 0.05em;
               }
               .results-table td { 
-                padding: 12px 14px; 
+                padding: 10px 14px; 
                 border-bottom: 1px solid #f1f5f9; 
-                font-size: 13px;
+                font-size: 12px;
                 font-weight: 600;
               }
               
               .critical { color: #e11d48; font-weight: 800; }
-              .unit-tag { font-size: 10px; opacity: 0.6; margin-left: 4px; }
+              .unit-tag { font-size: 9px; opacity: 0.6; margin-left: 4px; }
               
               .comments-box { 
                 background: #fff; 
                 border: 2px solid ${settings.primary_color || '#2563eb'}10; 
-                border-radius: 20px; 
-                padding: 20px 30px; 
-                margin-bottom: 20px;
+                border-radius: 16px; 
+                padding: 20px; 
+                margin-bottom: 25px;
                 position: relative;
               }
               .comments-label { 
@@ -295,7 +299,7 @@ export default function LabRequestsPage() {
               
               .footer { 
                 margin-top: auto; 
-                padding-top: 20px; 
+                padding-top: 40px; 
                 border-top: 2px solid #f8fafc; 
                 display: flex; 
                 justify-content: space-between; 
@@ -371,7 +375,7 @@ export default function LabRequestsPage() {
                   <p class="label">Demographics</p>
                   <p class="value">${req.patient_age || 'N/A'} • ${req.patient_gender || 'N/A'}</p>
                   <p class="value" style="font-size: 10px; color: #64748b; margin-top: 4px;">
-                    Requesting Physician: ${req.requested_by_name || 'HOSPITAL CLINIC'}
+                    REQUESTING DOCTOR: ${req.requested_by_name || 'HOSPITAL CLINIC'}
                   </p>
                 </div>
                 <div class="meta-item">
@@ -534,7 +538,11 @@ export default function LabRequestsPage() {
       <div className="card bg-white/70 backdrop-blur-xl border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.04)] overflow-hidden">
         <div className="flex p-2 gap-2 bg-gray-50/50 border-b border-gray-100 no-scrollbar overflow-x-auto">
           <button 
-            onClick={() => setActiveTab('Pending')}
+            onClick={() => {
+              const params = new URLSearchParams(searchParams.toString());
+              params.set('tab', 'Pending');
+              router.push(`${pathname}?${params.toString()}`);
+            }}
             className={cn(
               "flex-1 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] rounded-xl transition-all duration-300",
               activeTab === 'Pending' 
@@ -545,7 +553,11 @@ export default function LabRequestsPage() {
             Awaiting Specimen
           </button>
           <button 
-            onClick={() => setActiveTab('Collected')}
+            onClick={() => {
+              const params = new URLSearchParams(searchParams.toString());
+              params.set('tab', 'Collected');
+              router.push(`${pathname}?${params.toString()}`);
+            }}
             className={cn(
               "flex-1 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] rounded-xl transition-all duration-300",
               activeTab === 'Collected' 
@@ -556,7 +568,11 @@ export default function LabRequestsPage() {
             In Analysis
           </button>
           <button 
-            onClick={() => setActiveTab('Completed')}
+            onClick={() => {
+              const params = new URLSearchParams(searchParams.toString());
+              params.set('tab', 'Completed');
+              router.push(`${pathname}?${params.toString()}`);
+            }}
             className={cn(
               "flex-1 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] rounded-xl transition-all duration-300",
               activeTab === 'Completed' 
