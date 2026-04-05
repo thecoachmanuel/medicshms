@@ -86,6 +86,7 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
         { icon: ShieldCheck, label: 'Admin', path: `${base}/admin/users` },
         { icon: Stethoscope, label: 'Doctors', path: `${base}/admin/doctors` },
         { icon: Users, label: 'Hospital Staff', path: `${base}/admin/staff` },
+        { icon: FlaskConical, label: 'Laboratory Matrix', path: `${base}/admin/laboratory` },
         { icon: Building2, label: 'Departments', path: `${base}/admin/departments` },
         { icon: CalendarClock, label: 'Slot Settings', path: `${base}/admin/slot-settings` },
         { icon: FileCheck, label: 'Template', path: `${base}/admin/invoice-template` },
