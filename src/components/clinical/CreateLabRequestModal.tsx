@@ -203,8 +203,9 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
       toast.success(`${selectedTests.length} investigations queued`);
       onSuccess?.();
       onClose();
-    } catch (error) {
-      toast.error('Failed to initiate batch');
+    } catch (error: any) {
+      console.error('❌ Batch Initiation Error:', error);
+      toast.error(error.message || 'Failed to initiate batch');
     } finally {
       setLoading(false);
     }
