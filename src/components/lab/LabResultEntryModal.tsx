@@ -12,8 +12,6 @@ import {
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import toast from 'react-hot-toast';
-import { LabResultReport } from './LabResultReport';
-import { useAuth } from '@/context/AuthContext';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -194,7 +192,6 @@ interface Props {
 }
 
 export default function LabResultEntryModal({ request, onClose, onSuccess }: Props) {
-  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showLibrary, setShowLibrary] = useState(true);
   const [catalog, setCatalog] = useState<any[]>([]);
@@ -339,27 +336,23 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
     }
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   const handleSave = async (status: 'Collected' | 'Completed') => {
     setLoading(true);
     try {
       const { labAPI } = await import('@/lib/api');
       
-      // Combine structured data - capturing full context (unit, reference range) for persistence
-      const persistentFields = fields.map(f => ({
-        ...f,
-        value: fieldValues[f.id] || ''
-      }));
+      // Combine structured data - using a map of labels for the final result output
+      const structuredResults: Record<string, string> = {};
+      fields.forEach(f => {
+        structuredResults[f.label] = fieldValues[f.id] || '';
+      });
 
-      const finalResults = `${clinicalNotes}\n\nMETRIC_DATA:${JSON.stringify(persistentFields)}`;
+      const finalResults = `${clinicalNotes}\n\nMETRIC_DATA:${JSON.stringify(structuredResults)}`;
       
       await labAPI.updateResult({
         request_id: request.id || request._id,
         status: status,
-        test_name: request.test_name,
+        test_name: request.test_name, // Capture refined protocol name
         results: finalResults,
         is_critical: isCritical,
         file_url: fileUrl || undefined,
@@ -393,12 +386,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
               <Microscope className="w-6 h-6 text-indigo-600" />
             </div>
             <div>
-              <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-black text-gray-900 tracking-tight">Diagnostic Workspace</h2>
-                {request?.unit?.name && (
-                  <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[9px] font-black uppercase tracking-widest border border-indigo-100/50">{request.unit.name}</span>
-                )}
-              </div>
+              <h2 className="text-2xl font-black text-gray-900 tracking-tight">Diagnostic Workspace</h2>
               <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mt-0.5">Clinical Protocol Entry • Analysis in Progress</p>
             </div>
             <button 
@@ -412,18 +400,6 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
               {showLibrary ? "Hide Library" : "Show Library"}
             </button>
           </div>
-          <button 
-            onClick={handlePrint}
-            className="flex items-center gap-2 px-4 py-3 bg-white border border-slate-100 hover:border-indigo-200 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-indigo-600 transition-all shadow-sm"
-          >
-            <Printer className="w-4 h-4" /> Print Result
-          </button>
-          <button 
-            onClick={handlePrint}
-            className="flex items-center gap-2 px-4 py-3 bg-white border border-slate-100 hover:border-indigo-200 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-indigo-600 transition-all shadow-sm"
-          >
-            <Printer className="w-4 h-4" /> Print Result
-          </button>
           <button 
             onClick={onClose} 
             className="p-3 bg-gray-50 rounded-xl text-gray-400 hover:text-rose-500 hover:rotate-90 transition-all duration-300"
@@ -746,17 +722,6 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
         </div>
       </div>
 
-      {/* Hidden Printable Report Container */}
-      {/* Hidden Printable Report Container - Print Safe Visibility */}
-      <div className="opacity-0 pointer-events-none absolute inset-0 -z-50 overflow-hidden h-0">
-        <LabResultReport 
-          request={request}
-          patient={request?.patient}
-          results={fields.map(f => ({ ...f, value: fieldValues[f.id] }))}
-          scientistName={request?.handled_by_profile?.name || user?.name || 'Authorized Scientist'}
-          comments={clinicalNotes}
-        />
-      </div>
     </div>
   );
 }
