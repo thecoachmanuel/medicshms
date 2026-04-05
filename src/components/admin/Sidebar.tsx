@@ -32,7 +32,8 @@ import {
   Pill,
   Package,
   Scan,
-  ImageIcon
+  ImageIcon,
+  FlaskConical
 } from 'lucide-react';
 import { isPlatformAdmin } from '@/lib/auth-helpers';
 import { clsx, type ClassValue } from 'clsx';

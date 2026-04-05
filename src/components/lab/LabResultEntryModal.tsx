@@ -409,7 +409,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
         </div>
 
         <div className="flex-1 flex gap-8 min-h-0">
-          {/* Collapsible Sidebar: Protocol Library */}
+          {/* Collapsible Sidebar: Test Template Library */}
           {showLibrary && (
             <div className="w-64 shrink-0 bg-gray-50/50 rounded-[2rem] border border-gray-100 p-4 flex flex-col gap-4 animate-in slide-in-from-left-4 duration-300">
               <div className="px-2">
@@ -418,7 +418,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" />
                   <input 
                     type="text"
-                    placeholder="Search protocols..."
+                    placeholder="Search test templates..."
                     className="w-full pl-8 pr-4 py-2 bg-white border border-gray-100 rounded-xl text-[10px] font-bold outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all shadow-sm"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}

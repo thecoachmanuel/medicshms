@@ -247,11 +247,11 @@ export default function LabManagementSection() {
                 </div>
                 <div>
                   <h3 className="font-black text-gray-900 uppercase tracking-tight text-base font-bold">Diagnostic Catalog</h3>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Standardized test protocols & pricing index</p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Standardized tests & pricing index</p>
                 </div>
              </div>
              <button onClick={() => { setEditingItem(null); setIsCatalogModalOpen(true); }} className="btn-primary py-2.5 px-6 text-[10px] bg-emerald-600 hover:bg-emerald-700 border-emerald-700 shadow-emerald-100">
-               <BookOpen className="w-4 h-4" /> Add Protocol
+               <BookOpen className="w-4 h-4" /> Add Test
              </button>
           </div>
 
@@ -289,7 +289,7 @@ export default function LabManagementSection() {
               <div className="flex justify-between items-center">
                 <div className="space-y-1">
                   <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">{editingItem ? 'Refine Unit' : 'Establish Unit'}</h3>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Laboratory Matrix Protocol</p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Laboratory Test Parameter</p>
                 </div>
                 <button onClick={() => setIsUnitModalOpen(false)} className="p-2 hover:bg-gray-50 rounded-xl text-gray-400 hover:text-gray-900 transition-all"><X className="w-5 h-5" /></button>
               </div>
@@ -318,7 +318,7 @@ export default function LabManagementSection() {
            <div className="relative bg-white rounded-[3rem] w-full max-w-lg p-10 shadow-[0_32px_128px_rgba(30,41,59,0.2)] space-y-8 animate-in zoom-in-95 duration-300">
               <div className="flex justify-between items-center">
                 <div className="space-y-1">
-                  <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">{editingItem ? 'Update Protocol' : 'New Investigation'}</h3>
+                  <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">{editingItem ? 'Update Test' : 'New Investigation'}</h3>
                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Diagnostic Catalog Indexing</p>
                 </div>
                 <button onClick={() => setIsCatalogModalOpen(false)} className="p-2 hover:bg-gray-50 rounded-xl text-gray-400 hover:text-gray-900 transition-all"><X className="w-5 h-5" /></button>
@@ -344,8 +344,8 @@ export default function LabManagementSection() {
                        </select>
                     </div>
                     <div className="space-y-2 col-span-2">
-                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Clinical Protocol / Preparation</label>
-                       <textarea name="description" defaultValue={editingItem?.description} className="input py-4 min-h-[100px] text-sm font-medium" placeholder="Specify fasting requirements or collection protocols..." />
+                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Clinical Test / Preparation</label>
+                       <textarea name="description" defaultValue={editingItem?.description} className="input py-4 min-h-[100px] text-sm font-medium" placeholder="Specify fasting requirements or collection tests..." />
                     </div>
                  </div>
                  <button type="submit" className="w-full btn-primary py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] bg-emerald-600 border-emerald-700 shadow-xl shadow-emerald-600/20">

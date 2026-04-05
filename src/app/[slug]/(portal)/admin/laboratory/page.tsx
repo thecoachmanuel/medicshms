@@ -15,7 +15,7 @@ export default function LaboratoryMatrixPage() {
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">Laboratory Matrix</h1>
         </div>
         <p className="text-sm text-gray-500 font-medium ml-15">
-          Advanced diagnostic infrastructure management and clinical laboratory orchestration.
+          Advanced diagnostic test management and clinical laboratory orchestration.
         </p>
       </div>
 
