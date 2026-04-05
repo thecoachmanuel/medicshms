@@ -361,12 +361,16 @@ export default function LabRequestsPage() {
                 <div class="meta-item">
                   <p class="label">Patient Profile</p>
                   <p class="value">${req.patient?.full_name}</p>
-                  <p class="value" style="font-size: 10px; color: #64748b; margin-top: 4px;">ID: ${req.patient?.patient_id}</p>
+                  <p class="value" style="font-size: 10px; color: #64748b; margin-top: 4px;">
+                    ${req.patient_age || '-'} / ${req.patient_gender || '-'}
+                  </p>
                 </div>
                 <div class="meta-item">
                   <p class="label">Investigation</p>
                   <p class="value" style="color: ${settings.primary_color || '#2563eb'};">${req.test_name}</p>
-                  <p class="value" style="font-size: 10px; color: #64748b; margin-top: 4px;">UNIT: ${req.unit_name || 'GENERAL'}</p>
+                  <p class="value" style="font-size: 10px; color: #64748b; margin-top: 4px;">
+                    REFERRING: ${req.requested_by_name || 'HOSPITAL CLINIC'}
+                  </p>
                 </div>
                 <div class="meta-item">
                   <p class="label">Timeline</p>
@@ -376,9 +380,10 @@ export default function LabRequestsPage() {
               </div>
 
               <div class="comments-box">
-                <span class="comments-label">ANALYTICAL METRICS & CLINICAL NOTES</span>
+                <span class="comments-label">CLINICAL SUMMARY & ANALYTICAL METRICS</span>
                 <div class="comments-content">
                   ${(() => {
+                    const summary = req.clinical_summary || '';
                     if (req.results?.includes('METRIC_DATA:')) {
                       const parts = req.results.split('METRIC_DATA:');
                       const notes = parts[0].trim();
@@ -386,6 +391,7 @@ export default function LabRequestsPage() {
                       try { metrics = JSON.parse(parts[1]); } catch(e) {}
                       
                       return `
+                        ${summary ? `<div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #e2e8f0;"><strong>Clinical Summary:</strong><br/>${summary}</div>` : ''}
                         ${notes ? `<div style="margin-bottom: 25px;">${notes}</div>` : ''}
                         <table class="results-table">
                           <thead>
@@ -407,7 +413,10 @@ export default function LabRequestsPage() {
                         </table>
                       `;
                     }
-                    return req.results || 'Result interpreted as Normal. Refer to digital analysis for quantitative parameters.';
+                    return `
+                      ${summary ? `<div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #e2e8f0;"><strong>Clinical Summary:</strong><br/>${summary}</div>` : ''}
+                      ${req.results || 'Result interpreted as Normal. Refer to digital analysis for quantitative parameters.'}
+                    `;
                   })()}
                 </div>
               </div>

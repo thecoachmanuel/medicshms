@@ -318,6 +318,9 @@ export const labAPI = {
     patient_preparation?: string;
     collection_instructions?: string;
     lab_number?: string;
+    requested_by_name?: string;
+    patient_age?: string;
+    patient_gender?: string;
   }) => api.post<APIResponse<any>>('/lab-services', data),
   updateResult: (data: { 
     request_id: string; 
