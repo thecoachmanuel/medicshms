@@ -168,22 +168,22 @@ export default function LabRequestsPage() {
               body { 
                 font-family: 'Plus Jakarta Sans', sans-serif; 
                 margin: 0; 
-                padding: 40px; 
+                padding: 30px; 
                 color: #0f172a; 
                 background: #fff;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
               }
               
-              .container { max-width: 800px; margin: 0 auto; min-height: 1000px; display: flex; flex-direction: column; }
+              .container { max-width: 800px; margin: 0 auto; min-height: 900px; display: flex; flex-direction: column; }
               
               .header { 
                 display: flex; 
                 justify-content: space-between; 
                 align-items: center; 
                 border-bottom: 2px solid ${settings.primary_color || '#2563eb'}20; 
-                padding-bottom: 30px; 
-                margin-bottom: 30px; 
+                padding-bottom: 20px; 
+                margin-bottom: 20px; 
               }
               
               .hospital-brand { display: flex; align-items: center; gap: 20px; }
@@ -211,7 +211,7 @@ export default function LabRequestsPage() {
               
               .report-type { 
                 text-align: center; 
-                margin-bottom: 30px; 
+                margin-bottom: 20px; 
                 position: relative;
               }
               .report-type h2 { 
@@ -231,9 +231,9 @@ export default function LabRequestsPage() {
                 grid-template-columns: repeat(3, 1fr); 
                 gap: 20px; 
                 background: #f8fafc; 
-                padding: 24px; 
+                padding: 15px 24px; 
                 border-radius: 20px; 
-                margin-bottom: 30px;
+                margin-bottom: 20px;
                 border: 1px solid #f1f5f9;
               }
               .meta-item .label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; font-weight: 800; margin-bottom: 6px; }
@@ -251,7 +251,7 @@ export default function LabRequestsPage() {
                 letter-spacing: 0.05em;
               }
               .results-table td { 
-                padding: 16px 14px; 
+                padding: 12px 14px; 
                 border-bottom: 1px solid #f1f5f9; 
                 font-size: 13px;
                 font-weight: 600;
@@ -264,8 +264,8 @@ export default function LabRequestsPage() {
                 background: #fff; 
                 border: 2px solid ${settings.primary_color || '#2563eb'}10; 
                 border-radius: 20px; 
-                padding: 30px; 
-                margin-bottom: 40px;
+                padding: 20px 30px; 
+                margin-bottom: 20px;
                 position: relative;
               }
               .comments-label { 
@@ -295,7 +295,7 @@ export default function LabRequestsPage() {
               
               .footer { 
                 margin-top: auto; 
-                padding-top: 40px; 
+                padding-top: 20px; 
                 border-top: 2px solid #f8fafc; 
                 display: flex; 
                 justify-content: space-between; 
@@ -371,7 +371,7 @@ export default function LabRequestsPage() {
                   <p class="label">Demographics</p>
                   <p class="value">${req.patient_age || 'N/A'} • ${req.patient_gender || 'N/A'}</p>
                   <p class="value" style="font-size: 10px; color: #64748b; margin-top: 4px;">
-                    REFERRING: ${req.requested_by_name || 'HOSPITAL CLINIC'}
+                    Requesting Physician: ${req.requested_by_name || 'HOSPITAL CLINIC'}
                   </p>
                 </div>
                 <div class="meta-item">
