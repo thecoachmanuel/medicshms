@@ -19,6 +19,8 @@ export async function GET(request: Request) {
           id,
           full_name,
           patient_id,
+          gender,
+          date_of_birth,
           profile:profiles!user_id(name)
         ),
         doctor:doctors!doctor_id(
@@ -74,7 +76,8 @@ export async function POST(request: Request) {
       specimen_type: specimen_type || 'Venous Blood',
       priority: priority || 'Routine',
       patient_preparation: patient_preparation || null,
-      collection_instructions: collection_instructions || null
+      collection_instructions: collection_instructions || null,
+      lab_number: `${(test_name || 'LAB').substring(0, 3).toUpperCase()}${Math.floor(100000 + Math.random() * 900000)}`
     };
 
     // If a scientist/staff is creating it, we can pre-assign themselves

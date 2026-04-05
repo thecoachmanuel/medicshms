@@ -14,6 +14,18 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+function calculateAge(dob: string) {
+  if (!dob) return 'N/A';
+  const birthDate = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
+
 interface Metric {
   label: string;
   value: string;
@@ -67,10 +79,12 @@ export default function LabReportPreviewModal({ requests, onClose }: LabReportPr
               .page {
                 width: 210mm;
                 min-height: 297mm;
-                padding: 20mm;
+                padding: 15mm;
                 margin: 0 auto;
                 background: white;
                 box-sizing: border-box;
+                position: relative;
+                border: 1px solid #eee;
               }
               @page {
                 size: A4;
@@ -78,7 +92,7 @@ export default function LabReportPreviewModal({ requests, onClose }: LabReportPr
               }
               @media print {
                 body { background: none; }
-                .page { margin: 0; border: none; border-radius: 0; }
+                .page { margin: 0; border: none; border-radius: 0; width: 100%; min-height: 100%; padding: 10mm; }
               }
               .header { 
                 display: flex; 
@@ -166,12 +180,18 @@ export default function LabReportPreviewModal({ requests, onClose }: LabReportPr
               }
               
               .footer { 
-                margin-top: 50px; 
+                position: absolute;
+                bottom: 15mm;
+                left: 15mm;
+                right: 15mm;
                 border-top: 1px solid #e2e8f0; 
-                padding-top: 20px; 
+                padding-top: 15px; 
                 display: flex; 
                 justify-content: space-between; 
                 align-items: flex-end; 
+              }
+              @media print {
+                .footer { bottom: 10mm; left: 10mm; right: 10mm; }
               }
               .signature-box { text-align: center; width: 180px; }
               .signature-line { border-top: 1px solid #94a3b8; margin-bottom: 5px; }
@@ -288,42 +308,42 @@ export default function LabReportPreviewModal({ requests, onClose }: LabReportPr
                   {settings.cin_number && <p>CIN: {settings.cin_number}</p>}
                 </div>
                 <div className="text-right">
-                  <div className="demo-label">SPECIMEN ACCESSION</div>
-                  <div className="text-xl font-black text-indigo-600">#{specimenIds}</div>
-                  <div className="demo-label mt-2">CERTIFICATE NO</div>
+                  <div className="demo-label">ACCESSION NUMBER</div>
+                  <div className="text-xl font-black text-indigo-600">#{requests[0]?.lab_number || requests[0]?.id.slice(-8).toUpperCase()}</div>
+                  <div className="demo-label mt-2">REPORT REFERENCE</div>
                   <div className="font-bold text-xs uppercase">{new Date().getTime().toString(36).toUpperCase()}</div>
                 </div>
               </div>
 
               <div className="report-type">
-                <h2>Verified Diagnostic Report</h2>
+                <h2>Verified Diagnostic Certificate</h2>
               </div>
 
               {/* Patient Demographics */}
               <div className="demographics">
                 <div className="demo-item">
                   <span className="demo-label">Patient Name</span>
-                  <span className="demo-value uppercase">{patient.full_name || 'Unknown Subject'}</span>
+                  <span className="demo-value uppercase">{patient.full_name || 'N/A'}</span>
                 </div>
                 <div className="demo-item">
                   <span className="demo-label">Age / Gender</span>
-                  <span className="demo-value">{patient.age || 'N/A'}Y / {patient.gender || 'N/A'}</span>
+                  <span className="demo-value">{calculateAge(patient.date_of_birth)}Y / {patient.gender || 'N/A'}</span>
                 </div>
                 <div className="demo-item">
                   <span className="demo-label">Patient ID</span>
                   <span className="demo-value">#{patient.patient_id || 'N/A'}</span>
                 </div>
                 <div className="demo-item">
-                  <span className="demo-label">Requested Date</span>
-                  <span className="demo-value">{new Date(requests[0]?.requested_at).toLocaleDateString()}</span>
+                  <span className="demo-label">Requesting Physician</span>
+                  <span className="demo-value">{requests[0]?.doctor?.profile?.name || 'SELF REQUEST'}</span>
                 </div>
                 <div className="demo-item">
                   <span className="demo-label">Sample Collected</span>
-                  <span className="demo-value">{requests[0]?.collected_at ? new Date(requests[0]?.collected_at).toLocaleDateString() : 'N/A'}</span>
+                  <span className="demo-value">{requests[0]?.collected_at ? new Date(requests[0]?.collected_at).toLocaleDateString() : 'WAITING'}</span>
                 </div>
                 <div className="demo-item">
-                  <span className="demo-label">Report Authorized</span>
-                  <span className="demo-value">{new Date().toLocaleDateString()}</span>
+                  <span className="demo-label">Authorized Date</span>
+                  <span className="demo-value">{new Date(requests[0]?.completed_at || new Date()).toLocaleDateString()}</span>
                 </div>
               </div>
 
@@ -379,8 +399,8 @@ export default function LabReportPreviewModal({ requests, onClose }: LabReportPr
               {/* Authorized Signature */}
               <div className="footer">
                 <div className="text-[9px] text-gray-400 max-w-[350px]">
-                  <b>Electronic Verification:</b> This report is digitally signed and authorized by a registered medical scientist. 
-                  Any alteration voids this certificate. Investigation conducted under standardized diagnostic protocols.
+                  This laboratory investigation has been verified and authorized according to international clinical standards.
+                  Diagnostic accuracy is prioritized through standardized protocols.
                 </div>
                 <div className="signature-box">
                   <div className="signature-line"></div>
