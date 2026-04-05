@@ -44,9 +44,13 @@ export async function POST(request: Request) {
       unit_id: unit_id || null,
       description: description || null,
       is_auto_created: is_auto_created || false,
-      template_schema: template_schema || null,
       updated_at: new Date().toISOString()
     };
+
+    // Only include template_schema if provided to avoid failures on older schemas
+    if (template_schema) {
+      upsertData.template_schema = template_schema;
+    }
 
     const { data, error } = await supabaseClient
       .from('lab_test_catalog')
@@ -57,7 +61,15 @@ export async function POST(request: Request) {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      if (error.message?.includes('template_schema')) {
+        console.error('❌ Schema Mismatch: Migration 20240405000001 may be missing.');
+        return NextResponse.json({ 
+          message: 'Laboratory Schema Mismatch. Please apply the latest database migrations (template_schema column missing).' 
+        }, { status: 409 });
+      }
+      throw error;
+    }
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('💥 Lab Catalog POST Crash:', error);

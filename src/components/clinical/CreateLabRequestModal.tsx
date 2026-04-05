@@ -191,12 +191,20 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
       const promises = selectedTests.map(async (test) => {
         // Auto-Indexing for Scientists if price is provided manually
         if (test.is_new && !isDoctor && test.test_price > 0) {
-          await labAPI.upsertCatalogItem({
-            test_name: test.test_name,
-            price: test.test_price,
-            unit_id: test.unit_id,
-            is_auto_created: true
-          });
+          try {
+            await labAPI.upsertCatalogItem({
+              test_name: test.test_name,
+              price: test.test_price,
+              unit_id: test.unit_id,
+              is_auto_created: true
+            });
+          } catch (e: any) {
+            console.warn('⚠️ Auto-Indexing failed - schema may be outdated', e);
+            // We continue even if auto-indexing fails, but check for critical schema error
+            if (e.response?.status === 409) {
+              throw new Error('Database Schema Error: template_schema column is missing. Please run migrations.');
+            }
+          }
         }
 
         return labAPI.createRequest({
