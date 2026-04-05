@@ -431,7 +431,7 @@ export default function LabRequestsPage() {
         onSuccess={() => fetchRequests(activeTab)}
       />
       {printRequest && (
-        <div className="hidden">
+        <div className="opacity-0 pointer-events-none absolute inset-0 -z-50 overflow-hidden h-0">
           <LabResultReport 
             request={printRequest}
             patient={printRequest.patient}

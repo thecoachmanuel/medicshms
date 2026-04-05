@@ -747,7 +747,8 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
       </div>
 
       {/* Hidden Printable Report Container */}
-      <div className="hidden">
+      {/* Hidden Printable Report Container - Print Safe Visibility */}
+      <div className="opacity-0 pointer-events-none absolute inset-0 -z-50 overflow-hidden h-0">
         <LabResultReport 
           request={request}
           patient={request?.patient}

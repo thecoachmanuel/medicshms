@@ -22,8 +22,10 @@ export const LabResultReport = ({ request, patient, results, scientistName, comm
   const primaryColor = settings?.theme_color || '#2563eb';
   
   // Filter out fields that are meant to be hidden (optional, based on logic)
-  // For now, we show all passed results as the 'hide' logic happened in the modal before passing
-  const activeResults = results.filter(f => f.value !== undefined && f.value !== '');
+  const activeResults = Array.isArray(results) ? results.filter(f => f.value !== undefined && f.value !== '') : [];
+  
+  // If no metric data is passed, but comments exist, we'll still show the report!
+  const hasDetails = activeResults.length > 0;
 
   const dateStr = new Date().toLocaleDateString('en-GB', {
     day: '2-digit',
@@ -115,40 +117,57 @@ export const LabResultReport = ({ request, patient, results, scientistName, comm
       </div>
 
       {/* Investigation Details */}
-      <div className="mb-10">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-1.5 h-6 rounded-full" style={{ backgroundColor: primaryColor }}></div>
-          <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight">
-            {request?.test_name || 'Investigation Details'}
-          </h2>
-        </div>
+      {hasDetails && (
+        <div className="mb-10">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-1.5 h-6 rounded-full" style={{ backgroundColor: primaryColor }}></div>
+            <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight">
+              {request?.test_name || 'Investigation Details'}
+            </h2>
+          </div>
 
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-slate-50/50">
-              <th className="p-4 text-left text-[10px] font-black uppercase text-slate-500 tracking-widest border-b border-slate-200">Parameter</th>
-              <th className="p-4 text-center text-[10px] font-black uppercase text-slate-500 tracking-widest border-b border-slate-200">Result</th>
-              <th className="p-4 text-center text-[10px] font-black uppercase text-slate-500 tracking-widest border-b border-slate-200">Units</th>
-              <th className="p-4 text-right text-[10px] font-black uppercase text-slate-500 tracking-widest border-b border-slate-200">Reference Range</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {activeResults.map((field, idx) => (
-              <tr key={idx} className="hover:bg-slate-50/20 transition-colors">
-                <td className="p-4 text-[11px] font-black text-slate-800 uppercase tracking-tight">{field.label}</td>
-                <td className="p-4 text-center text-[12px] font-black text-slate-900 italic">{field.value}</td>
-                <td className="p-4 text-center text-[10px] font-bold text-slate-400">{field.unit || '-'}</td>
-                <td className="p-4 text-right text-[10px] font-black text-slate-500 tracking-tight">{field.referenceRange || '-'}</td>
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-slate-50/50">
+                <th className="p-4 text-left text-[10px] font-black uppercase text-slate-500 tracking-widest border-b border-slate-200">Parameter</th>
+                <th className="p-4 text-center text-[10px] font-black uppercase text-slate-500 tracking-widest border-b border-slate-200">Result</th>
+                <th className="p-4 text-center text-[10px] font-black uppercase text-slate-500 tracking-widest border-b border-slate-200">Units</th>
+                <th className="p-4 text-right text-[10px] font-black uppercase text-slate-500 tracking-widest border-b border-slate-200">Reference Range</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {activeResults.map((field, idx) => (
+                <tr key={idx} className="hover:bg-slate-50/20 transition-colors">
+                  <td className="p-4 text-[11px] font-black text-slate-800 uppercase tracking-tight">{field.label}</td>
+                  <td className="p-4 text-center text-[12px] font-black text-slate-900 italic">{field.value}</td>
+                  <td className="p-4 text-center text-[10px] font-bold text-slate-400">{field.unit || '-'}</td>
+                  <td className="p-4 text-right text-[10px] font-black text-slate-500 tracking-tight">{field.referenceRange || '-'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-      {/* Comments Section */}
-      {comments && (
+      {/* Narrative Result (If no structured data exists) */}
+      {!hasDetails && comments && (
+        <div className="mb-10">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-1.5 h-6 rounded-full" style={{ backgroundColor: primaryColor }}></div>
+            <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight">
+              {request?.test_name || 'Investigation Details'}
+            </h2>
+          </div>
+          <div className="p-8 bg-slate-50 rounded-3xl border border-slate-100 italic">
+            <p className="text-[14px] font-medium text-slate-800 leading-relaxed whitespace-pre-wrap">{comments}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Comments Section (Only if we have structured data AND comments) */}
+      {hasDetails && comments && (
         <div className="mb-10 p-6 bg-slate-50 rounded-2xl border border-slate-100 italic">
-          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 not-italic">Comments / Observations</h3>
+          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 not-italic">Additional Clinical Notes</h3>
           <p className="text-[12px] font-medium text-slate-600 leading-relaxed whitespace-pre-wrap">{comments}</p>
         </div>
       )}
