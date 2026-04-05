@@ -53,8 +53,19 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
     patient_preparation: '',
     collection_instructions: '',
     clinical_notes: '',
-    lab_number: ''
+    lab_number: '',
+    requesting_doctor: '',
+    clinical_summary: ''
   });
+
+  useEffect(() => {
+    if (isOpen && user) {
+      const role = user.role || 'Doctor';
+      if (role === 'Doctor' && user.name) {
+        setRequestData(prev => ({ ...prev, requesting_doctor: user.name }));
+      }
+    }
+  }, [isOpen, user]);
 
   useEffect(() => {
     if (isOpen) {
@@ -188,6 +199,25 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
 
     setLoading(true);
     try {
+      let patientId = selectedPatient.id || selectedPatient._id;
+
+      // RAPID ENROLLMENT: If patient was quick-added without an ID
+      if (!patientId && selectedPatient.isVirtual) {
+        try {
+          const enrollRes = await patientsAPI.create({
+            fullName: selectedPatient.fullName,
+            mobileNumber: '0000000000', // Placeholder for rapid entry
+            gender: 'Male' // Default
+          }) as any;
+          const newP = enrollRes.data || enrollRes;
+          patientId = newP.id || newP._id;
+        } catch (enrollError) {
+          console.error('Rapid Enrollment failed:', enrollError);
+          setLoading(false);
+          return toast.error('Rapid enrollment failed. Please check network.');
+        }
+      }
+
       const promises = selectedTests.map(async (test) => {
         // Auto-Indexing for Scientists if price is provided manually
         if (test.is_new && !isDoctor && test.test_price > 0) {
@@ -208,7 +238,7 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
         }
 
         return labAPI.createRequest({
-          patient_id: selectedPatient.id || selectedPatient._id,
+          patient_id: patientId,
           test_name: test.test_name,
           test_price: test.test_price,
           unit_id: test.unit_id,
@@ -305,22 +335,35 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
                    ))}
                 </div>
               ) : patientSearchTerm.length >= 2 && (
-                <div className="py-12 px-8 text-center bg-gray-50 rounded-[2rem] border-2 border-dashed border-gray-200">
-                  <div className="w-20 h-20 bg-white rounded-[2.25rem] flex items-center justify-center mx-auto mb-6 shadow-sm">
-                    <User className="w-10 h-10 text-gray-200" />
+                <div className="py-12 px-8 text-center bg-gray-50 rounded-[3rem] border-2 border-dashed border-gray-100 flex flex-col items-center">
+                  <div className="w-20 h-20 bg-white rounded-[2.25rem] flex items-center justify-center mb-6 shadow-xl shadow-gray-200/50">
+                    <User className="w-10 h-10 text-blue-100" />
                   </div>
-                  <h3 className="text-lg font-black text-gray-900 tracking-tight mb-2">Subject Not Indexed</h3>
-                  <p className="text-xs text-gray-500 font-medium max-w-xs mx-auto mb-8">This patient doesn't appear in our registry. Would you like to create a rapid file?</p>
-                  <button 
-                    onClick={() => {
-                        setEnrollData(prev => ({ ...prev, fullName: patientSearchTerm }));
-                        setStage('Enroll');
-                    }}
-                    className="px-8 py-4 bg-gray-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all active:scale-95 shadow-xl shadow-gray-200"
-                    type="button"
-                  >
-                    Enroll Now
-                  </button>
+                  <h3 className="text-xl font-black text-gray-900 tracking-tight mb-2">"{patientSearchTerm}"</h3>
+                  <p className="text-xs text-gray-500 font-medium max-w-xs mx-auto mb-10">Subject not found in registry. You can proceed with rapid enrollment or create a full clinical file.</p>
+                  
+                  <div className="flex gap-4 w-full max-w-sm">
+                    <button 
+                      onClick={() => {
+                          setSelectedPatient({ fullName: patientSearchTerm, isVirtual: true });
+                          setStage('Configure');
+                      }}
+                      className="flex-1 px-8 py-5 bg-gray-900 text-white rounded-[1.75rem] text-[11px] font-black uppercase tracking-[0.2em] hover:bg-blue-600 transition-all active:scale-95 shadow-2xl shadow-gray-200"
+                      type="button"
+                    >
+                      Quick Proceed
+                    </button>
+                    <button 
+                      onClick={() => {
+                          setEnrollData(prev => ({ ...prev, fullName: patientSearchTerm }));
+                          setStage('Enroll');
+                      }}
+                      className="flex-1 px-8 py-5 bg-white border-2 border-gray-100 text-gray-900 rounded-[1.75rem] text-[11px] font-black uppercase tracking-[0.2em] hover:bg-gray-50 transition-all active:scale-95"
+                      type="button"
+                    >
+                      Full Enrollment
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -569,6 +612,16 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
               </div>
 
               <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Requesting Physician</label>
+                  <input 
+                    placeholder="Enter doctor's name..."
+                    className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-gray-900"
+                    value={requestData.requesting_doctor}
+                    onChange={e => setRequestData({...requestData, requesting_doctor: e.target.value})}
+                  />
+                </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Specimen Type</label>
                   <select 
@@ -586,22 +639,24 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
                     <option>Stool</option>
                   </select>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Patient Peparation</label>
-                  <input 
-                    placeholder="e.g. 12hr Fasting"
-                    className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-gray-900"
-                    value={requestData.patient_preparation}
-                    onChange={e => setRequestData({...requestData, patient_preparation: e.target.value})}
-                  />
-                </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Investigation Notes</label>
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Clinical Summary / Brief History</label>
                 <textarea 
                   rows={2}
-                  placeholder="Clinical indications or specific requirements..."
+                  placeholder="Summary of patient's clinical state or indications..."
+                  className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium text-gray-700 resize-none"
+                  value={requestData.clinical_summary}
+                  onChange={e => setRequestData({...requestData, clinical_summary: e.target.value})}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Analytical Instructions / Notes</label>
+                <textarea 
+                  rows={2}
+                  placeholder="Standard operating instructions or specific requirements..."
                   className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium text-gray-700 resize-none"
                   value={requestData.clinical_notes}
                   onChange={e => setRequestData({...requestData, clinical_notes: e.target.value})}

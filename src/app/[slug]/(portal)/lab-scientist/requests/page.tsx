@@ -160,108 +160,272 @@ export default function LabRequestsPage() {
           <head>
             <title>Lab Report - ${req.patient?.full_name}</title>
             <style>
-              @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
-              body { font-family: 'Inter', sans-serif; padding: 50px; color: #1e293b; max-width: 900px; margin: 0 auto; background: #fff; }
-              .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 4px solid #f1f5f9; padding-bottom: 30px; margin-bottom: 40px; }
-              .hospital-info h1 { font-size: 28px; font-weight: 900; color: #0f172a; margin: 0; text-transform: uppercase; letter-spacing: -0.02em; }
-              .hospital-info p { font-size: 13px; color: #64748b; margin: 4px 0; font-weight: 500; }
-              .report-title { text-align: center; margin-bottom: 40px; }
-              .report-title h2 { font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #334155; background: #f8fafc; display: inline-block; padding: 10px 30px; border-radius: 12px; }
-              .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px; }
-              .detail-item { border-left: 3px solid #e2e8f0; padding-left: 20px; }
-              .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; font-weight: 700; margin-bottom: 4px; }
-              .value { font-size: 15px; font-weight: 600; color: #1e293b; }
-              .accession-tag { display: inline-block; padding: 4px 12px; background: #eff6ff; border: 1px solid #dbeafe; color: #2563eb; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-top: 8px; }
-              .results-section { background: #fff; border: 2px solid #f1f5f9; border-radius: 20px; padding: 40px; margin-bottom: 40px; min-height: 200px; position: relative; }
-              .results-content { line-height: 1.8; font-size: 15px; white-space: pre-wrap; }
-              .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 80px; font-weight: 900; color: #f1f5f9; z-index: -1; pointer-events: none; white-space: nowrap; }
-              .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 60px; padding-top: 30px; border-top: 2px solid #f1f5f9; }
-              .signature-box { text-align: center; width: 200px; }
-              .signature-line { border-top: 2px solid #e2e8f0; margin-top: 40px; padding-top: 10px; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; }
-              @media print { body { padding: 20px; } .no-print { display: none; } }
+              @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+              
+              @page { size: A4; margin: 0; }
+              body { 
+                font-family: 'Plus Jakarta Sans', sans-serif; 
+                margin: 0; 
+                padding: 40px; 
+                color: #0f172a; 
+                background: #fff;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+              
+              .container { max-width: 800px; margin: 0 auto; min-height: 1000px; display: flex; flex-col: column; }
+              
+              .header { 
+                display: flex; 
+                justify-content: space-between; 
+                align-items: center; 
+                border-bottom: 2px solid ${settings.primary_color || '#2563eb'}20; 
+                padding-bottom: 30px; 
+                margin-bottom: 30px; 
+              }
+              
+              .hospital-brand { display: flex; align-items: center; gap: 20px; }
+              .logo-box { 
+                width: 70px; 
+                height: 70px; 
+                background: ${settings.primary_color || '#2563eb'}08; 
+                border-radius: 18px; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center;
+                border: 1px solid ${settings.primary_color || '#2563eb'}15;
+              }
+              .logo { max-height: 50px; max-width: 50px; object-fit: contain; }
+              
+              .hospital-details h1 { 
+                font-size: 22px; 
+                font-weight: 800; 
+                color: #0f172a; 
+                margin: 0; 
+                letter-spacing: -0.02em; 
+                text-transform: uppercase;
+              }
+              .hospital-details p { font-size: 11px; color: #64748b; margin: 4px 0; font-weight: 600; }
+              
+              .report-type { 
+                text-align: center; 
+                margin-bottom: 30px; 
+                position: relative;
+              }
+              .report-type h2 { 
+                font-size: 14px; 
+                font-weight: 800; 
+                text-transform: uppercase; 
+                letter-spacing: 0.2em; 
+                color: ${settings.primary_color || '#2563eb'}; 
+                background: ${settings.primary_color || '#2563eb'}08; 
+                display: inline-block; 
+                padding: 8px 24px; 
+                border-radius: 99px;
+              }
+              
+              .patient-meta { 
+                display: grid; 
+                grid-template-columns: repeat(3, 1fr); 
+                gap: 20px; 
+                background: #f8fafc; 
+                padding: 24px; 
+                border-radius: 20px; 
+                margin-bottom: 30px;
+                border: 1px solid #f1f5f9;
+              }
+              .meta-item .label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; font-weight: 800; margin-bottom: 6px; }
+              .meta-item .value { font-size: 13px; font-weight: 700; color: #1e293b; }
+              
+              .results-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+              .results-table th { 
+                text-align: left; 
+                padding: 14px; 
+                background: #f1f5f9; 
+                font-size: 10px; 
+                font-weight: 800; 
+                text-transform: uppercase; 
+                color: #64748b;
+                letter-spacing: 0.05em;
+              }
+              .results-table td { 
+                padding: 16px 14px; 
+                border-bottom: 1px solid #f1f5f9; 
+                font-size: 13px;
+                font-weight: 600;
+              }
+              
+              .critical { color: #e11d48; font-weight: 800; }
+              .unit-tag { font-size: 10px; opacity: 0.6; margin-left: 4px; }
+              
+              .comments-box { 
+                background: #fff; 
+                border: 2px solid ${settings.primary_color || '#2563eb'}10; 
+                border-radius: 20px; 
+                padding: 30px; 
+                margin-bottom: 40px;
+                position: relative;
+              }
+              .comments-label { 
+                position: absolute; 
+                top: -10px; 
+                left: 20px; 
+                background: #fff; 
+                padding: 0 10px; 
+                font-size: 9px; 
+                font-weight: 800; 
+                color: ${settings.primary_color || '#2563eb'}; 
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+              }
+              .comments-content { font-size: 13px; line-height: 1.7; color: #334155; white-space: pre-wrap; }
+              
+              .accession-badge { 
+                display: inline-block; 
+                padding: 4px 10px; 
+                background: ${settings.primary_color || '#2563eb'}10; 
+                color: ${settings.primary_color || '#2563eb'}; 
+                border-radius: 6px; 
+                font-size: 10px; 
+                font-weight: 800; 
+                margin-top: 5px;
+              }
+              
+              .footer { 
+                margin-top: auto; 
+                padding-top: 40px; 
+                border-top: 2px solid #f8fafc; 
+                display: flex; 
+                justify-content: space-between; 
+                align-items: flex-end; 
+              }
+              .signature-zone { text-align: center; width: 220px; }
+              .sig-img { height: 50px; margin-bottom: 10px; opacity: 0.8; }
+              .sig-line { 
+                border-top: 1.5px solid #e2e8f0; 
+                margin-top: 8px; 
+                padding-top: 8px; 
+                font-size: 10px; 
+                font-weight: 700; 
+                color: #64748b; 
+                text-transform: uppercase; 
+              }
+              
+              .watermark { 
+                position: fixed; 
+                top: 50%; 
+                left: 50%; 
+                transform: translate(-50%, -50%) rotate(-45deg); 
+                font-size: 100px; 
+                font-weight: 900; 
+                color: #f1f5f9; 
+                z-index: -10; 
+                pointer-events: none; 
+                opacity: 0.5;
+                white-space: nowrap;
+              }
+              
+              @media print { 
+                body { padding: 40px; } 
+                .no-print { display: none; } 
+              }
             </style>
           </head>
           <body>
-            <div class="header">
-              <div class="hospital-info">
-                 ${(req.hospital_details?.hospital_logo || settings.hospital_logo) ? `<img src="${req.hospital_details?.hospital_logo || settings.hospital_logo}" style="height: 60px; margin-bottom: 15px; object-fit: contain;" />` : ''}
-                 <h1>${req.hospital_details?.hospital_name || settings.hospital_name || 'Medical Diagnostic Center'}</h1>
-                 <p>${req.hospital_details?.address || settings.address || 'Clinic HQ Sector 4'}</p>
-                 <p>Contact: ${req.hospital_details?.contact_email || settings.contact_email || 'diagnostics@hospital.com'}</p>
-                 ${(req.hospital_details?.cin_number || settings.cin_number) ? `<p>REG: ${req.hospital_details?.cin_number || settings.cin_number}</p>` : ''}
+            <div class="watermark">CERTIFIED REPORT</div>
+            <div class="container">
+              <div class="header">
+                <div class="hospital-brand">
+                  <div class="logo-box">
+                    ${(req.hospital_details?.hospital_logo || settings.logo_url) ? `<img src="${req.hospital_details?.hospital_logo || settings.logo_url}" class="logo" />` : ''}
+                  </div>
+                  <div class="hospital-details">
+                    <h1>${req.hospital_details?.hospital_name || settings.hospital_name || 'Medical Diagnostic Center'}</h1>
+                    <p>${req.hospital_details?.address || settings.address || 'Clinical Headquarters'}</p>
+                    <p>${req.hospital_details?.contact_email || settings.contact_email || 'diagnostics@hospital.com'}</p>
+                    ${(req.hospital_details?.cin_number || settings.cin_number) ? `<p>REG: ${req.hospital_details?.cin_number || settings.cin_number}</p>` : ''}
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <div class="label" style="font-size: 9px; color: #94a3b8; font-weight: 800; letter-spacing: 0.1em;">ACCESSION ID</div>
+                  <div class="value" style="font-size: 16px; font-weight: 800;">#${req.id.slice(-8).toUpperCase()}</div>
+                  ${req.lab_number ? `<div class="accession-badge">ACC NO: ${req.lab_number}</div>` : ''}
+                </div>
               </div>
-              <div style="text-align: right;">
-                 <div class="label" style="font-size: 10px;">Diagnostic Report ID</div>
-                 <div class="value" style="font-size: 18px; letter-spacing: -0.02em;">#${req.id.slice(-8).toUpperCase()}</div>
-                 ${req.lab_number ? `<div class="accession-tag">LAB ACC NO: ${req.lab_number}</div>` : ''}
+
+              <div class="report-type">
+                <h2>Clinical Pathology Report</h2>
+              </div>
+
+              <div class="patient-meta">
+                <div class="meta-item">
+                  <p class="label">Patient Profile</p>
+                  <p class="value">${req.patient?.full_name}</p>
+                  <p class="value" style="font-size: 10px; color: #64748b; margin-top: 4px;">ID: ${req.patient?.patient_id}</p>
+                </div>
+                <div class="meta-item">
+                  <p class="label">Investigation</p>
+                  <p class="value" style="color: ${settings.primary_color || '#2563eb'};">${req.test_name}</p>
+                  <p class="value" style="font-size: 10px; color: #64748b; margin-top: 4px;">UNIT: ${req.unit_name || 'GENERAL'}</p>
+                </div>
+                <div class="meta-item">
+                  <p class="label">Timeline</p>
+                  <p class="value">${new Date(req.completed_at || req.updated_at).toLocaleDateString()} ${new Date(req.completed_at || req.updated_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                  <p class="value" style="font-size: 10px; color: #64748b; margin-top: 4px;">COLLECTED: ${new Date(req.requested_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+
+              <div class="comments-box">
+                <span class="comments-label">ANALYTICAL METRICS & CLINICAL NOTES</span>
+                <div class="comments-content">
+                  ${(() => {
+                    if (req.results?.includes('METRIC_DATA:')) {
+                      const parts = req.results.split('METRIC_DATA:');
+                      const notes = parts[0].trim();
+                      let metrics = {};
+                      try { metrics = JSON.parse(parts[1]); } catch(e) {}
+                      
+                      return `
+                        ${notes ? `<div style="margin-bottom: 25px;">${notes}</div>` : ''}
+                        <table class="results-table">
+                          <thead>
+                            <tr>
+                              <th>Investigation Parameter</th>
+                              <th>Result Value</th>
+                              <th>Reference Range</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            ${Object.entries(metrics).map(([k, v]: any) => `
+                              <tr>
+                                <td>${k}</td>
+                                <td><span class="${v?.toLowerCase()?.includes('high') || v?.toLowerCase()?.includes('low') ? 'critical' : ''}">${v}</span></td>
+                                <td style="color: #64748b; font-size: 11px;">${v?.split('(')[1]?.replace(')', '') || '-'}</td>
+                              </tr>
+                            `).join('')}
+                          </tbody>
+                        </table>
+                      `;
+                    }
+                    return req.results || 'Result interpreted as Normal. Refer to digital analysis for quantitative parameters.';
+                  })()}
+                </div>
+              </div>
+
+              <div class="footer">
+                <div style="font-size: 9px; color: #94a3b8; max-width: 320px; line-height: 1.6;">
+                  This report is electronically verified and digitally signed. It is intended for clinical use by medical practitioners. Clinical correlation is recommended.
+                </div>
+                <div class="signature-zone">
+                  <p class="value" style="color: ${settings.primary_color || '#2563eb'}; font-size: 15px;">${req.handled_by_profile?.name || user?.name || 'Chief Pathologist'}</p>
+                  <div class="sig-line">Laboratory Director / Authorized Signatory</div>
+                  <p style="font-size: 8px; color: #94a3b8; margin-top: 4px;">${new Date().toLocaleString()}</p>
+                </div>
               </div>
             </div>
 
-            <div class="report-title">
-              <h2>Diagnostic Laboratory Certificate</h2>
-            </div>
-            
-            <div class="details-grid">
-              <div class="detail-item">
-                <p class="label">Patient Name</p>
-                <p class="value">${req.patient?.full_name || 'N/A'}</p>
-                <p class="value" style="font-size: 12px; color: #94a3b8;">ID: ${req.patient?.patient_id || 'N/A'}</p>
-              </div>
-              <div class="detail-item">
-                <p class="label">Investigation Protocol</p>
-                <p class="value" style="color: #2563eb;">${req.test_name}</p>
-                ${req.unit_name ? `<p class="value" style="font-size: 11px; color: #64748b; font-weight: 700; margin-top: 4px;">UNIT: ${req.unit_name.toUpperCase()}</p>` : ''}
-              </div>
-              <div class="detail-item">
-                <p class="label">Sample Collected</p>
-                <p class="value">${new Date(req.requested_at).toLocaleString()}</p>
-              </div>
-              <div class="detail-item">
-                <p class="label">Authorized Completion</p>
-                <p class="value">${new Date(req.completed_at || req.updated_at).toLocaleString()}</p>
-              </div>
-            </div>
-
-            <div class="results-section">
-              <div class="watermark">CERTIFIED RESULT</div>
-              <p class="label" style="margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">COMMENTS & ANALYTICAL METRICS</p>
-              <div class="results-content">
-                ${(() => {
-                  if (req.results?.includes('METRIC_DATA:')) {
-                    const parts = req.results.split('METRIC_DATA:');
-                    const notes = parts[0].trim();
-                    let metrics = {};
-                    try { metrics = JSON.parse(parts[1]); } catch(e) {}
-                    
-                    return `
-                      <div style="margin-bottom: 30px;">${notes}</div>
-                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #fcfcfc; padding: 25px; border-radius: 12px; border: 1px solid #f1f5f9;">
-                        ${Object.entries(metrics).map(([k, v]) => `
-                          <div style="border-bottom: 1px dotted #e2e8f0; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-end;">
-                            <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">${k}</span>
-                            <span style="font-size: 14px; font-weight: 900; color: #1e293b;">${v}</span>
-                          </div>
-                        `).join('')}
-                      </div>
-                    `;
-                  }
-                  return req.results || 'Investigation successful. Refer to digital attachments for quantitative parameters.';
-                })()}
-              </div>
-            </div>
-
-            <div class="footer">
-              <div style="font-size: 11px; color: #94a3b8; max-width: 300px;">
-                This document is electronically generated and contains clinical data verified by the hospital's pathology department.
-              </div>
-              <div class="signature-box">
-                <p class="value" style="color: #2563eb; margin-bottom: -30px; font-size: 16px;">${req.handled_by_profile?.name || user?.name || 'Authorized Scientist'}</p>
-                <div class="signature-line">Authorized Signatory<br/><span style="font-size: 8px; color: #94a3b8;">Pathology & Laboratory Services</span></div>
-              </div>
-            </div>
-            
             <script>
-              window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 500); }
+              window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 700); }
             </script>
           </body>
         </html>
