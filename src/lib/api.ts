@@ -320,7 +320,7 @@ export const labAPI = {
   }) => api.post<APIResponse<any>>('/lab-services', data),
   updateResult: (data: { 
     request_id: string; 
-    status: string; 
+    status?: string; 
     results?: string; 
     file_url?: string;
     collected_at?: string;
@@ -328,6 +328,10 @@ export const labAPI = {
     max_range?: number;
     is_critical?: boolean;
     unit?: string;
+    test_price?: number;
+    test_name?: string;
+    unit_id?: string;
+    payment_status?: string;
   }) => api.put<APIResponse<any>>('/lab-services', data),
 
   // Lab Matrix & Catalog

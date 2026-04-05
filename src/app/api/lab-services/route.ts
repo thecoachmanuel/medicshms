@@ -98,21 +98,22 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const { error: authError, profile, supabase: supabaseClient } = await withAuth(request, ['Lab Scientist']);
+  const { error: authError, profile, supabase: supabaseClient } = await withAuth(request, ['Lab Scientist', 'Receptionist', 'Admin']);
   if (authError || !supabaseClient) return authError;
 
   try {
     const body = await request.json();
     const { 
       request_id, status, results, file_url, collected_at, 
-      min_range, max_range, is_critical, unit 
+      min_range, max_range, is_critical, unit,
+      test_price, test_name, unit_id, payment_status
     } = body;
 
     const updateData: any = {
-      status,
       handled_by: profile?.id
     };
 
+    if (status) updateData.status = status;
     if (results) updateData.results = results;
     if (file_url) updateData.file_url = file_url;
     if (collected_at) updateData.collected_at = collected_at;
@@ -120,6 +121,10 @@ export async function PUT(request: Request) {
     if (max_range !== undefined) updateData.max_range = max_range;
     if (is_critical !== undefined) updateData.is_critical = is_critical;
     if (unit) updateData.unit = unit;
+    if (test_price !== undefined) updateData.test_price = test_price;
+    if (test_name) updateData.test_name = test_name;
+    if (unit_id) updateData.unit_id = unit_id;
+    if (payment_status) updateData.payment_status = payment_status;
     
     if (status === 'Completed') updateData.completed_at = new Date().toISOString();
 
