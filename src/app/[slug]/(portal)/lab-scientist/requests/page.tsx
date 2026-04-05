@@ -397,10 +397,10 @@ export default function LabRequestsPage() {
                             activeTab === 'Collected' ? "bg-amber-50 border-amber-100 text-amber-600" :
                             "bg-emerald-50 border-emerald-100 text-emerald-600"
                           )}>
-                            {req.patient?.full_name?.[0] || 'P'}
+                            {(req.patient?.full_name || req.patient?.profile?.name)?.[0] || 'P'}
                           </div>
                           <div>
-                            <p className="text-sm font-black text-gray-900 leading-none mb-1.5">{req.patient?.full_name || 'N/A'}</p>
+                            <p className="text-sm font-black text-gray-900 leading-none mb-1.5">{req.patient?.full_name || req.patient?.profile?.name || 'N/A'}</p>
                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none bg-gray-50 px-2 py-1 rounded-md border border-gray-100">#{req.patient?.patient_id || 'ID-REDACTED'}</p>
                           </div>
                         </div>

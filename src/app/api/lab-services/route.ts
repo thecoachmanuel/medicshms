@@ -17,6 +17,8 @@ export async function GET(request: Request) {
         *,
         patient:patients!patient_id(
           id,
+          full_name,
+          patient_id,
           profile:profiles!user_id(name)
         ),
         doctor:doctors!doctor_id(

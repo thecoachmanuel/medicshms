@@ -193,11 +193,11 @@ export default function ReceptionistLabRequestsPage() {
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center font-black text-indigo-600 text-xs shadow-sm">
-                          {req.patient?.full_name?.[0]}
+                          {(req.patient?.full_name || req.patient?.profile?.name)?.[0]}
                         </div>
                         <div>
-                          <p className="text-sm font-black text-gray-900 leading-none mb-1.5">{req.patient?.full_name}</p>
-                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">#{req.patient?.patient_id}</p>
+                          <p className="text-sm font-black text-gray-900 leading-none mb-1.5">{req.patient?.full_name || req.patient?.profile?.name || 'N/A'}</p>
+                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">#{req.patient?.patient_id || 'ID-REDACTED'}</p>
                         </div>
                       </div>
                     </td>
