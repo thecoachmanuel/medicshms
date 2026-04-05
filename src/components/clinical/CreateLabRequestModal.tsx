@@ -7,6 +7,7 @@ import {
   Phone, Mail, Calendar, Loader2 
 } from 'lucide-react';
 import { labAPI, patientsAPI, servicesAPI } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -67,7 +68,8 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
     }
   }, [isOpen, initialPatientId]);
 
-  const userRole = (labAPI as any).user?.role || 'Doctor'; // Standard fallback
+  const { profile } = useAuth();
+  const userRole = profile?.role || 'Doctor';
   const isDoctor = userRole === 'Doctor';
 
   const fetchInitialPatient = async (pid: string) => {
@@ -560,7 +562,7 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
                     <div className="px-6 py-2">
                       <p className="text-[10px] text-indigo-600 font-black uppercase tracking-[0.2em]">Job Valuation</p>
                       <p className="text-xl font-black text-gray-900">
-                        {isDoctor ? 'Multiple Tests Selected' : `₦ ${selectedTests.reduce((acc, t) => acc + (t.test_price || 0), 0).toLocaleString()}`}
+                        ₦ {selectedTests.reduce((acc, t) => acc + (t.test_price || 0), 0).toLocaleString()}
                       </p>
                     </div>
                     <button 

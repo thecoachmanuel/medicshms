@@ -48,7 +48,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const { error: authError, profile, supabase: supabaseClient } = await withAuth(request, ['Doctor', 'Lab Scientist', 'Admin']);
+  const { error: authError, profile, supabase: supabaseClient } = await withAuth(request, ['Doctor', 'Lab Scientist', 'Admin', 'Receptionist']);
   if (authError || !supabaseClient) return authError;
 
   try {
