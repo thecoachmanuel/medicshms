@@ -438,8 +438,16 @@ export default function LabRequestsPage() {
             results={(() => {
               if (printRequest.results?.includes('METRIC_DATA:')) {
                 try {
-                  const metrics = JSON.parse(printRequest.results.split('METRIC_DATA:')[1]);
-                  return Object.entries(metrics).map(([k, v]) => ({ label: k, value: v }));
+                  const rawContent = printRequest.results.split('METRIC_DATA:')[1];
+                  const data = JSON.parse(rawContent);
+                  
+                  // Handle Array structure (new)
+                  if (Array.isArray(data)) {
+                    return data;
+                  }
+                  
+                  // Handle Dictionary structure (old)
+                  return Object.entries(data).map(([k, v]) => ({ label: k, value: v }));
                 } catch(e) { return []; }
               }
               return [];

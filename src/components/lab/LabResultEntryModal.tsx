@@ -348,18 +348,18 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
     try {
       const { labAPI } = await import('@/lib/api');
       
-      // Combine structured data - using a map of labels for the final result output
-      const structuredResults: Record<string, string> = {};
-      fields.forEach(f => {
-        structuredResults[f.label] = fieldValues[f.id] || '';
-      });
+      // Combine structured data - capturing full context (unit, reference range) for persistence
+      const persistentFields = fields.map(f => ({
+        ...f,
+        value: fieldValues[f.id] || ''
+      }));
 
-      const finalResults = `${clinicalNotes}\n\nMETRIC_DATA:${JSON.stringify(structuredResults)}`;
+      const finalResults = `${clinicalNotes}\n\nMETRIC_DATA:${JSON.stringify(persistentFields)}`;
       
       await labAPI.updateResult({
         request_id: request.id || request._id,
         status: status,
-        test_name: request.test_name, // Capture refined protocol name
+        test_name: request.test_name,
         results: finalResults,
         is_critical: isCritical,
         file_url: fileUrl || undefined,
@@ -751,7 +751,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
         <LabResultReport 
           request={request}
           patient={request?.patient}
-          results={fields}
+          results={fields.map(f => ({ ...f, value: fieldValues[f.id] }))}
           scientistName={request?.handled_by_profile?.name || user?.name || 'Authorized Scientist'}
           comments={clinicalNotes}
         />
