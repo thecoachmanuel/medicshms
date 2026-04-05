@@ -53,6 +53,7 @@ function LabResultsContent() {
   });
 
   const handlePrint = (req: any) => {
+    console.log('💎 Authorizing Print Preview for:', req?.test_name);
     if (!req) {
       toast.error('Invalid request data for certificate');
       return;
@@ -185,7 +186,7 @@ function LabResultsContent() {
                           e.stopPropagation();
                           handlePrint(req);
                         }}
-                        className="w-12 h-12 rounded-xl bg-gray-900 flex items-center justify-center text-white hover:bg-emerald-600 transition-all shadow-lg active:scale-95"
+                        className="relative z-20 w-12 h-12 rounded-xl bg-gray-900 flex items-center justify-center text-white hover:bg-emerald-600 transition-all shadow-lg active:scale-95 cursor-pointer"
                         title="Preview & Print Certificate"
                       >
                         <Printer className="w-5 h-5" />
