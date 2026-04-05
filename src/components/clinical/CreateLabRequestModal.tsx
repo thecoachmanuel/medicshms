@@ -68,8 +68,8 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
     }
   }, [isOpen, initialPatientId]);
 
-  const { profile } = useAuth();
-  const userRole = profile?.role || 'Doctor';
+  const { user } = useAuth();
+  const userRole = user?.role || 'Doctor';
   const isDoctor = userRole === 'Doctor';
 
   const fetchInitialPatient = async (pid: string) => {
