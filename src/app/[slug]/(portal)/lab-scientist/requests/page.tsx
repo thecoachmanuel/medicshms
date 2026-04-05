@@ -356,20 +356,20 @@ export default function LabRequestsPage() {
               </div>
 
               <div class="report-type">
-                <h2>Clinical Pathology Report</h2>
+                <h2>Laboratory Report</h2>
               </div>
 
               <div class="patient-meta">
                 <div class="meta-item">
-                  <p class="label">Patient Profile</p>
+                  <p class="label">Patient Name</p>
                   <p class="value">${req.patient?.full_name}</p>
                   <p class="value" style="font-size: 10px; color: #64748b; margin-top: 4px;">
-                    ${req.patient_age || '-'} / ${req.patient_gender || '-'}
+                    ID: ${req.patient?.patient_id || '-'}
                   </p>
                 </div>
                 <div class="meta-item">
-                  <p class="label">Investigation</p>
-                  <p class="value" style="color: ${settings.primary_color || '#2563eb'};">${req.test_name}</p>
+                  <p class="label">Demographics</p>
+                  <p class="value">${req.patient_age || 'N/A'} • ${req.patient_gender || 'N/A'}</p>
                   <p class="value" style="font-size: 10px; color: #64748b; margin-top: 4px;">
                     REFERRING: ${req.requested_by_name || 'HOSPITAL CLINIC'}
                   </p>
@@ -393,8 +393,8 @@ export default function LabRequestsPage() {
                       try { metrics = JSON.parse(parts[1]); } catch(e) {}
                       
                       return `
-                        ${summary ? `<div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #e2e8f0;"><strong>Clinical Summary:</strong><br/>${summary}</div>` : ''}
-                        ${notes ? `<div style="margin-bottom: 25px;">${notes}</div>` : ''}
+                        ${summary ? `<div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed #e2e8f0; font-size: 12px;"><strong>Clinical Summary:</strong><br/>${summary}</div>` : ''}
+                        ${notes ? `<div style="margin-bottom: 20px; font-size: 12px;">${notes}</div>` : ''}
                         <table class="results-table">
                           <thead>
                             <tr>
@@ -416,8 +416,8 @@ export default function LabRequestsPage() {
                       `;
                     }
                     return `
-                      ${summary ? `<div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #e2e8f0;"><strong>Clinical Summary:</strong><br/>${summary}</div>` : ''}
-                      ${req.results || 'Result interpreted as Normal. Refer to digital analysis for quantitative parameters.'}
+                      ${summary ? `<div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed #e2e8f0; font-size: 12px;"><strong>Clinical Summary:</strong><br/>${summary}</div>` : ''}
+                      <div style="font-size: 12px;">${req.results || 'Result interpreted as Normal. Refer to digital analysis for quantitative parameters.'}</div>
                     `;
                   })()}
                 </div>
@@ -428,8 +428,8 @@ export default function LabRequestsPage() {
                   This report is electronically verified and digitally signed. It is intended for clinical use by medical practitioners. Clinical correlation is recommended.
                 </div>
                 <div class="signature-zone">
-                  <p class="value" style="color: ${settings.primary_color || '#2563eb'}; font-size: 15px;">${req.handled_by_profile?.name || user?.name || 'Chief Pathologist'}</p>
-                  <div class="sig-line">Laboratory Director / Authorized Signatory</div>
+                  <p class="value" style="color: ${settings.primary_color || '#2563eb'}; font-size: 14px;">${req.handled_by_profile?.name || user?.name || 'Chief Lab Scientist'}</p>
+                  <div class="sig-line">Lab. Scientist / Authorized Signatory</div>
                   <p style="font-size: 8px; color: #94a3b8; margin-top: 4px;">${new Date().toLocaleString()}</p>
                 </div>
               </div>
