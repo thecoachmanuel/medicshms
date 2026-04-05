@@ -255,7 +255,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-y-0 right-0 left-0 lg:left-64 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-xl" onClick={onClose}></div>
       <div className="relative bg-white/95 backdrop-blur-md rounded-[3rem] max-w-4xl w-full p-10 shadow-[0_32px_128px_rgba(30,41,59,0.15)] overflow-hidden border border-white/40 max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-300">
         

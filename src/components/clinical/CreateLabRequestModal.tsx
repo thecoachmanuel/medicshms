@@ -215,7 +215,7 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-y-0 right-0 left-0 lg:left-64 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-xl" onClick={onClose}></div>
       <div className="relative bg-white/95 backdrop-blur-md rounded-[3rem] max-w-2xl w-full shadow-[0_32px_128px_rgba(30,41,59,0.15)] border border-white/40 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-300">
         
