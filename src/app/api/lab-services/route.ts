@@ -67,7 +67,7 @@ export async function POST(request: Request) {
       test_name,
       clinical_notes,
       status: 'Pending',
-      payment_status: 'Unpaid',
+      payment_status: 'Pending',
       unit_id: unit_id || null,
       specimen_type: specimen_type || 'Venous Blood',
       priority: priority || 'Routine',
