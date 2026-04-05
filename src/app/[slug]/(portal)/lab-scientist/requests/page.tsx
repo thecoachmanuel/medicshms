@@ -172,104 +172,102 @@ export default function LabRequestsPage() {
               body { 
                 font-family: 'Plus Jakarta Sans', sans-serif; 
                 margin: 0; 
-                padding: 40px; 
+                padding: 30px; 
                 color: #0f172a; 
                 background: #fff;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
               }
               
-              .container { max-width: 800px; margin: 0 auto; min-height: 1000px; display: flex; flex-direction: column; }
+              .container { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; }
               
               .header { 
                 display: flex; 
                 justify-content: space-between; 
                 align-items: center; 
-                border-bottom: 2px solid ${settings.primary_color || '#2563eb'}20; 
-                padding-bottom: 20px; 
-                margin-bottom: 20px; 
+                border-bottom: 1.5px solid ${settings.primary_color || '#2563eb'}20; 
+                padding-bottom: 15px; 
+                margin-bottom: 15px; 
               }
               
-              .hospital-brand { display: flex; align-items: center; gap: 15px; }
+              .hospital-brand { display: flex; align-items: center; gap: 12px; }
               .logo-box { 
-                width: 60px; 
-                height: 60px; 
-                background: ${settings.primary_color || '#2563eb'}08; 
-                border-radius: 12px; 
+                width: 50px; 
+                height: 50px; 
+                background: ${settings.primary_color || '#2563eb'}05; 
+                border-radius: 10px; 
                 display: flex; 
                 align-items: center; 
                 justify-content: center;
-                border: 1px solid ${settings.primary_color || '#2563eb'}15;
+                border: 0.5px solid ${settings.primary_color || '#2563eb'}10;
               }
-              .logo { max-height: 40px; max-width: 40px; object-fit: contain; }
+              .logo { max-height: 34px; max-width: 34px; object-fit: contain; }
               
               .hospital-details h1 { 
-                font-size: 20px; 
+                font-size: 18px; 
                 font-weight: 800; 
                 color: #0f172a; 
                 margin: 0; 
-                letter-spacing: -0.02em; 
+                letter-spacing: -0.01em; 
                 text-transform: uppercase;
               }
-              .hospital-details p { font-size: 10px; color: #64748b; margin: 2px 0; font-weight: 600; }
+              .hospital-details p { font-size: 9px; color: #64748b; margin: 1px 0; font-weight: 600; }
               
               .report-type { 
                 text-align: center; 
-                margin-bottom: 20px; 
-                position: relative;
+                margin-bottom: 15px; 
               }
               .report-type h2 { 
-                font-size: 13px; 
+                font-size: 11px; 
                 font-weight: 800; 
                 text-transform: uppercase; 
-                letter-spacing: 0.15em; 
+                letter-spacing: 0.1em; 
                 color: ${settings.primary_color || '#2563eb'}; 
                 background: ${settings.primary_color || '#2563eb'}08; 
                 display: inline-block; 
-                padding: 6px 20px; 
+                padding: 4px 16px; 
                 border-radius: 99px;
               }
               
               .patient-meta { 
                 display: grid; 
                 grid-template-columns: repeat(3, 1fr); 
-                gap: 15px; 
+                gap: 12px; 
                 background: #f8fafc; 
-                padding: 16px; 
-                border-radius: 16px; 
-                margin-bottom: 20px;
-                border: 1px solid #f1f5f9;
+                padding: 12px; 
+                border-radius: 12px; 
+                margin-bottom: 15px;
+                border: 0.5px solid #f1f5f9;
               }
-              .meta-item .label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; font-weight: 800; margin-bottom: 4px; }
-              .meta-item .value { font-size: 12px; font-weight: 700; color: #1e293b; }
+              .meta-item .label { font-size: 7.5px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; font-weight: 800; margin-bottom: 3px; }
+              .meta-item .value { font-size: 11px; font-weight: 700; color: #1e293b; }
               
-              .results-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+              .results-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
               .results-table th { 
                 text-align: left; 
-                padding: 10px 14px; 
+                padding: 8px 12px; 
                 background: #f1f5f9; 
-                font-size: 9px; 
+                font-size: 8.5px; 
                 font-weight: 800; 
                 text-transform: uppercase; 
                 color: #64748b;
-                letter-spacing: 0.05em;
               }
               .results-table td { 
-                padding: 10px 14px; 
+                padding: 8px 12px; 
                 border-bottom: 1px solid #f1f5f9; 
-                font-size: 12px;
+                font-size: 11px;
                 font-weight: 600;
               }
               
               .critical { color: #e11d48; font-weight: 800; }
-              .unit-tag { font-size: 9px; opacity: 0.6; margin-left: 4px; }
+              .unit-tag { font-size: 8px; opacity: 0.6; margin-left: 2px; }
               
               .comments-box { 
                 background: #fff; 
-                border: 2px solid ${settings.primary_color || '#2563eb'}10; 
-                border-radius: 16px; 
-                padding: 20px; 
-                margin-bottom: 25px;
+                border: 1.5px solid ${settings.primary_color || '#2563eb'}10; 
+                border-radius: 12px; 
+                padding: 15px; 
+                margin-bottom: 20px;
                 position: relative;
               }
               .comments-label { 
@@ -284,34 +282,33 @@ export default function LabRequestsPage() {
                 text-transform: uppercase;
                 letter-spacing: 0.1em;
               }
-              .comments-content { font-size: 13px; line-height: 1.7; color: #334155; white-space: pre-wrap; }
+              .comments-content { font-size: 11.5px; line-height: 1.5; color: #334155; white-space: pre-wrap; }
               
               .accession-badge { 
                 display: inline-block; 
-                padding: 4px 10px; 
+                padding: 3px 8px; 
                 background: ${settings.primary_color || '#2563eb'}10; 
                 color: ${settings.primary_color || '#2563eb'}; 
-                border-radius: 6px; 
-                font-size: 10px; 
+                border-radius: 4px; 
+                font-size: 9px; 
                 font-weight: 800; 
-                margin-top: 5px;
+                margin-top: 3px;
               }
               
               .footer { 
-                margin-top: auto; 
-                padding-top: 40px; 
-                border-top: 2px solid #f8fafc; 
+                margin-top: 20px; 
+                padding-top: 15px; 
+                border-top: 1px solid #f8fafc; 
                 display: flex; 
                 justify-content: space-between; 
                 align-items: flex-end; 
               }
-              .signature-zone { text-align: center; width: 220px; }
-              .sig-img { height: 50px; margin-bottom: 10px; opacity: 0.8; }
+              .signature-zone { text-align: center; width: 180px; }
               .sig-line { 
-                border-top: 1.5px solid #e2e8f0; 
-                margin-top: 8px; 
-                padding-top: 8px; 
-                font-size: 10px; 
+                border-top: 1px solid #e2e8f0; 
+                margin-top: 5px; 
+                padding-top: 5px; 
+                font-size: 9px; 
                 font-weight: 700; 
                 color: #64748b; 
                 text-transform: uppercase; 

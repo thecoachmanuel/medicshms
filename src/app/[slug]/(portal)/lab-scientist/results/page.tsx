@@ -4,21 +4,10 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { labAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { 
-  Microscope, 
-  Search, 
-  Printer, 
-  Eye, 
-  Calendar, 
-  Filter, 
-  ArrowRight,
-  ClipboardCheck,
-  Activity,
-  User,
-  FlaskConical
-} from 'lucide-react';
+import { Microscope, Search, Printer, Eye, Calendar, Filter, ArrowRight, ClipboardCheck, Activity, User, FlaskConical, CheckSquare, Square } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import LabReportPreviewModal from '@/components/lab/LabReportPreviewModal';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -30,6 +19,8 @@ function LabResultsContent() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [previewRequests, setPreviewRequests] = useState<any[] | null>(null);
 
   useEffect(() => {
     fetchVerifiedResults();
@@ -61,103 +52,28 @@ function LabResultsContent() {
     return matchesSearch;
   });
 
-  const handlePrint = async (req: any) => {
-    const { siteSettingsAPI } = await import('@/lib/api');
-    const settingsRes = await siteSettingsAPI.get() as any;
-    const settings = settingsRes.data || {};
+  const handlePrint = (req: any) => {
+    setPreviewRequests([req]);
+  };
 
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Lab Report - ${req.patient?.full_name}</title>
-            <style>
-              @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
-              body { font-family: 'Inter', sans-serif; padding: 50px; color: #1e293b; max-width: 900px; margin: 0 auto; background: #fff; }
-              .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 4px solid #f1f5f9; padding-bottom: 30px; margin-bottom: 40px; }
-              .hospital-info h1 { font-size: 28px; font-weight: 900; color: #0f172a; margin: 0; text-transform: uppercase; letter-spacing: -0.02em; }
-              .hospital-info p { font-size: 13px; color: #64748b; margin: 4px 0; font-weight: 500; }
-              .report-title { text-align: center; margin-bottom: 40px; }
-              .report-title h2 { font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #1e293b; background: #f8fafc; display: inline-block; padding: 10px 30px; border-radius: 12px; }
-              .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px; }
-              .detail-item { border-left: 3px solid #e2e8f0; padding-left: 20px; }
-              .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; font-weight: 700; margin-bottom: 4px; }
-              .value { font-size: 15px; font-weight: 600; color: #1e293b; }
-              .results-section { background: #fff; border: 2px solid #f1f5f9; border-radius: 20px; padding: 40px; margin-bottom: 40px; min-height: 200px; position: relative; }
-              .results-content { line-height: 1.8; font-size: 15px; white-space: pre-wrap; }
-              .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 80px; font-weight: 900; color: #f1f5f9; z-index: -1; pointer-events: none; white-space: nowrap; }
-              .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 60px; padding-top: 30px; border-top: 2px solid #f1f5f9; }
-              .signature-box { text-align: center; width: 200px; }
-              .signature-line { border-top: 2px solid #e2e8f0; margin-top: 40px; padding-top: 10px; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; }
-              @media print { body { padding: 20px; } .no-print { display: none; } }
-            </style>
-          </head>
-          <body>
-            <div class="header">
-              <div class="hospital-info">
-                 ${settings.hospital_logo ? `<img src="${settings.hospital_logo}" style="height: 60px; margin-bottom: 15px;" />` : ''}
-                 <h1>${settings.hospital_name || 'Laboratory Diagnostic Hub'}</h1>
-                 <p>${settings.address || 'Clinic HQ Sector 4'}</p>
-                 <p>Contact: ${settings.contact_email || 'diagnostics@hospital.com'}</p>
-                 ${settings.cin_number ? `<p>CIN: ${settings.cin_number}</p>` : ''}
-              </div>
-              <div style="text-align: right;">
-                 <div class="value" style="font-size: 12px; color: #64748b;">SPECIMEN #</div>
-                 <div class="value" style="font-size: 18px;">#${req.id.slice(-8).toUpperCase()}</div>
-              </div>
-            </div>
-
-            <div class="report-title">
-              <h2>Verified Laboratory Certificate</h2>
-            </div>
-            
-            <div class="details-grid">
-              <div class="detail-item">
-                <p class="label">Patient Profile</p>
-                <p class="value">${req.patient?.full_name || 'N/A'}</p>
-                <p class="value" style="font-size: 12px; color: #94a3b8;">ID: ${req.patient?.patient_id || 'N/A'}</p>
-              </div>
-              <div class="detail-item">
-                <p class="label">Investigation Protocol</p>
-                <p class="value" style="color: #059669;">${req.test_name}</p>
-              </div>
-              <div class="detail-item">
-                <p class="label">Inception Date</p>
-                <p class="value">${new Date(req.requested_at).toLocaleString()}</p>
-              </div>
-              <div class="detail-item">
-                <p class="label">Verification Date</p>
-                <p class="value">${new Date(req.completed_at || req.updated_at).toLocaleString()}</p>
-              </div>
-            </div>
-
-            <div class="results-section">
-              <div class="watermark">LAB VERIFIED</div>
-              <p class="label" style="margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">Clinical Observations & Parameters</p>
-              <div class="results-content">${req.results || 'No interpretive data recorded for this specimen.'}</div>
-            </div>
-
-            <div class="footer">
-              <div style="font-size: 11px; color: #94a3b8; max-width: 300px;">
-                This laboratory investigation has been verified and authorized by the department of clinical pathology. Verified using standardized diagnostic protocols.
-              </div>
-              <div class="signature-box">
-                <div class="signature-line">Authorized Scientist</div>
-                <p style="font-size: 14px; font-weight: 900; color: #1e293b; margin-top: 5px;">${req.handled_by_profile?.name || user?.name || 'Medical Scientist'}</p>
-              </div>
-            </div>
-
-            <script>
-              window.onload = () => {
-                window.print();
-              }
-            </script>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
+  const handleBulkPrint = () => {
+    const selected = results.filter(r => selectedIds.includes(r.id));
+    if (selected.length === 0) return;
+    
+    // Check if multiple patients are selected
+    const patientIds = new Set(selected.map(r => r.patient?.id));
+    if (patientIds.size > 1) {
+      toast.error('Please select results for a single patient to consolidate.');
+      return;
     }
+    
+    setPreviewRequests(selected);
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
   };
 
   return (
@@ -224,9 +140,23 @@ function LabResultsContent() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {filteredResults.map(req => (
-                <div key={req.id} className="group bg-white border border-gray-100 rounded-3xl p-6 hover:shadow-2xl hover:shadow-emerald-500/5 transition-all duration-500 relative overflow-hidden">
-                   <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50/50 rounded-bl-[4rem] group-hover:bg-emerald-600 transition-colors duration-500 flex items-center justify-center -mr-4 -mt-4 pb-4 pl-4">
-                      <Microscope className="w-6 h-6 text-emerald-200 group-hover:text-white transition-colors" />
+                <div 
+                  key={req.id} 
+                  className={cn(
+                    "group bg-white border rounded-3xl p-6 hover:shadow-2xl hover:shadow-emerald-500/5 transition-all duration-500 relative overflow-hidden cursor-pointer",
+                    selectedIds.includes(req.id) ? "border-emerald-500 bg-emerald-50/10 shadow-xl" : "border-gray-100"
+                  )}
+                  onClick={() => toggleSelect(req.id)}
+                >
+                   <div className={cn(
+                     "absolute top-0 right-0 w-24 h-24 rounded-bl-[4rem] transition-colors duration-500 flex items-center justify-center -mr-4 -mt-4 pb-4 pl-4",
+                     selectedIds.includes(req.id) ? "bg-emerald-600" : "bg-emerald-50/50 group-hover:bg-emerald-600"
+                   )}>
+                      {selectedIds.includes(req.id) ? (
+                        <CheckSquare className="w-6 h-6 text-white" />
+                      ) : (
+                        <Microscope className="w-6 h-6 text-emerald-200 group-hover:text-white transition-colors" />
+                      )}
                    </div>
                    
                    <div className="mb-6">
@@ -246,9 +176,12 @@ function LabResultsContent() {
                          <p className="text-xs font-bold text-gray-700">{new Date(req.completed_at || req.updated_at).toLocaleDateString()}</p>
                       </div>
                       <button 
-                        onClick={() => handlePrint(req)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePrint(req);
+                        }}
                         className="w-12 h-12 rounded-xl bg-gray-900 flex items-center justify-center text-white hover:bg-emerald-600 transition-all shadow-lg active:scale-95"
-                        title="Print Certified Certificate"
+                        title="Preview & Print Certificate"
                       >
                         <Printer className="w-5 h-5" />
                       </button>
@@ -259,6 +192,41 @@ function LabResultsContent() {
           )}
         </div>
       </div>
+      {/* Floating Action Bar */}
+      {selectedIds.length > 0 && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-10 duration-500">
+           <div className="bg-gray-900/90 backdrop-blur-2xl px-8 py-5 rounded-[2.5rem] border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center gap-8">
+              <div className="flex flex-col">
+                <span className="text-emerald-400 text-[10px] font-black uppercase tracking-widest">Protocol Selection</span>
+                <span className="text-white font-black text-sm">{selectedIds.length} Result(s) Prepared</span>
+              </div>
+              <div className="w-px h-10 bg-gray-700" />
+              <div className="flex items-center gap-3">
+                 <button 
+                   onClick={() => setSelectedIds([])}
+                   className="px-6 py-3 rounded-2xl text-xs font-black text-gray-400 hover:text-white transition-colors uppercase tracking-widest"
+                 >
+                   Clear Selection
+                 </button>
+                 <button 
+                   onClick={handleBulkPrint}
+                   className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-emerald-900/20"
+                 >
+                   <Printer className="w-4 h-4" />
+                   Generate Consolidated Report
+                 </button>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* Preview Modal */}
+      {previewRequests && (
+        <LabReportPreviewModal 
+          requests={previewRequests}
+          onClose={() => setPreviewRequests(null)}
+        />
+      )}
     </div>
   );
 }

@@ -227,7 +227,23 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
         try {
           const parts = request.results.split('METRIC_DATA:');
           setClinicalNotes(parts[0].trim());
-          setFieldValues(JSON.parse(parts[1]));
+          const data = JSON.parse(parts[1]);
+          
+          if (Array.isArray(data)) {
+            // New format: Array of metric objects
+            const values: Record<string, string> = {};
+            // We'll need to match by label since IDs are transient per session
+            // This is a bit tricky, but usually the fields will be initialized from a template first
+            // or the existing field logic will handle it if we populate fieldValues correctly.
+            data.forEach((m: any) => {
+              // We'll store by label for the component to pick up if it can
+              values[m.label] = m.value;
+            });
+            setFieldValues(values);
+          } else {
+            // Legacy format: Object { "label": "value" }
+            setFieldValues(data);
+          }
         } catch (e) {
           setClinicalNotes(request.results);
         }
@@ -346,11 +362,13 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
       const settingsRes = await siteSettingsAPI.get({ slug }) as any;
       const settings = settingsRes.data || {};
       
-      // Combine structured data - using a map of labels for the final result output
-      const structuredResults: Record<string, string> = {};
-      fields.forEach(f => {
-        structuredResults[f.label] = fieldValues[f.id] || '';
-      });
+      // Capture structured metrics including metadata for the report
+      const structuredResults = fields.map(f => ({
+        label: f.label,
+        value: fieldValues[f.id] || '',
+        unit: f.unit || '',
+        referenceRange: f.referenceRange || ''
+      }));
 
       const finalResults = `${clinicalNotes}\n\nMETRIC_DATA:${JSON.stringify(structuredResults)}`;
       
