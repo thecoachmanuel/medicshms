@@ -52,7 +52,8 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
     priority: 'Routine' as 'Routine' | 'Urgent' | 'Stat',
     patient_preparation: '',
     collection_instructions: '',
-    clinical_notes: ''
+    clinical_notes: '',
+    lab_number: ''
   });
 
   useEffect(() => {
@@ -110,7 +111,8 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
       priority: 'Routine',
       patient_preparation: '',
       collection_instructions: '',
-      clinical_notes: ''
+      clinical_notes: '',
+      lab_number: ''
     });
   };
 
@@ -177,6 +179,13 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
     if (!selectedPatient || selectedTests.length === 0) {
       return toast.error('Selection required');
     }
+
+    // Double check: all new tests must have a price
+    const missingPrice = selectedTests.find(t => t.is_new && (!t.test_price || t.test_price <= 0));
+    if (missingPrice) {
+      return toast.error(`Please provide a price for manual investigation: ${missingPrice.test_name}`);
+    }
+
     setLoading(true);
     try {
       const promises = selectedTests.map(async (test) => {
@@ -380,204 +389,234 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
           {/* STAGE: CONFIGURE */}
           {stage === 'Configure' && (
             <div className="space-y-8 animate-in fade-in slide-in-from-right-4">
-              {/* Using a Fragment to group Config siblings and prevent parentage issues */}
-              <>
-                 {/* Selection Summary */}
-                 <div className="p-6 bg-blue-50/50 rounded-[2rem] border border-blue-100 flex items-center justify-between shadow-sm mr-1">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-white border border-blue-100 flex items-center justify-center font-black text-blue-600 text-xs shadow-sm">
-                        {selectedPatient?.fullName?.[0]}
-                      </div>
-                      <div>
-                        <p className="font-black text-gray-900 leading-none">{selectedPatient?.fullName}</p>
-                        <p className="text-[9px] text-blue-500 font-bold uppercase tracking-widest mt-1">Ready for assignment</p>
-                      </div>
-                    </div>
-                    <button onClick={() => setStage('Discovery')} className="text-[10px] font-black uppercase text-blue-600 hover:underline" type="button">Change Subject</button>
-                 </div>
-
-                  <div className="space-y-4 col-span-2">
-                    <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1 flex justify-between">
-                      Protocol Investigation
-                      {isNewTest && <span className="text-amber-500 animate-pulse">Auto-Indexed Mode</span>}
-                    </label>
-                    <div className="relative">
-                      <div className="relative group">
-                        <TestTubes className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
-                        <input 
-                          placeholder="Search or Type new test..."
-                          className="w-full pl-14 pr-32 py-5 bg-gray-50/50 border border-gray-100 rounded-[1.5rem] focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-black text-gray-900 shadow-inner"
-                          value={testSearchTerm}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setTestSearchTerm(val);
-                            const match = labCatalog.find(c => c.test_name.toLowerCase() === val.toLowerCase());
-                            setIsNewTest(!match && val.length > 0);
-                            setShowCatalogSuggestions(val.length > 0);
-                          }}
-                          onFocus={() => setShowCatalogSuggestions(testSearchTerm.length > 0)}
-                        />
-                        <button 
-                          onClick={() => {
-                            if (testSearchTerm) {
-                              const match = labCatalog.find(c => c.test_name.toLowerCase() === testSearchTerm.toLowerCase());
-                              handleAddTest({
-                                test_name: match?.test_name || testSearchTerm,
-                                test_price: match?.price || 0,
-                                unit_id: match?.unit_id || null,
-                                is_new: !match
-                              });
-                            }
-                          }}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg active:scale-95"
-                          type="button"
-                        >
-                          Add Test
-                        </button>
-                      </div>
-                      
-                      {showCatalogSuggestions && (
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-[1.5rem] shadow-2xl border border-gray-100 overflow-hidden z-[80] animate-in fade-in slide-in-from-top-2">
-                          <div className="max-h-60 overflow-y-auto no-scrollbar">
-                            {labCatalog
-                              .filter(c => c.test_name.toLowerCase().includes(testSearchTerm.toLowerCase()))
-                              .map(c => (
-                                <button 
-                                  key={c.id}
-                                  onClick={() => {
-                                    handleAddTest({
-                                      test_name: c.test_name,
-                                      test_price: c.price,
-                                      unit_id: c.unit_id,
-                                      is_new: false
-                                    });
-                                  }}
-                                  className="w-full flex items-center justify-between p-5 hover:bg-blue-50 transition-colors text-left border-b border-gray-50 last:border-0"
-                                  type="button"
-                                >
-                                  <div>
-                                    <p className="font-black text-gray-900 text-sm">{c.test_name}</p>
-                                    <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest leading-none mt-1">{c.unit?.name || 'General'}</p>
-                                  </div>
-                                  <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-widest group-hover:bg-white text-right">₦{c.price.toLocaleString()}</span>
-                                </button>
-                              ))}
-                            
-                            {isNewTest && (
-                                <button 
-                                  onClick={() => handleAddTest({ test_name: testSearchTerm, test_price: 0, unit_id: null, is_new: true })}
-                                  className="w-full p-4 bg-amber-50/50 border-t border-amber-100 hover:bg-amber-100 transition-colors"
-                                  type="button"
-                                >
-                                   <p className="text-[9px] font-black text-amber-700 uppercase tracking-widest text-center flex items-center justify-center gap-2">
-                                     <Plus className="w-3 h-3" /> Add Research Investigation: "{testSearchTerm}"
-                                   </p>
-                                 </button>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+              <div className="p-6 bg-blue-50/50 rounded-[2rem] border border-blue-100 flex items-center justify-between shadow-sm mr-1">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-white border border-blue-100 flex items-center justify-center font-black text-blue-600 text-xs shadow-sm">
+                    {selectedPatient?.fullName?.[0]}
                   </div>
+                  <div>
+                    <p className="font-black text-gray-900 leading-none">{selectedPatient?.fullName}</p>
+                    <p className="text-[9px] text-blue-500 font-bold uppercase tracking-widest mt-1">Ready for assignment</p>
+                  </div>
+                </div>
+                <button onClick={() => setStage('Discovery')} className="text-[10px] font-black uppercase text-blue-600 hover:underline" type="button">Change Subject</button>
+              </div>
 
-                  {/* Batch Cart UI */}
-                  {selectedTests.length > 0 && (
-                    <div className="space-y-3 p-6 bg-gray-50/50 rounded-[2rem] border border-dashed border-gray-200">
-                      <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Investigation Batch ({selectedTests.length})</p>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedTests.map(t => (
-                          <div key={t.test_name} className="flex items-center gap-2 pl-4 pr-2 py-2 bg-white border border-gray-100 rounded-xl shadow-sm group">
-                            <span className="text-xs font-black text-gray-700">{t.test_name}</span>
-                            <button onClick={() => handleRemoveTest(t.test_name)} className="p-1 hover:bg-rose-50 rounded-lg text-gray-300 hover:text-rose-500 transition-all" type="button">
-                              <X className="w-3.5 h-3.5" />
+              <div className="space-y-4 col-span-2">
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1 flex justify-between">
+                  Protocol Investigation
+                  {isNewTest && <span className="text-amber-500 animate-pulse">Auto-Indexed Mode</span>}
+                </label>
+                <div className="relative">
+                  <div className="relative group">
+                    <TestTubes className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+                    <input 
+                      placeholder="Search or Type new test..."
+                      className="w-full pl-14 pr-48 py-5 bg-gray-50/50 border border-gray-100 rounded-[1.5rem] focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-black text-gray-900 shadow-inner"
+                      value={testSearchTerm}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setTestSearchTerm(val);
+                        const match = labCatalog.find(c => c.test_name.toLowerCase() === val.toLowerCase());
+                        setIsNewTest(!match && val.length > 0);
+                        setShowCatalogSuggestions(val.length > 0);
+                      }}
+                      onFocus={() => setShowCatalogSuggestions(testSearchTerm.length > 0)}
+                    />
+                    {isNewTest && (
+                      <div className="absolute right-32 top-1/2 -translate-y-1/2 flex items-center gap-2 border-l border-amber-100 pl-4 h-8">
+                        <span className="text-[9px] font-black text-amber-600 uppercase tracking-tighter">₦</span>
+                        <input 
+                          type="number" 
+                          placeholder="Fee"
+                          required
+                          className="w-16 bg-transparent outline-none text-[10px] font-black text-emerald-600 placeholder:text-amber-300"
+                          id="manual-test-price"
+                        />
+                      </div>
+                    )}
+                    <button 
+                      onClick={() => {
+                        if (testSearchTerm) {
+                          const match = labCatalog.find(c => c.test_name.toLowerCase() === testSearchTerm.toLowerCase());
+                          const manualPriceInput = document.getElementById('manual-test-price') as HTMLInputElement;
+                          const manualPrice = manualPriceInput ? parseFloat(manualPriceInput.value) : 0;
+                          
+                          if (!match && (!manualPrice || manualPrice <= 0)) {
+                            return toast.error('A diagnostic fee is required for new investigations');
+                          }
+
+                          handleAddTest({
+                            test_name: match?.test_name || testSearchTerm,
+                            test_price: match?.price || manualPrice,
+                            unit_id: match?.unit_id || null,
+                            is_new: !match
+                          });
+                        }
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95"
+                      type="button"
+                    >
+                      Add Test
+                    </button>
+                  </div>
+                  
+                  {showCatalogSuggestions && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-[1.5rem] shadow-2xl border border-gray-100 overflow-hidden z-[80] animate-in fade-in slide-in-from-top-2">
+                      <div className="max-h-60 overflow-y-auto no-scrollbar">
+                        {labCatalog
+                          .filter(c => c.test_name.toLowerCase().includes(testSearchTerm.toLowerCase()))
+                          .map(c => (
+                            <button 
+                              key={c.id}
+                              onClick={() => {
+                                handleAddTest({
+                                  test_name: c.test_name,
+                                  test_price: c.price,
+                                  unit_id: c.unit_id,
+                                  is_new: false
+                                });
+                              }}
+                              className="w-full flex items-center justify-between p-5 hover:bg-blue-50 transition-colors text-left border-b border-gray-50 last:border-0"
+                              type="button"
+                            >
+                              <div>
+                                <p className="font-black text-gray-900 text-sm">{c.test_name}</p>
+                                <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest leading-none mt-1">{c.unit?.name || 'General'}</p>
+                              </div>
+                              <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-widest group-hover:bg-white text-right">₦{c.price.toLocaleString()}</span>
                             </button>
-                          </div>
-                        ))}
+                          ))}
+                        
+                        {isNewTest && (
+                            <button 
+                              onClick={() => {
+                                const manualPriceInput = document.getElementById('manual-test-price') as HTMLInputElement;
+                                const manualPrice = manualPriceInput ? parseFloat(manualPriceInput.value) : 0;
+                                if (!manualPrice || manualPrice <= 0) return toast.error('Diagnostic fee required');
+                                handleAddTest({ test_name: testSearchTerm, test_price: manualPrice, unit_id: null, is_new: true });
+                              }}
+                              className="w-full p-4 bg-amber-50/50 border-t border-amber-100 hover:bg-amber-100 transition-colors"
+                              type="button"
+                            >
+                               <p className="text-[9px] font-black text-amber-700 uppercase tracking-widest text-center flex items-center justify-center gap-2">
+                                 <Plus className="w-3 h-3" /> Add Research Investigation: "{testSearchTerm}"
+                               </p>
+                             </button>
+                        )}
                       </div>
                     </div>
                   )}
+                </div>
+              </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Priority Level</label>
-                    <div className="flex p-1 bg-gray-50 rounded-2xl border border-gray-100 group">
-                      {(['Routine', 'Urgent', 'Stat'] as const).map(p => (
-                        <button 
-                          key={p}
-                          onClick={() => setRequestData({...requestData, priority: p})}
-                          type="button"
-                          className={cn(
-                            "flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all",
-                            requestData.priority === p ? 
-                              (p === 'Stat' ? "bg-rose-500 text-white shadow-lg shadow-rose-100" :
-                               p === 'Urgent' ? "bg-amber-500 text-white shadow-lg shadow-amber-100" :
-                               "bg-gray-900 text-white shadow-lg shadow-gray-200") : 
-                              "text-gray-400 hover:bg-white hover:text-gray-600"
-                          )}
-                        >
-                          {p}
+              {selectedTests.length > 0 && (
+                <div className="space-y-3 p-6 bg-gray-50/50 rounded-[2rem] border border-dashed border-gray-200">
+                  <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Investigation Batch ({selectedTests.length})</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedTests.map(t => (
+                      <div key={t.test_name} className="flex items-center gap-2 pl-4 pr-2 py-2 bg-white border border-gray-100 rounded-xl shadow-sm group">
+                        <span className="text-xs font-black text-gray-700">{t.test_name}</span>
+                        <button onClick={() => handleRemoveTest(t.test_name)} className="p-1 hover:bg-rose-50 rounded-lg text-gray-300 hover:text-rose-500 transition-all" type="button">
+                          <X className="w-3.5 h-3.5" />
                         </button>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
+                </div>
+              )}
 
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Specimen Type</label>
-                      <select 
-                        className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-gray-900 appearance-none"
-                        value={requestData.specimen_type}
-                        onChange={e => setRequestData({...requestData, specimen_type: e.target.value})}
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Priority Level</label>
+                  <div className="flex p-1 bg-gray-50 rounded-2xl border border-gray-100 group">
+                    {(['Routine', 'Urgent', 'Stat'] as const).map(p => (
+                      <button 
+                        key={p}
+                        onClick={() => setRequestData({...requestData, priority: p})}
+                        type="button"
+                        className={cn(
+                          "flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all",
+                          requestData.priority === p ? 
+                            (p === 'Stat' ? "bg-rose-500 text-white shadow-lg shadow-rose-100" :
+                             p === 'Urgent' ? "bg-amber-500 text-white shadow-lg shadow-amber-100" :
+                             "bg-gray-900 text-white shadow-lg shadow-gray-200") : 
+                            "text-gray-400 hover:bg-white hover:text-gray-600"
+                        )}
                       >
-                        <option>Venous Blood</option>
-                        <option>Capillary Blood</option>
-                        <option>Mid-stream Urine</option>
-                        <option>24-hour Urine</option>
-                        <option>Nasopharyngeal Swab</option>
-                        <option>Saliva</option>
-                        <option>Cerebrospinal Fluid</option>
-                        <option>Stool</option>
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Patient Peparation</label>
-                      <input 
-                        placeholder="e.g. 12hr Fasting"
-                        className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-gray-900"
-                        value={requestData.patient_preparation}
-                        onChange={e => setRequestData({...requestData, patient_preparation: e.target.value})}
-                      />
-                    </div>
+                        {p}
+                      </button>
+                    ))}
                   </div>
+                </div>
+                <div className="space-y-2">
+                   <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Lab Accession No. (Optional)</label>
+                   <input 
+                     placeholder="e.g. LAB-2024-001"
+                     className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all font-bold text-gray-900"
+                     value={requestData.lab_number}
+                     onChange={e => setRequestData({...requestData, lab_number: e.target.value})}
+                   />
+                </div>
+              </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Investigation Notes</label>
-                    <textarea 
-                      rows={2}
-                      placeholder="Clinical indications or specific requirements..."
-                      className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium text-gray-700 resize-none"
-                      value={requestData.clinical_notes}
-                      onChange={e => setRequestData({...requestData, clinical_notes: e.target.value})}
-                    />
-                  </div>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Specimen Type</label>
+                  <select 
+                    className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-gray-900 appearance-none"
+                    value={requestData.specimen_type}
+                    onChange={e => setRequestData({...requestData, specimen_type: e.target.value})}
+                  >
+                    <option>Venous Blood</option>
+                    <option>Capillary Blood</option>
+                    <option>Mid-stream Urine</option>
+                    <option>24-hour Urine</option>
+                    <option>Nasopharyngeal Swab</option>
+                    <option>Saliva</option>
+                    <option>Cerebrospinal Fluid</option>
+                    <option>Stool</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Patient Peparation</label>
+                  <input 
+                    placeholder="e.g. 12hr Fasting"
+                    className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-gray-900"
+                    value={requestData.patient_preparation}
+                    onChange={e => setRequestData({...requestData, patient_preparation: e.target.value})}
+                  />
+                </div>
+              </div>
 
-                  <div className="flex items-center justify-between p-2 bg-indigo-50/30 rounded-[2rem] border border-indigo-100/20 mt-4 overflow-hidden">
-                    <div className="px-6 py-2">
-                      <p className="text-[10px] text-indigo-600 font-black uppercase tracking-[0.2em]">Job Valuation</p>
-                      <p className="text-xl font-black text-gray-900">
-                        ₦ {selectedTests.reduce((acc, t) => acc + (t.test_price || 0), 0).toLocaleString()}
-                      </p>
-                    </div>
-                    <button 
-                      onClick={handleSubmitRequest}
-                      disabled={loading}
-                      type="button"
-                      className="bg-gray-900 text-white px-10 py-5 rounded-[1.75rem] text-xs font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-blue-600 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3"
-                    >
-                      {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
-                      {isDoctor ? 'Request Investigation' : 'Authorize Job'}
-                    </button>
-                  </div>
-              </>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Investigation Notes</label>
+                <textarea 
+                  rows={2}
+                  placeholder="Clinical indications or specific requirements..."
+                  className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium text-gray-700 resize-none"
+                  value={requestData.clinical_notes}
+                  onChange={e => setRequestData({...requestData, clinical_notes: e.target.value})}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-2 bg-indigo-50/30 rounded-[2rem] border border-indigo-100/20 mt-4 overflow-hidden">
+                <div className="px-6 py-2">
+                  <p className="text-[10px] text-indigo-600 font-black uppercase tracking-[0.2em]">Job Valuation</p>
+                  <p className="text-xl font-black text-gray-900">
+                    ₦ {selectedTests.reduce((acc, t) => acc + (t.test_price || 0), 0).toLocaleString()}
+                  </p>
+                </div>
+                <button 
+                  onClick={handleSubmitRequest}
+                  disabled={loading}
+                  type="button"
+                  className="bg-gray-900 text-white px-10 py-5 rounded-[1.75rem] text-xs font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-blue-600 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3"
+                >
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
+                  {isDoctor ? 'Request Investigation' : 'Authorize Job'}
+                </button>
+              </div>
             </div>
           )}
         </div>

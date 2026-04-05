@@ -339,7 +339,9 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
   const handleSave = async (status: 'Collected' | 'Completed') => {
     setLoading(true);
     try {
-      const { labAPI } = await import('@/lib/api');
+      const { labAPI, siteSettingsAPI } = await import('@/lib/api');
+      const settingsRes = await siteSettingsAPI.get() as any;
+      const settings = settingsRes.data || {};
       
       // Combine structured data - using a map of labels for the final result output
       const structuredResults: Record<string, string> = {};
@@ -358,7 +360,9 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
         file_url: fileUrl || undefined,
         // Optional ranges if applicable (using first field as primary if number)
         min_range: undefined,
-        max_range: undefined
+        max_range: undefined,
+        hospital_details: settings,
+        unit_name: request.unit?.name
       });
 
       toast.success(status === 'Completed' ? 'Diagnostic Report Authorized & Released' : 'Progress Saved as Draft');

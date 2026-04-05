@@ -37,14 +37,20 @@ export default function LabRequestsPage() {
   const [globalSearch, setGlobalSearch] = useState('');
   const [assignedUnits, setAssignedUnits] = useState<any[]>([]);
   const [selectedUnitId, setSelectedUnitId] = useState<string>('all');
+  const [selectedDate, setSelectedDate] = useState<string>('');
 
   const filteredRequests = (requests || []).filter(req => {
     const searchLow = globalSearch.toLowerCase();
-    return (
+    const matchesSearch = (
       req.test_name?.toLowerCase().includes(searchLow) ||
       req.patient?.full_name?.toLowerCase().includes(searchLow) ||
-      req.patient?.patient_id?.toLowerCase().includes(searchLow)
+      req.patient?.patient_id?.toLowerCase().includes(searchLow) ||
+      req.lab_number?.toLowerCase().includes(searchLow)
     );
+
+    const matchesDate = !selectedDate || new Date(req.requested_at).toISOString().split('T')[0] === selectedDate;
+
+    return matchesSearch && matchesDate;
   });
 
   useEffect(() => {
@@ -165,6 +171,7 @@ export default function LabRequestsPage() {
               .detail-item { border-left: 3px solid #e2e8f0; padding-left: 20px; }
               .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; font-weight: 700; margin-bottom: 4px; }
               .value { font-size: 15px; font-weight: 600; color: #1e293b; }
+              .accession-tag { display: inline-block; padding: 4px 12px; background: #eff6ff; border: 1px solid #dbeafe; color: #2563eb; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-top: 8px; }
               .results-section { background: #fff; border: 2px solid #f1f5f9; border-radius: 20px; padding: 40px; margin-bottom: 40px; min-height: 200px; position: relative; }
               .results-content { line-height: 1.8; font-size: 15px; white-space: pre-wrap; }
               .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 80px; font-weight: 900; color: #f1f5f9; z-index: -1; pointer-events: none; white-space: nowrap; }
@@ -177,15 +184,16 @@ export default function LabRequestsPage() {
           <body>
             <div class="header">
               <div class="hospital-info">
-                 ${settings.hospital_logo ? `<img src="${settings.hospital_logo}" style="height: 60px; margin-bottom: 15px; object-fit: contain;" />` : ''}
-                 <h1>${settings.hospital_name || 'Medical Diagnostic Center'}</h1>
-                 <p>${settings.address || 'Clinic HQ Sector 4'}</p>
-                 <p>Contact: ${settings.contact_email || 'diagnostics@hospital.com'}</p>
-                 ${settings.cin_number ? `<p>CIN: ${settings.cin_number}</p>` : ''}
+                 ${(req.hospital_details?.hospital_logo || settings.hospital_logo) ? `<img src="${req.hospital_details?.hospital_logo || settings.hospital_logo}" style="height: 60px; margin-bottom: 15px; object-fit: contain;" />` : ''}
+                 <h1>${req.hospital_details?.hospital_name || settings.hospital_name || 'Medical Diagnostic Center'}</h1>
+                 <p>${req.hospital_details?.address || settings.address || 'Clinic HQ Sector 4'}</p>
+                 <p>Contact: ${req.hospital_details?.contact_email || settings.contact_email || 'diagnostics@hospital.com'}</p>
+                 ${(req.hospital_details?.cin_number || settings.cin_number) ? `<p>REG: ${req.hospital_details?.cin_number || settings.cin_number}</p>` : ''}
               </div>
               <div style="text-align: right;">
-                 <div class="value" style="font-size: 12px; color: #64748b;">REPORT ID</div>
-                 <div class="value" style="font-size: 18px;">#${req.id.slice(-8).toUpperCase()}</div>
+                 <div class="label" style="font-size: 10px;">Diagnostic Report ID</div>
+                 <div class="value" style="font-size: 18px; letter-spacing: -0.02em;">#${req.id.slice(-8).toUpperCase()}</div>
+                 ${req.lab_number ? `<div class="accession-tag">LAB ACC NO: ${req.lab_number}</div>` : ''}
               </div>
             </div>
 
@@ -202,6 +210,7 @@ export default function LabRequestsPage() {
               <div class="detail-item">
                 <p class="label">Investigation Protocol</p>
                 <p class="value" style="color: #2563eb;">${req.test_name}</p>
+                ${req.unit_name ? `<p class="value" style="font-size: 11px; color: #64748b; font-weight: 700; margin-top: 4px;">UNIT: ${req.unit_name.toUpperCase()}</p>` : ''}
               </div>
               <div class="detail-item">
                 <p class="label">Sample Collected</p>
@@ -215,7 +224,7 @@ export default function LabRequestsPage() {
 
             <div class="results-section">
               <div class="watermark">CERTIFIED RESULT</div>
-              <p class="label" style="margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">Clinical Observations & quantitative metrics</p>
+              <p class="label" style="margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">COMMENTS & ANALYTICAL METRICS</p>
               <div class="results-content">
                 ${(() => {
                   if (req.results?.includes('METRIC_DATA:')) {
@@ -246,8 +255,8 @@ export default function LabRequestsPage() {
                 This document is electronically generated and contains clinical data verified by the hospital's pathology department.
               </div>
               <div class="signature-box">
-                <p class="value" style="color: #2563eb; margin-bottom: -30px;">${req.handled_by_profile?.name || user?.name || 'Authorized Scientist'}</p>
-                <div class="signature-line">Chief Scientific Officer</div>
+                <p class="value" style="color: #2563eb; margin-bottom: -30px; font-size: 16px;">${req.handled_by_profile?.name || user?.name || 'Authorized Scientist'}</p>
+                <div class="signature-line">Authorized Signatory<br/><span style="font-size: 8px; color: #94a3b8;">Pathology & Laboratory Services</span></div>
               </div>
             </div>
             
@@ -315,6 +324,27 @@ export default function LabRequestsPage() {
               value={globalSearch}
               onChange={(e) => setGlobalSearch(e.target.value)}
             />
+          </div>
+          <div className="relative group w-full md:w-auto">
+             <input 
+               type="date"
+               className="w-full px-6 py-3.5 bg-white border border-gray-200 rounded-2xl text-[11px] font-black uppercase tracking-widest focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 outline-none transition-all shadow-sm"
+               value={selectedDate}
+               onChange={(e) => setSelectedDate(e.target.value)}
+             />
+             {!selectedDate && (
+               <div className="absolute inset-0 flex items-center pointer-events-none px-6 text-[9px] font-black uppercase text-gray-400 tracking-widest bg-white rounded-2xl">
+                 Date Filter (Off)
+               </div>
+             )}
+             {selectedDate && (
+               <button 
+                 onClick={() => setSelectedDate('')}
+                 className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 hover:bg-rose-50 rounded-lg text-gray-300 hover:text-rose-500 transition-all"
+               >
+                 <X className="w-3.5 h-3.5" />
+               </button>
+             )}
           </div>
           <button 
             onClick={() => setShowNewModal(true)}

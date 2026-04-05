@@ -317,6 +317,7 @@ export const labAPI = {
     priority?: 'Routine' | 'Urgent' | 'Stat';
     patient_preparation?: string;
     collection_instructions?: string;
+    lab_number?: string;
   }) => api.post<APIResponse<any>>('/lab-services', data),
   updateResult: (data: { 
     request_id: string; 
@@ -332,6 +333,8 @@ export const labAPI = {
     test_name?: string;
     unit_id?: string;
     payment_status?: string;
+    hospital_details?: any;
+    unit_name?: string;
   }) => api.put<APIResponse<any>>('/lab-services', data),
 
   // Lab Matrix & Catalog
