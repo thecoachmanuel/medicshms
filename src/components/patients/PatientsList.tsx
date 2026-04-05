@@ -15,7 +15,8 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import RegisterPatientModal from './RegisterPatientModal';
 import EditPatientModal from './EditPatientModal';
-import { Edit2, Trash2 } from 'lucide-react';
+import CreateLabRequestModal from '@/components/clinical/CreateLabRequestModal';
+import { Edit2, Trash2, Microscope } from 'lucide-react';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -42,6 +43,7 @@ export default function PatientsList({ role }: Props) {
   const [showAppointmentsModal, setShowAppointmentsModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showLabModal, setShowLabModal] = useState(false);
   const [patientToEdit, setPatientToEdit] = useState<any>(null);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [appointmentsLoading, setAppointmentsLoading] = useState(false);
@@ -258,22 +260,31 @@ export default function PatientsList({ role }: Props) {
                     </div>
                   </td>
                   <td className="px-6 py-5 text-center">
-                    <div className="flex flex-col items-center gap-2">
-                       <Link 
-                        href={`/${slug}/${portalRole}/patients/${patient.patientId || patient._id}`}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 border border-indigo-500 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:shadow-indigo-200 transition-all active:scale-95 w-full justify-center"
-                      >
-                        <History className="w-3.5 h-3.5" />
-                        360 History
-                      </Link>
-                      <button 
-                        onClick={() => handleViewAppointments(patient)}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-indigo-600 hover:border-indigo-100 transition-all w-full justify-center"
-                      >
-                        <FileText className="w-3.5 h-3.5" />
-                        Encounters
-                      </button>
-                    </div>
+                      <div className="flex flex-col items-center gap-2">
+                         {isDoctor && (
+                           <button 
+                             onClick={() => { setSelectedPatient(patient); setShowLabModal(true); }}
+                             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 border border-blue-500 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-blue-100 hover:bg-blue-700 hover:shadow-blue-200 transition-all active:scale-95 w-full justify-center"
+                           >
+                             <Stethoscope className="w-3.5 h-3.5" />
+                             Request Lab
+                           </button>
+                         )}
+                         <Link 
+                          href={`/${slug}/${portalRole}/patients/${patient.patientId || patient._id}`}
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 border border-indigo-500 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:shadow-indigo-200 transition-all active:scale-95 w-full justify-center"
+                        >
+                          <History className="w-3.5 h-3.5" />
+                          360 History
+                        </Link>
+                        <button 
+                          onClick={() => handleViewAppointments(patient)}
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-indigo-600 hover:border-indigo-100 transition-all w-full justify-center"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          Encounters
+                        </button>
+                      </div>
                   </td>
                   {isAdminOrReceptionist && (
                     <td className="px-6 py-5 text-right">
@@ -441,6 +452,13 @@ export default function PatientsList({ role }: Props) {
           onClose={() => { setShowEditModal(false); setPatientToEdit(null); }}
           onSuccess={fetchPatients}
           patient={patientToEdit}
+        />
+      )}
+      {showLabModal && selectedPatient && (
+        <CreateLabRequestModal 
+          isOpen={showLabModal}
+          onClose={() => setShowLabModal(false)}
+          initialPatientId={selectedPatient.patientId || selectedPatient._id}
         />
       )}
     </div>

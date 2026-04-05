@@ -22,6 +22,7 @@ export default function PortalLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, loading: authLoading, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -68,7 +69,6 @@ export default function PortalLayout({
 
   const trialDaysRemaining = getTrialDaysRemaining();
 
-  const pathname = usePathname();
   const isExemptRoute = pathname?.endsWith('/admin/billing') || pathname?.endsWith('/admin/support') || pathname?.endsWith('/admin/subscription');
 
   if ((isExpired || isPaused || isSuspended) && !isExemptRoute) {

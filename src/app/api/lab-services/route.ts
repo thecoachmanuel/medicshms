@@ -3,23 +3,28 @@ import { supabaseAdmin, supabase } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
 
 export async function GET(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Lab Scientist', 'Doctor', 'Admin']);
-  if (authError) return authError;
+  const { error: authError, profile, supabase: supabaseClient } = await withAuth(request, ['Lab Scientist', 'Doctor', 'Admin']);
+  if (authError || !supabaseClient) return authError;
 
   const { searchParams } = new URL(request.url);
   const patientId = searchParams.get('patientId');
   const status = searchParams.get('status');
 
   try {
-    let query = (supabaseAdmin || supabase)
+    let query = supabaseClient
       .from('clinical_requests')
       .select(`
         *,
-        patient:patient_id(full_name, patient_id),
-        doctor:doctor_id(id),
-        doctor_profile:doctor_id(*),
-        handled_by_profile:handled_by(name),
-        unit:unit_id(name)
+        patient:patients!patient_id(
+          id,
+          profile:profiles!user_id(name)
+        ),
+        doctor:doctors!doctor_id(
+          id,
+          profile:profiles!user_id(name)
+        ),
+        handled_by_profile:profiles!handled_by(name),
+        unit:lab_units!unit_id(name)
       `)
       .eq('hospital_id', profile?.hospital_id)
       .eq('type', 'Laboratory')
@@ -30,21 +35,21 @@ export async function GET(request: Request) {
 
     const { data, error } = await query;
     
-    // We need to resolve doctor names carefully since doctor_profile might be pointing to auth/doctors 
-    // Usually doctor_id in clinical_requests is doctors.id, let's fetch profile separately if needed.
-    // For simplicity, we just return the raw data and let client handle joining if necessary.
-    
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Lab Services API Error:', error);
+      throw error;
+    }
     
     return NextResponse.json({ data });
   } catch (error: any) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    console.error('💥 Lab Services API Crash:', error);
+    return NextResponse.json({ message: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Doctor', 'Lab Scientist', 'Admin']);
-  if (authError) return authError;
+  const { error: authError, profile, supabase: supabaseClient } = await withAuth(request, ['Doctor', 'Lab Scientist', 'Admin']);
+  if (authError || !supabaseClient) return authError;
 
   try {
     const { 
@@ -75,13 +80,11 @@ export async function POST(request: Request) {
       insertData.handled_by = profile.id;
     }
 
-    // Add financial metadata if provided (will use these for billing generation)
-    // Even if columns don't exist yet, we can store in a result-like field or just 
-    // handle it in the billing logic if we pass common service_ids
+    // Add financial metadata if provided
     if (test_price) insertData.test_price = test_price;
     if (service_id) insertData.service_id = service_id;
 
-    const { data, error } = await (supabaseAdmin || supabase)
+    const { data, error } = await supabaseClient
       .from('clinical_requests')
       .insert([insertData])
       .select()
@@ -95,8 +98,8 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Lab Scientist']);
-  if (authError) return authError;
+  const { error: authError, profile, supabase: supabaseClient } = await withAuth(request, ['Lab Scientist']);
+  if (authError || !supabaseClient) return authError;
 
   try {
     const body = await request.json();
@@ -120,11 +123,10 @@ export async function PUT(request: Request) {
     
     if (status === 'Completed') updateData.completed_at = new Date().toISOString();
 
-    const { data, error } = await (supabaseAdmin || supabase)
+    const { data, error } = await supabaseClient
       .from('clinical_requests')
       .update(updateData)
       .eq('id', request_id)
-      .eq('hospital_id', profile?.hospital_id)
       .select()
       .single();
 

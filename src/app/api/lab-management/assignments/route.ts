@@ -3,20 +3,20 @@ import { supabaseAdmin, supabase } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
 
 export async function GET(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Lab Scientist', 'Admin']);
-  if (authError) return authError;
+  const { error: authError, profile, supabase: supabaseClient } = await withAuth(request, ['Lab Scientist', 'Admin', 'Doctor']);
+  if (authError || !supabaseClient) return authError;
 
   const { searchParams } = new URL(request.url);
-  const scientist_id = searchParams.get('scientist_id');
-  const unit_id = searchParams.get('unit_id');
+  const scientist_id = searchParams.get('scientist_id') || searchParams.get('scientistId');
+  const unit_id = searchParams.get('unit_id') || searchParams.get('unitId');
 
   try {
-    let query = (supabaseAdmin || supabase)
+    let query = supabaseClient
       .from('lab_unit_assignments')
       .select(`
         *,
-        unit:unit_id(id, name),
-        scientist:scientist_id(id, name, email)
+        unit:lab_units!unit_id(id, name),
+        scientist:profiles!scientist_id(id, name, email)
       `);
 
     if (scientist_id) query = query.eq('scientist_id', scientist_id);
@@ -24,21 +24,21 @@ export async function GET(request: Request) {
 
     const { data: assignments, error } = await query;
 
-    if (error) throw error;
-    
-    // Filter by hospital_id via the unit join since assignments don't have direct hospital_id
-    // But since RLS is enabled on lab_units and lab_unit_assignments (tenant_isolation_policy_assignments),
-    // Supabase will automatically filter based on the user's hospital.
+    if (error) {
+      console.error('❌ Assignments API Error:', error);
+      throw error;
+    }
     
     return NextResponse.json({ data: assignments });
   } catch (error: any) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    console.error('💥 Assignments API Crash:', error);
+    return NextResponse.json({ message: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Admin']);
-  if (authError) return authError;
+  const { error: authError, profile, supabase: supabaseClient } = await withAuth(request, ['Admin']);
+  if (authError || !supabaseClient) return authError;
 
   try {
     const body = await request.json();
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
 
     if (!unit_id || !scientist_id) return NextResponse.json({ message: 'Unit and Scientist IDs are required' }, { status: 400 });
 
-    const { data, error } = await (supabaseAdmin || supabase)
+    const { data, error } = await supabaseClient
       .from('lab_unit_assignments')
       .insert([{ unit_id, scientist_id }])
       .select()
@@ -60,8 +60,8 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Admin']);
-  if (authError) return authError;
+  const { error: authError, profile, supabase: supabaseClient } = await withAuth(request, ['Admin']);
+  if (authError || !supabaseClient) return authError;
 
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
@@ -69,7 +69,7 @@ export async function DELETE(request: Request) {
   if (!id) return NextResponse.json({ message: 'Assignment ID is required' }, { status: 400 });
 
   try {
-    const { error } = await (supabaseAdmin || supabase)
+    const { error } = await supabaseClient
       .from('lab_unit_assignments')
       .delete()
       .eq('id', id);

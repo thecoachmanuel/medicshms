@@ -13,33 +13,24 @@ export async function GET(request: Request) {
   try {
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59).toISOString();
     const startOfSixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString();
 
-    const [
-      { count: totalPatients },
-      { count: totalDoctors },
-      { count: totalDepartments },
-      { data: todayAppointmentsData },
-      { data: appointmentStatsData },
-      { data: revenueData },
-      { count: pendingBills },
-      { count: openTickets },
-      { count: activeAnnouncements }
-    ] = await Promise.all([
+    const results = await Promise.all([
       client.from('public_appointments').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id),
-      client.from('doctors').select('*', { count: 'exact', head: true }).eq('is_active', true).eq('hospital_id', userProfile?.hospital_id),
-      client.from('departments').select('*', { count: 'exact', head: true }).eq('is_active', true).eq('hospital_id', userProfile?.hospital_id),
-      client.from('public_appointments').select('appointment_date, appointment_status, visit_type, created_at').eq('hospital_id', userProfile?.hospital_id).eq('appointment_date', startOfToday.split('T')[0]),
-      client.from('public_appointments').select('appointment_date, appointment_status, visit_type, created_at').eq('hospital_id', userProfile?.hospital_id).gte('created_at', startOfLastMonth),
+      client.from('doctors').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id).eq('is_active', true),
+      client.from('departments').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id).eq('is_active', true),
+      client.from('public_appointments').select('appointment_status, created_at, appointment_id').eq('hospital_id', userProfile?.hospital_id).gte('created_at', startOfToday).lte('created_at', endOfToday),
+      client.from('public_appointments').select('appointment_status, created_at, visit_type').eq('hospital_id', userProfile?.hospital_id).gte('created_at', startOfLastMonth),
       client.from('bills')
         .select(`
           total_amount, 
           paid_amount, 
           created_at,
-          appointment:public_appointment_id(department)
+          appointment:public_appointments!public_appointment_id(department)
         `)
         .eq('hospital_id', userProfile?.hospital_id)
         .gte('created_at', startOfSixMonthsAgo)
@@ -48,6 +39,22 @@ export async function GET(request: Request) {
       client.from('support_tickets').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id).in('status', ['Open', 'In Progress']),
       client.from('announcements').select('*', { count: 'exact', head: true }).eq('is_active', true).eq('hospital_id', userProfile?.hospital_id)
     ]);
+
+    const [r1, r2, r3, r4, r5, r6, r7, r8, r9] = results;
+    const { count: totalPatients } = r1;
+    const { count: totalDoctors } = r2;
+    const { count: totalDepartments } = r3;
+    const { data: todayAppointmentsData } = r4;
+    const { data: appointmentStatsData } = r5;
+    const { data: revenueData } = r6;
+    const { count: pendingBills } = r7;
+    const { count: openTickets } = r8;
+    const { count: activeAnnouncements } = r9;
+
+    const errors = results.filter(r => r.error).map(r => r.error);
+    if (errors.length > 0) {
+      console.error('One or more dashboard queries failed:', errors);
+    }
 
     // Process Appointment Stats
     const apts = appointmentStatsData || [];
@@ -144,7 +151,7 @@ export async function GET(request: Request) {
       revenueTrend
     });
   } catch (error: any) {
-    console.error('Dashboard stats error:', error);
-    return NextResponse.json({ message: 'Failed to fetch dashboard stats' }, { status: 500 });
+    console.error('Detailed Dashboard stats error:', error);
+    return NextResponse.json({ message: 'Failed to fetch dashboard stats', error: error.message }, { status: 500 });
   }
 }

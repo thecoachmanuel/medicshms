@@ -24,11 +24,17 @@ export default function ReceptionistLabRequestsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [globalSearch, setGlobalSearch] = useState('');
 
+  const [catalog, setCatalog] = useState<any[]>([]);
+  const [mappingRequest, setMappingRequest] = useState<any | null>(null);
+
   const fetchRequests = async () => {
     setLoading(true);
     try {
       const response: any = await labAPI.getRequests({ status: activeTab });
       setRequests(response.data || response.requests || []);
+      
+      const catRes = await labAPI.getCatalog() as any;
+      setCatalog(catRes.data || []);
     } catch (error) {
       toast.error('Failed to load clinical queue');
     } finally {
@@ -39,6 +45,52 @@ export default function ReceptionistLabRequestsPage() {
   useEffect(() => {
     fetchRequests();
   }, [activeTab]);
+
+  const handleAuthorizeBilling = async (req: any, mappedItem?: any) => {
+    const { labAPI, billingAPI } = await import('@/lib/api');
+    try {
+      let targetPrice = req.test_price || 0;
+      let targetName = req.test_name;
+      let targetUnit = req.unit_id;
+
+      if (mappedItem) {
+        targetPrice = mappedItem.price;
+        targetName = mappedItem.test_name;
+        targetUnit = mappedItem.unit_id;
+      } else if (targetPrice === 0) {
+        // If price is 0 and no mapped item provided, we need to show mapping UI
+        const match = catalog.find((c: any) => c.test_name.toLowerCase() === req.test_name.toLowerCase());
+        if (!match) {
+          setMappingRequest(req);
+          return;
+        }
+        targetPrice = match.price;
+        targetName = match.test_name;
+        targetUnit = match.unit_id;
+      }
+
+      setLoading(true);
+      // 2. Update request with price and standard name
+      await labAPI.updateResult({
+        request_id: req.id,
+        test_price: targetPrice,
+        test_name: targetName,
+        unit_id: targetUnit,
+        payment_status: 'Billed'
+      });
+
+      // 3. Generate Invoice
+      await billingAPI.generateForLab(req.id, {});
+      
+      toast.success(`Billing authorized: ${targetName} (₦${targetPrice.toLocaleString()})`);
+      setMappingRequest(null);
+      fetchRequests();
+    } catch (error) {
+      toast.error('Failed to authorize billing');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredRequests = (requests || []).filter(req => {
     const s = globalSearch.toLowerCase();
@@ -181,18 +233,27 @@ export default function ReceptionistLabRequestsPage() {
                           </span>
                        </div>
                     </td>
-                    <td className="px-6 py-5">
-                      <div className="flex flex-col items-end gap-1.5">
-                        <span className={cn(
-                          "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border shadow-sm",
-                          req.status === 'Completed' ? "bg-emerald-600 text-white border-emerald-700" :
-                          req.status === 'Collected' ? "bg-amber-500 text-white border-amber-600" : "bg-gray-100 text-gray-400 border-gray-200"
-                        )}>
-                          {req.status}
-                        </span>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">{new Date(req.requested_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                      </div>
-                    </td>
+                     <td className="px-6 py-5">
+                       <div className="flex flex-col items-end gap-1.5">
+                         {req.payment_status === 'Unpaid' && activeTab === 'Pending' && (
+                           <button 
+                             onClick={() => handleAuthorizeBilling(req)}
+                             className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg active:scale-95 flex items-center gap-2 mb-2"
+                           >
+                             <FileText className="w-3.5 h-3.5" />
+                             Authorize Billing
+                           </button>
+                         )}
+                         <span className={cn(
+                           "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border shadow-sm",
+                           req.status === 'Completed' ? "bg-emerald-600 text-white border-emerald-700" :
+                           req.status === 'Collected' ? "bg-amber-500 text-white border-amber-600" : "bg-gray-100 text-gray-400 border-gray-200"
+                         )}>
+                           {req.status}
+                         </span>
+                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">{new Date(req.requested_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                       </div>
+                     </td>
                   </tr>
                 ))}
               </tbody>
@@ -206,6 +267,56 @@ export default function ReceptionistLabRequestsPage() {
         onClose={() => setShowCreateModal(false)}
         onSuccess={fetchRequests}
       />
+
+      {/* Protocol Mapping Modal */}
+      {mappingRequest && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-md" onClick={() => setMappingRequest(null)}></div>
+          <div className="relative bg-white rounded-[2.5rem] max-w-lg w-full p-10 shadow-2xl animate-in zoom-in-95">
+             <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center border border-amber-100">
+                  <RefreshCw className="w-6 h-6 text-amber-600" />
+                </div>
+                <div>
+                   <h3 className="text-xl font-black text-gray-900 tracking-tight">Map to Catalog</h3>
+                   <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-0.5">Clinical Protocol Alignment Required</p>
+                </div>
+             </div>
+
+             <div className="p-5 bg-gray-50 rounded-2xl border border-gray-100 mb-8">
+                <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-1">Doctor Requested:</p>
+                <p className="text-lg font-black text-gray-900">"{mappingRequest.test_name}"</p>
+                <p className="text-[10px] text-amber-600 font-bold mt-2">⚠️ This protocol is not in the system catalog and has no price.</p>
+             </div>
+
+             <div className="space-y-4">
+                <label className="text-[10px] text-gray-400 font-black uppercase tracking-widest ml-1">Select Official Investigation</label>
+                <div className="max-h-60 overflow-y-auto space-y-2 no-scrollbar p-1">
+                   {catalog.filter(c => c.test_name.toLowerCase().includes(mappingRequest.test_name.toLowerCase()) || true).map(c => (
+                     <button 
+                       key={c.id}
+                       onClick={() => handleAuthorizeBilling(mappingRequest, c)}
+                       className="w-full flex items-center justify-between p-4 bg-white border border-gray-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50/30 transition-all group text-left"
+                     >
+                        <div>
+                          <p className="font-black text-gray-900 text-sm group-hover:text-indigo-600">{c.test_name}</p>
+                          <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">{c.unit?.name}</p>
+                        </div>
+                        <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-widest group-hover:bg-indigo-100">₦{c.price.toLocaleString()}</span>
+                     </button>
+                   ))}
+                </div>
+             </div>
+
+             <button 
+               onClick={() => setMappingRequest(null)}
+               className="w-full mt-8 py-4 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-gray-600 transition-colors"
+             >
+                Cancel Authorization
+             </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

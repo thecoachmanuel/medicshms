@@ -3,26 +3,30 @@ import { supabaseAdmin, supabase } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
 
 export async function GET(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Lab Scientist', 'Admin', 'Doctor', 'Receptionist']);
-  if (authError) return authError;
+  const { error: authError, profile, supabase: supabaseClient } = await withAuth(request, ['Lab Scientist', 'Admin', 'Doctor', 'Receptionist']);
+  if (authError || !supabaseClient) return authError;
 
   try {
-    const { data, error } = await (supabaseAdmin || supabase)
+    const { data, error } = await supabaseClient
       .from('lab_units')
       .select('*')
       .eq('hospital_id', profile?.hospital_id)
       .order('name');
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Lab Units API Error:', error);
+      throw error;
+    }
     return NextResponse.json({ data });
   } catch (error: any) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    console.error('💥 Lab Units API Crash:', error);
+    return NextResponse.json({ message: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Admin', 'Lab Scientist']);
-  if (authError) return authError;
+  const { error: authError, profile, supabase: supabaseClient } = await withAuth(request, ['Admin', 'Lab Scientist']);
+  if (authError || !supabaseClient) return authError;
 
   try {
     const body = await request.json();
@@ -30,7 +34,7 @@ export async function POST(request: Request) {
 
     if (!name) return NextResponse.json({ message: 'Unit name is required' }, { status: 400 });
 
-    const { data, error } = await (supabaseAdmin || supabase)
+    const { data, error } = await supabaseClient
       .from('lab_units')
       .insert([{
         hospital_id: profile?.hospital_id,
@@ -48,8 +52,8 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Admin', 'Lab Scientist']);
-  if (authError) return authError;
+  const { error: authError, profile, supabase: supabaseClient } = await withAuth(request, ['Admin', 'Lab Scientist']);
+  if (authError || !supabaseClient) return authError;
 
   try {
     const body = await request.json();
@@ -57,7 +61,7 @@ export async function PUT(request: Request) {
 
     if (!id) return NextResponse.json({ message: 'Unit ID is required' }, { status: 400 });
 
-    const { data, error } = await (supabaseAdmin || supabase)
+    const { data, error } = await supabaseClient
       .from('lab_units')
       .update({ name, description })
       .eq('id', id)
@@ -73,8 +77,8 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Admin']);
-  if (authError) return authError;
+  const { error: authError, profile, supabase: supabaseClient } = await withAuth(request, ['Admin']);
+  if (authError || !supabaseClient) return authError;
 
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
@@ -82,7 +86,7 @@ export async function DELETE(request: Request) {
   if (!id) return NextResponse.json({ message: 'Unit ID is required' }, { status: 400 });
 
   try {
-    const { error } = await (supabaseAdmin || supabase)
+    const { error } = await supabaseClient
       .from('lab_units')
       .delete()
       .eq('id', id)

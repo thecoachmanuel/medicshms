@@ -130,6 +130,45 @@ const TEMPLATES: DiagnosticTemplate[] = [
     ]
   },
   {
+    id: 'electrolytes',
+    name: 'Electrolytes (U&E)',
+    unit: 'Biochemistry',
+    fields: [
+      { label: 'Sodium (Na+)', unit: 'mmol/L', referenceRange: '135 - 145', type: 'number' },
+      { label: 'Potassium (K+)', unit: 'mmol/L', referenceRange: '3.5 - 5.1', type: 'number' },
+      { label: 'Chloride (Cl-)', unit: 'mmol/L', referenceRange: '98 - 107', type: 'number' },
+      { label: 'Bicarbonate (HCO3-)', unit: 'mmol/L', referenceRange: '22 - 28', type: 'number' },
+      { label: 'Urea', unit: 'mmol/L', referenceRange: '2.5 - 7.1', type: 'number' },
+      { label: 'Creatinine', unit: 'μmol/L', referenceRange: '62 - 106', type: 'number' }
+    ]
+  },
+  {
+    id: 'stool_analysis',
+    name: 'Stool Analysis (Routine)',
+    unit: 'Microbiology',
+    fields: [
+      { label: 'Appearance', type: 'select', options: ['Formed', 'Semi-formed', 'Loose', 'Watery'] },
+      { label: 'Color', type: 'select', options: ['Brown', 'Yellow', 'Clay', 'Green', 'Bloody'] },
+      { label: 'Microscopy: Cysts', type: 'text', defaultValue: 'None Seen' },
+      { label: 'Microscopy: Ova', type: 'text', defaultValue: 'None Seen' },
+      { label: 'Microscopy: WBC/Pus', unit: '/hpf', defaultValue: '0-2' },
+      { label: 'Occult Blood', type: 'select', options: ['Negative', 'Positive'] }
+    ]
+  },
+  {
+    id: 'semen_analysis',
+    name: 'Semen Analysis',
+    unit: 'Microbiology',
+    fields: [
+      { label: 'Volume', unit: 'mL', referenceRange: '> 1.5' },
+      { label: 'Liquefaction Time', unit: 'mins', referenceRange: '< 60' },
+      { label: 'Total Count', unit: 'million/mL', referenceRange: '> 15' },
+      { label: 'Active Motility', unit: '%', referenceRange: '> 40' },
+      { label: 'Normal Morphology', unit: '%', referenceRange: '> 4' },
+      { label: 'Abnormal Forms', unit: '%' }
+    ]
+  },
+  {
     id: 'serology',
     name: 'Serology / Rapid Screen',
     unit: 'Serology',
@@ -196,6 +235,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
       await labAPI.updateResult({
         request_id: request.id || request._id,
         status: status,
+        test_name: request.test_name, // Capture refined protocol name
         results: finalResults,
         is_critical: isCritical,
         file_url: fileUrl || undefined,
@@ -265,8 +305,21 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
             </div>
             <div>
               <p className="text-[10px] text-gray-400 uppercase font-black tracking-[0.2em] mb-2">Investigation Required</p>
-              <p className="font-black text-indigo-600 text-lg leading-none">{request.test_name}</p>
-              <p className="text-[10px] text-gray-500 font-medium mt-2 italic">Scheduled: {new Date(request.requested_at).toLocaleString()}</p>
+              <div className="relative group">
+                <input 
+                  type="text"
+                  className="font-black text-indigo-600 text-lg leading-none bg-transparent border-b border-dashed border-indigo-200 hover:border-indigo-400 focus:border-indigo-600 outline-none w-full pb-1 transition-all"
+                  value={request.test_name}
+                  onChange={(e) => {
+                    // Update local request object (though it won't persist until save)
+                    request.test_name = e.target.value;
+                  }}
+                />
+                <p className="text-[10px] text-gray-500 font-medium mt-2 italic flex items-center gap-2">
+                  <Clock className="w-3 h-3" /> Scheduled: {new Date(request.requested_at).toLocaleString()}
+                  <span className="text-amber-500 font-bold ml-2 underline cursor-help" title="Scientists can refine the test name to match specialized protocols">Editable Protocol</span>
+                </p>
+              </div>
             </div>
           </div>
 

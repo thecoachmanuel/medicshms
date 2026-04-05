@@ -47,15 +47,6 @@ export default function LabScientistDashboard({ params }: { params: Promise<{ sl
     fetchAll();
   }, [fetchAll]);
 
-  if (loading) {
-    return <div className="space-y-6 animate-pulse">
-      <div className="h-8 w-64 bg-gray-200 rounded"></div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[...Array(4)].map((_, i) => <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>)}
-      </div>
-    </div>;
-  }
-
   const stats = React.useMemo(() => {
     const safeRequests = Array.isArray(requests) ? requests : [];
     const pending = safeRequests.filter(r => r?.status === 'Pending').length;
@@ -107,8 +98,9 @@ export default function LabScientistDashboard({ params }: { params: Promise<{ sl
   // Group by Test Name for Volume Chart
   const chartData = React.useMemo(() => {
     const counts: Record<string, number> = {};
-    requests.forEach(r => {
-      const name = r.test_name || 'Unofficial Test';
+    const safeRequests = Array.isArray(requests) ? requests : [];
+    safeRequests.forEach(r => {
+      const name = r?.test_name || 'Unofficial Test';
       counts[name] = (counts[name] || 0) + 1;
     });
     return Object.entries(counts)
@@ -116,6 +108,15 @@ export default function LabScientistDashboard({ params }: { params: Promise<{ sl
       .sort((a, b) => b.tests - a.tests)
       .slice(0, 5);
   }, [requests]);
+
+  if (loading) {
+    return <div className="space-y-6 animate-pulse">
+      <div className="h-8 w-64 bg-gray-200 rounded"></div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[...Array(4)].map((_, i) => <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>)}
+      </div>
+    </div>;
+  }
 
   const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
 
@@ -218,7 +219,7 @@ export default function LabScientistDashboard({ params }: { params: Promise<{ sl
                     </div>
                     <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest flex items-center gap-1.5">
                        <User className="w-3 h-3" />
-                       {req.patient?.full_name || 'Anonymous Subject'}
+                       {req.patient?.profile?.name || 'Anonymous Subject'}
                     </p>
                   </div>
                   <div className={cn(

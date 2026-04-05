@@ -45,11 +45,8 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
     dateOfBirth: ''
   });
   
+  const [selectedTests, setSelectedTests] = useState<any[]>([]);
   const [requestData, setRequestData] = useState({
-    service_id: '',
-    unit_id: '',
-    test_name: '',
-    test_price: 0,
     specimen_type: 'Venous Blood',
     priority: 'Routine' as 'Routine' | 'Urgent' | 'Stat',
     patient_preparation: '',
@@ -69,6 +66,9 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
       }
     }
   }, [isOpen, initialPatientId]);
+
+  const userRole = (labAPI as any).user?.role || 'Doctor'; // Standard fallback
+  const isDoctor = userRole === 'Doctor';
 
   const fetchInitialPatient = async (pid: string) => {
     try {
@@ -100,12 +100,10 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
   const resetForms = () => {
     setSelectedPatient(null);
     setPatientSearchTerm('');
+    setTestSearchTerm('');
+    setSelectedTests([]);
     setEnrollData({ fullName: '', mobileNumber: '', emailAddress: '', gender: 'Male', dateOfBirth: '' });
     setRequestData({
-      service_id: '',
-      unit_id: '',
-      test_name: '',
-      test_price: 0,
       specimen_type: 'Venous Blood',
       priority: 'Routine',
       patient_preparation: '',
@@ -160,31 +158,51 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
     }
   };
 
+  const handleAddTest = (test: any) => {
+    if (selectedTests.find(t => t.test_name === test.test_name)) {
+      return toast.error('Test already added to batch');
+    }
+    setSelectedTests([...selectedTests, test]);
+    setTestSearchTerm('');
+    setShowCatalogSuggestions(false);
+  };
+
+  const handleRemoveTest = (name: string) => {
+    setSelectedTests(selectedTests.filter(t => t.test_name !== name));
+  };
+
   const handleSubmitRequest = async () => {
-    if (!selectedPatient || !requestData.test_name) {
-      return toast.error('Incomplete request parameters');
+    if (!selectedPatient || selectedTests.length === 0) {
+      return toast.error('Selection required');
     }
     setLoading(true);
     try {
-      // Auto-Indexing: If it's a new test, add it to catalog
-      if (isNewTest) {
-        await labAPI.upsertCatalogItem({
-          test_name: requestData.test_name,
-          price: requestData.test_price,
-          unit_id: requestData.unit_id,
-          is_auto_created: true
-        });
-      }
+      const promises = selectedTests.map(async (test) => {
+        // Auto-Indexing for Scientists if price is provided manually
+        if (test.is_new && !isDoctor && test.test_price > 0) {
+          await labAPI.upsertCatalogItem({
+            test_name: test.test_name,
+            price: test.test_price,
+            unit_id: test.unit_id,
+            is_auto_created: true
+          });
+        }
 
-      await labAPI.createRequest({
-        patient_id: selectedPatient.id || selectedPatient._id,
-        ...requestData
+        return labAPI.createRequest({
+          patient_id: selectedPatient.id || selectedPatient._id,
+          test_name: test.test_name,
+          test_price: test.test_price,
+          unit_id: test.unit_id,
+          ...requestData
+        });
       });
-      toast.success('Lab job assigned and queued');
+
+      await Promise.all(promises);
+      toast.success(`${selectedTests.length} investigations queued`);
       onSuccess?.();
       onClose();
     } catch (error) {
-      toast.error('Failed to initiate lab job');
+      toast.error('Failed to initiate batch');
     } finally {
       setLoading(false);
     }
@@ -219,7 +237,7 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-4 hover:bg-white rounded-2xl text-gray-400 hover:text-rose-500 hover:rotate-90 transition-all duration-300">
+          <button onClick={onClose} className="p-4 hover:bg-white rounded-2xl text-gray-400 hover:text-rose-500 hover:rotate-90 transition-all duration-300" type="button">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -250,6 +268,7 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
                        key={p.id}
                        onClick={() => { setSelectedPatient(p); setStage('Configure'); }}
                        className="w-full flex items-center justify-between p-5 bg-white border border-gray-100 rounded-[1.5rem] hover:border-blue-200 hover:bg-blue-50/30 transition-all group"
+                       type="button"
                      >
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 font-black text-blue-600 text-sm">
@@ -277,6 +296,7 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
                         setStage('Enroll');
                     }}
                     className="px-8 py-4 bg-gray-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all active:scale-95 shadow-xl shadow-gray-200"
+                    type="button"
                   >
                     Enroll Now
                   </button>
@@ -339,11 +359,12 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
                   />
                </div>
                <div className="flex gap-4 pt-4">
-                  <button onClick={() => setStage('Discovery')} className="flex-1 py-4 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-gray-600 transition-colors">Discard</button>
+                  <button onClick={() => setStage('Discovery')} className="flex-1 py-4 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-gray-600 transition-colors" type="button">Discard</button>
                   <button 
                     onClick={handleEnrollPatient}
                     disabled={loading}
                     className="flex-[2] py-4 bg-gray-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-gray-200 hover:bg-emerald-600 transition-all flex items-center justify-center gap-3"
+                    type="button"
                   >
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                     Create Identity
@@ -355,21 +376,23 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
           {/* STAGE: CONFIGURE */}
           {stage === 'Configure' && (
             <div className="space-y-8 animate-in fade-in slide-in-from-right-4">
-               {/* Selection Summary */}
-               <div className="p-6 bg-blue-50/50 rounded-[2rem] border border-blue-100 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-white border border-blue-100 flex items-center justify-center font-black text-blue-600 text-xs shadow-sm">
-                      {selectedPatient?.fullName?.[0]}
+              {/* Using a Fragment to group Config siblings and prevent parentage issues */}
+              <>
+                 {/* Selection Summary */}
+                 <div className="p-6 bg-blue-50/50 rounded-[2rem] border border-blue-100 flex items-center justify-between shadow-sm mr-1">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-white border border-blue-100 flex items-center justify-center font-black text-blue-600 text-xs shadow-sm">
+                        {selectedPatient?.fullName?.[0]}
+                      </div>
+                      <div>
+                        <p className="font-black text-gray-900 leading-none">{selectedPatient?.fullName}</p>
+                        <p className="text-[9px] text-blue-500 font-bold uppercase tracking-widest mt-1">Ready for assignment</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-black text-gray-900 leading-none">{selectedPatient?.fullName}</p>
-                      <p className="text-[9px] text-blue-500 font-bold uppercase tracking-widest mt-1">Ready for assignment</p>
-                    </div>
-                  </div>
-                  <button onClick={() => setStage('Discovery')} className="text-[10px] font-black uppercase text-blue-600 hover:underline">Change</button>
-               </div>
+                    <button onClick={() => setStage('Discovery')} className="text-[10px] font-black uppercase text-blue-600 hover:underline" type="button">Change Subject</button>
+                 </div>
 
-                 <div className="space-y-4 col-span-2">
+                  <div className="space-y-4 col-span-2">
                     <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1 flex justify-between">
                       Protocol Investigation
                       {isNewTest && <span className="text-amber-500 animate-pulse">Auto-Indexed Mode</span>}
@@ -379,23 +402,34 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
                         <TestTubes className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
                         <input 
                           placeholder="Search or Type new test..."
-                          className="w-full pl-14 pr-6 py-5 bg-gray-50/50 border border-gray-100 rounded-[1.5rem] focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-black text-gray-900 shadow-inner"
+                          className="w-full pl-14 pr-32 py-5 bg-gray-50/50 border border-gray-100 rounded-[1.5rem] focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-black text-gray-900 shadow-inner"
                           value={testSearchTerm}
                           onChange={(e) => {
                             const val = e.target.value;
                             setTestSearchTerm(val);
-                            setRequestData({ ...requestData, test_name: val });
                             const match = labCatalog.find(c => c.test_name.toLowerCase() === val.toLowerCase());
-                            if (match) {
-                              setIsNewTest(false);
-                              setRequestData(prev => ({ ...prev, test_name: match.test_name, test_price: match.price, unit_id: match.unit_id }));
-                            } else {
-                              setIsNewTest(val.length > 0);
-                            }
+                            setIsNewTest(!match && val.length > 0);
                             setShowCatalogSuggestions(val.length > 0);
                           }}
                           onFocus={() => setShowCatalogSuggestions(testSearchTerm.length > 0)}
                         />
+                        <button 
+                          onClick={() => {
+                            if (testSearchTerm) {
+                              const match = labCatalog.find(c => c.test_name.toLowerCase() === testSearchTerm.toLowerCase());
+                              handleAddTest({
+                                test_name: match?.test_name || testSearchTerm,
+                                test_price: match?.price || 0,
+                                unit_id: match?.unit_id || null,
+                                is_new: !match
+                              });
+                            }
+                          }}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg active:scale-95"
+                          type="button"
+                        >
+                          Add Test
+                        </button>
                       </div>
                       
                       {showCatalogSuggestions && (
@@ -407,48 +441,66 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
                                 <button 
                                   key={c.id}
                                   onClick={() => {
-                                    setRequestData({ ...requestData, test_name: c.test_name, test_price: c.price, unit_id: c.unit_id });
-                                    setTestSearchTerm(c.test_name);
-                                    setIsNewTest(false);
-                                    setShowCatalogSuggestions(false);
+                                    handleAddTest({
+                                      test_name: c.test_name,
+                                      test_price: c.price,
+                                      unit_id: c.unit_id,
+                                      is_new: false
+                                    });
                                   }}
                                   className="w-full flex items-center justify-between p-5 hover:bg-blue-50 transition-colors text-left border-b border-gray-50 last:border-0"
+                                  type="button"
                                 >
                                   <div>
                                     <p className="font-black text-gray-900 text-sm">{c.test_name}</p>
                                     <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest leading-none mt-1">{c.unit?.name || 'General'}</p>
                                   </div>
-                                  <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-widest group-hover:bg-white">₦{c.price.toLocaleString()}</span>
+                                  <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-widest group-hover:bg-white text-right">₦{c.price.toLocaleString()}</span>
                                 </button>
                               ))}
                             
                             {isNewTest && (
-                               <div className="p-4 bg-amber-50/50 border-t border-amber-100">
-                                  <p className="text-[9px] font-black text-amber-700 uppercase tracking-widest text-center">Protocol not in catalog. Proceeding with auto-indexing.</p>
-                                </div>
+                                <button 
+                                  onClick={() => handleAddTest({ test_name: testSearchTerm, test_price: 0, unit_id: null, is_new: true })}
+                                  className="w-full p-4 bg-amber-50/50 border-t border-amber-100 hover:bg-amber-100 transition-colors"
+                                  type="button"
+                                >
+                                   <p className="text-[9px] font-black text-amber-700 uppercase tracking-widest text-center flex items-center justify-center gap-2">
+                                     <Plus className="w-3 h-3" /> Add Research Investigation: "{testSearchTerm}"
+                                   </p>
+                                 </button>
                             )}
                           </div>
                         </div>
                       )}
                     </div>
-                 </div>
+                  </div>
 
-                 <div className="space-y-2">
-                   <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Service Fee (₦)</label>
-                   <input 
-                      type="number"
-                      placeholder="0.00"
-                      className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-gray-900"
-                      value={requestData.test_price}
-                      onChange={e => setRequestData({...requestData, test_price: parseFloat(e.target.value) || 0})}
-                   />
-                 <div className="space-y-2">
-                   <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Priority Level</label>
-                   <div className="flex p-1 bg-gray-50 rounded-2xl border border-gray-100 group">
+                  {/* Batch Cart UI */}
+                  {selectedTests.length > 0 && (
+                    <div className="space-y-3 p-6 bg-gray-50/50 rounded-[2rem] border border-dashed border-gray-200">
+                      <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Investigation Batch ({selectedTests.length})</p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedTests.map(t => (
+                          <div key={t.test_name} className="flex items-center gap-2 pl-4 pr-2 py-2 bg-white border border-gray-100 rounded-xl shadow-sm group">
+                            <span className="text-xs font-black text-gray-700">{t.test_name}</span>
+                            <button onClick={() => handleRemoveTest(t.test_name)} className="p-1 hover:bg-rose-50 rounded-lg text-gray-300 hover:text-rose-500 transition-all" type="button">
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Priority Level</label>
+                    <div className="flex p-1 bg-gray-50 rounded-2xl border border-gray-100 group">
                       {(['Routine', 'Urgent', 'Stat'] as const).map(p => (
                         <button 
                           key={p}
                           onClick={() => setRequestData({...requestData, priority: p})}
+                          type="button"
                           className={cn(
                             "flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all",
                             requestData.priority === p ? 
@@ -461,64 +513,67 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
                           {p}
                         </button>
                       ))}
-                   </div>
-                 </div>
-               </div>
-
-               <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Specimen Type</label>
-                    <select 
-                      className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-gray-900 appearance-none"
-                      value={requestData.specimen_type}
-                      onChange={e => setRequestData({...requestData, specimen_type: e.target.value})}
-                    >
-                      <option>Venous Blood</option>
-                      <option>Capillary Blood</option>
-                      <option>Mid-stream Urine</option>
-                      <option>24-hour Urine</option>
-                      <option>Nasopharyngeal Swab</option>
-                      <option>Saliva</option>
-                      <option>Cerebrospinal Fluid</option>
-                      <option>Stool</option>
-                    </select>
+                    </div>
                   </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Specimen Type</label>
+                      <select 
+                        className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-gray-900 appearance-none"
+                        value={requestData.specimen_type}
+                        onChange={e => setRequestData({...requestData, specimen_type: e.target.value})}
+                      >
+                        <option>Venous Blood</option>
+                        <option>Capillary Blood</option>
+                        <option>Mid-stream Urine</option>
+                        <option>24-hour Urine</option>
+                        <option>Nasopharyngeal Swab</option>
+                        <option>Saliva</option>
+                        <option>Cerebrospinal Fluid</option>
+                        <option>Stool</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Patient Peparation</label>
+                      <input 
+                        placeholder="e.g. 12hr Fasting"
+                        className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-gray-900"
+                        value={requestData.patient_preparation}
+                        onChange={e => setRequestData({...requestData, patient_preparation: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Patient Peparation</label>
-                    <input 
-                      placeholder="e.g. 12hr Fasting"
-                      className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-gray-900"
-                      value={requestData.patient_preparation}
-                      onChange={e => setRequestData({...requestData, patient_preparation: e.target.value})}
+                    <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Investigation Notes</label>
+                    <textarea 
+                      rows={2}
+                      placeholder="Clinical indications or specific requirements..."
+                      className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium text-gray-700 resize-none"
+                      value={requestData.clinical_notes}
+                      onChange={e => setRequestData({...requestData, clinical_notes: e.target.value})}
                     />
                   </div>
-               </div>
 
-               <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Investigation Notes</label>
-                  <textarea 
-                    rows={2}
-                    placeholder="Clinical indications or specific requirements..."
-                    className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium text-gray-700 resize-none"
-                    value={requestData.clinical_notes}
-                    onChange={e => setRequestData({...requestData, clinical_notes: e.target.value})}
-                  />
-               </div>
-
-               <div className="flex items-center justify-between p-2 bg-indigo-50/30 rounded-[2rem] border border-indigo-100/20 mt-4 overflow-hidden">
-                  <div className="px-6 py-2">
-                    <p className="text-[10px] text-indigo-600 font-black uppercase tracking-[0.2em]">Job Valuation</p>
-                    <p className="text-xl font-black text-gray-900">₦ {requestData.test_price.toLocaleString()}</p>
+                  <div className="flex items-center justify-between p-2 bg-indigo-50/30 rounded-[2rem] border border-indigo-100/20 mt-4 overflow-hidden">
+                    <div className="px-6 py-2">
+                      <p className="text-[10px] text-indigo-600 font-black uppercase tracking-[0.2em]">Job Valuation</p>
+                      <p className="text-xl font-black text-gray-900">
+                        {isDoctor ? 'Multiple Tests Selected' : `₦ ${selectedTests.reduce((acc, t) => acc + (t.test_price || 0), 0).toLocaleString()}`}
+                      </p>
+                    </div>
+                    <button 
+                      onClick={handleSubmitRequest}
+                      disabled={loading}
+                      type="button"
+                      className="bg-gray-900 text-white px-10 py-5 rounded-[1.75rem] text-xs font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-blue-600 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3"
+                    >
+                      {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
+                      {isDoctor ? 'Request Investigation' : 'Authorize Job'}
+                    </button>
                   </div>
-                  <button 
-                    onClick={handleSubmitRequest}
-                    disabled={loading}
-                    className="bg-gray-900 text-white px-10 py-5 rounded-[1.75rem] text-xs font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-blue-600 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3"
-                  >
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
-                    Authorize Job
-                  </button>
-               </div>
+              </>
             </div>
           )}
         </div>
