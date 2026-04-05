@@ -9,6 +9,7 @@ import {
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { siteSettingsAPI } from '@/lib/api';
+import toast from 'react-hot-toast';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -47,8 +48,10 @@ export default function LabReportPreviewModal({ requests, onClose }: LabReportPr
       try {
         const res = await siteSettingsAPI.get() as any;
         setSettings(res.data || {});
+        toast.success('Clinical Branding Synchronized');
       } catch (e) {
         console.error('Failed to fetch hospital settings');
+        toast.error('Branding synchronization delayed');
       } finally {
         setLoading(false);
       }
@@ -57,9 +60,11 @@ export default function LabReportPreviewModal({ requests, onClose }: LabReportPr
   }, []);
 
   const handlePrint = () => {
-    // We print the contents of the report-container div
     const printContent = document.getElementById('report-container');
-    if (!printContent) return;
+    if (!printContent) {
+      toast.error('Clinical report buffer not ready');
+      return;
+    }
 
     const printWindow = window.open('', '_blank');
     if (printWindow) {
@@ -226,7 +231,6 @@ export default function LabReportPreviewModal({ requests, onClose }: LabReportPr
   };
 
   const patient = requests[0]?.patient || {};
-  const specimenIds = requests.map(r => r.id.slice(-8).toUpperCase()).join(', ');
 
   const parseResults = (rawString: string): { metrics: Metric[], notes: string } => {
     if (!rawString) return { metrics: [], notes: '' };
@@ -240,7 +244,6 @@ export default function LabReportPreviewModal({ requests, onClose }: LabReportPr
         if (Array.isArray(data)) {
           return { metrics: data, notes };
         } else {
-          // Legacy format
           const metrics = Object.entries(data).map(([label, value]) => ({
             label,
             value: String(value),
@@ -257,11 +260,10 @@ export default function LabReportPreviewModal({ requests, onClose }: LabReportPr
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-      <div className="bg-white/95 backdrop-blur-xl rounded-[2.5rem] w-full max-w-[210mm] max-h-[95vh] flex flex-col shadow-2xl overflow-hidden border border-white/20">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-[2.5rem] w-full max-w-[210mm] max-h-[95vh] flex flex-col shadow-2xl overflow-hidden border border-gray-100">
         
-        {/* Modal Header Actions */}
-        <div className="flex justify-between items-center px-10 py-6 border-b border-gray-100 shrink-0 bg-white/50">
+        <div className="flex justify-between items-center px-10 py-6 border-b border-gray-100 shrink-0 bg-white">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100">
               <FileText className="w-5 h-5 text-indigo-600" />
@@ -281,29 +283,25 @@ export default function LabReportPreviewModal({ requests, onClose }: LabReportPr
             </button>
             <button 
               onClick={onClose}
-              className="p-3 bg-gray-100 rounded-2xl text-gray-400 hover:text-rose-500 hover:bg-rose-50 transition-all"
+              className="p-3 bg-gray-50 rounded-2xl text-gray-400 hover:text-rose-500 hover:bg-rose-50 transition-all"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Scrollable Container (Screen Only) */}
-        <div className="flex-1 overflow-y-auto p-12 bg-gray-50/50 custom-scrollbar">
-          
-          {/* THE ACTUAL REPORT (Styled for A4) */}
+        <div className="flex-1 overflow-y-auto p-12 bg-gray-50/50">
           <div id="report-container">
             <div className="page bg-white shadow-sm mx-auto">
               <div className="watermark">LAB CERTIFIED</div>
               
-              {/* Report Header */}
               <div className="header">
                 <div className="hospital-info">
                   {settings.hospital_logo && (
                     <img src={settings.hospital_logo} alt="Hospital Logo" className="hospital-logo" />
                   )}
                   <h1>{settings.hospital_name || 'Laboratory Diagnostic Hub'}</h1>
-                  <p>{settings.address || 'Clinic HQ Sector 4'}</p>
+                  <p>{settings.address || 'Hospital Address'}</p>
                   <p>{settings.contact_email || 'diagnostics@hospital.com'} • {settings.contact_phone || '+234 000 000 0000'}</p>
                   {settings.cin_number && <p>CIN: {settings.cin_number}</p>}
                 </div>
@@ -319,7 +317,6 @@ export default function LabReportPreviewModal({ requests, onClose }: LabReportPr
                 <h2>Verified Diagnostic Certificate</h2>
               </div>
 
-              {/* Patient Demographics */}
               <div className="demographics">
                 <div className="demo-item">
                   <span className="demo-label">Patient Name</span>
@@ -347,7 +344,6 @@ export default function LabReportPreviewModal({ requests, onClose }: LabReportPr
                 </div>
               </div>
 
-              {/* Tests Breakdown */}
               {requests.map((req, idx) => {
                 const { metrics, notes } = parseResults(req.results);
                 return (
@@ -372,7 +368,7 @@ export default function LabReportPreviewModal({ requests, onClose }: LabReportPr
                               <td className="font-bold">{m.label}</td>
                               <td className={cn(
                                 "font-bold",
-                                req.is_critical && mIdx === 0 && "text-critical" // Heuristic for critical if marked
+                                req.is_critical && mIdx === 0 && "text-critical"
                               )}>{m.value}</td>
                               <td>{m.unit}</td>
                               <td className="text-[10px] text-gray-500 italic">{m.referenceRange || 'N/A'}</td>
@@ -396,7 +392,6 @@ export default function LabReportPreviewModal({ requests, onClose }: LabReportPr
                 );
               })}
 
-              {/* Authorized Signature */}
               <div className="footer">
                 <div className="text-[9px] text-gray-400 max-w-[350px]">
                   This laboratory investigation has been verified and authorized according to international clinical standards.

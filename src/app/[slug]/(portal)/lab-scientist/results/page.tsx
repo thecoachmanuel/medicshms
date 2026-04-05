@@ -53,6 +53,11 @@ function LabResultsContent() {
   });
 
   const handlePrint = (req: any) => {
+    if (!req) {
+      toast.error('Invalid request data for certificate');
+      return;
+    }
+    toast.success('Preparing Clinical Certificate...');
     setPreviewRequests([req]);
   };
 
