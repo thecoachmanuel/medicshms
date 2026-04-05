@@ -6,7 +6,8 @@ import {
   ChevronDown, AlertCircle, Printer, Download,
   Beaker, Microscope, Activity, Droplets, Info,
   Plus, Trash2, Edit3, Copy, ChevronLeft, ChevronRight,
-  Database
+  Database, File, Paperclip, Upload,
+  Search, Eye, EyeOff, Settings2
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -200,6 +201,8 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
   const [clinicalNotes, setClinicalNotes] = useState('');
   const [isCritical, setIsCritical] = useState(false);
   const [fileUrl, setFileUrl] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchCatalog();
@@ -238,7 +241,9 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
     // Initialize fields from schema with unique IDs for dynamic manipulation
     const initialFields = schema.fields.map((f: any, idx: number) => ({
       ...f,
-      id: `field-${Date.now()}-${idx}`
+      id: `field-${Date.now()}-${idx}`,
+      hideUnit: f.unit === undefined || f.unit === '',
+      hideRef: f.referenceRange === undefined || f.referenceRange === ''
     }));
     setFields(initialFields);
 
@@ -302,6 +307,32 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
       toast.error('Failed to update master template');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 5MB Limit
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size exceeds the 5MB clinical threshold');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const { uploadAPI } = await import('@/lib/api');
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const res = await uploadAPI.upload(formData) as any;
+      setFileUrl(res.data?.url || res.url);
+      toast.success('Clinical evidence uploaded successfully');
+    } catch (e) {
+      toast.error('Laboratory upload failed');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -383,14 +414,23 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
             <div className="w-64 shrink-0 bg-gray-50/50 rounded-[2rem] border border-gray-100 p-4 flex flex-col gap-4 animate-in slide-in-from-left-4 duration-300">
               <div className="px-2">
                 <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Investigation Library</h3>
-                <p className="text-[9px] text-gray-500 font-medium leading-tight">Select a diagnostic protocol to populate parameters.</p>
+                <div className="relative mt-3">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" />
+                  <input 
+                    type="text"
+                    placeholder="Search protocols..."
+                    className="w-full pl-8 pr-4 py-2 bg-white border border-gray-100 rounded-xl text-[10px] font-bold outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all shadow-sm"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
               </div>
               
               <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-1.5">
                 {/* Seeded Templates (Legacy/Hardcoded) */}
                 <div className="mb-4">
                   <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mb-2 ml-2">Quick Access</p>
-                  {TEMPLATES.map(t => (
+                  {TEMPLATES.filter(t => t.name.toLowerCase().includes(searchTerm.toLowerCase())).map(t => (
                     <button 
                       key={t.id}
                       onClick={() => handleApplyTemplate(t)}
@@ -407,7 +447,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                 {/* Database Catalog Templates */}
                 <div>
                   <p className="text-[8px] font-black text-emerald-400 uppercase tracking-widest mb-2 ml-2">Global Catalog</p>
-                  {catalog.map(t => (
+                  {catalog.filter(t => t.test_name.toLowerCase().includes(searchTerm.toLowerCase())).map(t => (
                     <button 
                       key={t.id}
                       onClick={() => handleApplyTemplate(t)}
@@ -487,26 +527,30 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                             placeholder="Parameter Name"
                           />
                           <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-1.5 px-2 py-1 bg-white rounded-lg border border-indigo-100/50 shadow-sm transition-all hover:bg-indigo-50/50 cursor-text">
-                              <span className="text-[8px] font-black text-indigo-400 uppercase">Unit:</span>
-                              <input 
-                                type="text"
-                                value={field.unit}
-                                onChange={(e) => handleUpdateFieldMeta(field.id, { unit: e.target.value })}
-                                className="text-[9px] font-bold text-indigo-600 bg-transparent border-none outline-none focus:ring-0 w-12 p-0"
-                                placeholder="..."
-                              />
-                            </div>
-                            <div className="flex items-center gap-1.5 px-2 py-1 bg-white rounded-lg border border-indigo-100/50 shadow-sm transition-all hover:bg-indigo-50/50 cursor-text">
-                              <span className="text-[8px] font-black text-indigo-400 uppercase">REF:</span>
-                              <input 
-                                type="text"
-                                value={field.referenceRange}
-                                onChange={(e) => handleUpdateFieldMeta(field.id, { referenceRange: e.target.value })}
-                                className="text-[9px] font-bold text-indigo-600 bg-transparent border-none outline-none focus:ring-0 w-32 p-0"
-                                placeholder="Range..."
-                              />
-                            </div>
+                            {!field.hideUnit && (
+                              <div className="flex items-center gap-1.5 px-2 py-1 bg-white rounded-lg border border-indigo-100/50 shadow-sm transition-all hover:bg-indigo-50/50 cursor-text">
+                                <span className="text-[8px] font-black text-indigo-400 uppercase">Unit:</span>
+                                <input 
+                                  type="text"
+                                  value={field.unit}
+                                  onChange={(e) => handleUpdateFieldMeta(field.id, { unit: e.target.value })}
+                                  className="text-[9px] font-bold text-indigo-600 bg-transparent border-none outline-none focus:ring-0 w-12 p-0"
+                                  placeholder="..."
+                                />
+                              </div>
+                            )}
+                            {!field.hideRef && (
+                              <div className="flex items-center gap-1.5 px-2 py-1 bg-white rounded-lg border border-indigo-100/50 shadow-sm transition-all hover:bg-indigo-50/50 cursor-text">
+                                <span className="text-[8px] font-black text-indigo-400 uppercase">REF:</span>
+                                <input 
+                                  type="text"
+                                  value={field.referenceRange}
+                                  onChange={(e) => handleUpdateFieldMeta(field.id, { referenceRange: e.target.value })}
+                                  className="text-[9px] font-bold text-indigo-600 bg-transparent border-none outline-none focus:ring-0 w-32 p-0"
+                                  placeholder="Range..."
+                                />
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -542,6 +586,27 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                         {/* Row Actions */}
                         <div className="flex md:flex-col gap-2 items-center justify-center border-l border-gray-100 pl-4">
                           <button 
+                            onClick={() => handleUpdateFieldMeta(field.id, { hideUnit: !field.hideUnit })}
+                            className={cn(
+                              "p-2 rounded-xl transition-all",
+                              field.hideUnit ? "text-gray-300 hover:text-indigo-600 hover:bg-indigo-50" : "text-indigo-600 bg-indigo-50"
+                            )}
+                            title={field.hideUnit ? "Show Unit Field" : "Hide Unit Field"}
+                          >
+                            {field.hideUnit ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          </button>
+                          <button 
+                            onClick={() => handleUpdateFieldMeta(field.id, { hideRef: !field.hideRef })}
+                            className={cn(
+                              "p-2 rounded-xl transition-all",
+                              field.hideRef ? "text-gray-300 hover:text-rose-600 hover:bg-rose-50" : "text-rose-600 bg-rose-50"
+                            )}
+                            title={field.hideRef ? "Show Ref Range" : "Hide Ref Range"}
+                          >
+                            {field.hideRef ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          </button>
+                          <div className="w-full h-px bg-gray-100 my-1 hidden md:block" />
+                          <button 
                             onClick={() => handleDuplicateField(field)}
                             className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
                             title="Duplicate Entry"
@@ -573,7 +638,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
               {/* Qualitative Observations */}
               <div className="space-y-6 pt-8 border-t border-gray-100">
                 <div>
-                  <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] ml-1 mb-2">Clinical Observations & Qualitative Commentary</label>
+                  <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] ml-1 mb-2">COMMENTS</label>
                   <textarea 
                     rows={4} 
                     className="w-full bg-gray-50 border border-gray-200/50 rounded-[1.5rem] p-5 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-medium text-gray-800 shadow-inner" 
@@ -584,15 +649,38 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="group">
-                    <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] ml-1 mb-2">Cloud Attachment URI</label>
-                    <input 
-                      type="text" 
-                      className="w-full px-6 py-4 bg-gray-50 border border-gray-200/50 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-bold text-gray-900 shadow-inner" 
-                      value={fileUrl}
-                      onChange={(e) => setFileUrl(e.target.value)}
-                      placeholder="https://..."
-                    />
+                  <div className="group relative">
+                    <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] ml-1 mb-2">Clinical Attachment (Max 5MB)</label>
+                    <div className="relative group/upload h-[56px]">
+                      <input 
+                        type="file" 
+                        onChange={handleFileUpload}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        accept=".pdf,.jpg,.jpeg,.png,.docx"
+                        disabled={isUploading}
+                      />
+                      <div className={cn(
+                        "w-full h-full px-6 bg-gray-50 border border-dashed border-gray-200 rounded-[1.25rem] flex items-center justify-between transition-all group-hover/upload:border-indigo-300 group-hover/upload:bg-indigo-50/10",
+                        isUploading && "animate-pulse border-amber-300"
+                      )}>
+                        <div className="flex items-center gap-3 overflow-hidden">
+                          {isUploading ? (
+                            <Activity className="w-4 h-4 text-amber-500 animate-spin" />
+                          ) : fileUrl ? (
+                            <CheckCircle className="w-4 h-4 text-emerald-500" />
+                          ) : (
+                            <Paperclip className="w-4 h-4 text-gray-400" />
+                          )}
+                          <span className={cn(
+                            "text-[10px] font-bold truncate pr-4",
+                            fileUrl ? "text-emerald-700" : "text-gray-400"
+                          )}>
+                            {isUploading ? "Uploading clinical data..." : fileUrl ? fileUrl.split('/').pop() : "Drag or click to attach evidence"}
+                          </span>
+                        </div>
+                        <Upload className="w-4 h-4 text-gray-300 group-hover/upload:text-indigo-500 transition-all shrink-0" />
+                      </div>
+                    </div>
                   </div>
                   <div className="flex flex-col justify-end">
                     <button 

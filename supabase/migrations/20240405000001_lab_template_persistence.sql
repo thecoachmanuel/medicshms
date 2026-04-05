@@ -107,6 +107,69 @@ BEGIN
         ]
     }') ON CONFLICT (hospital_id, test_name) DO UPDATE SET template_schema = EXCLUDED.template_schema;
 
+    -- --- Hormones --- --
+    INSERT INTO public.lab_test_catalog (hospital_id, chem_id, test_name, price, template_schema)
+    VALUES (def_hosp_id, chem_id, 'Thyroid Profile (T3, T4, TSH)', 12500, '{
+        "fields": [
+            {"label": "TSH (Thyroid Stimulating Hormone)", "unit": "uIU/mL", "referenceRange": "0.4 - 4.5", "type": "number"},
+            {"label": "Free T3", "unit": "pg/dL", "referenceRange": "230 - 420", "type": "number"},
+            {"label": "Free T4", "unit": "ng/dL", "referenceRange": "0.8 - 1.8", "type": "number"}
+        ]
+    }') ON CONFLICT (hospital_id, test_name) DO UPDATE SET template_schema = EXCLUDED.template_schema;
+
+    INSERT INTO public.lab_test_catalog (hospital_id, chem_id, test_name, price, template_schema)
+    VALUES (def_hosp_id, chem_id, 'Reproductive Hormones (FSH, LH, Prolactin)', 18000, '{
+        "fields": [
+            {"label": "FSH (Follicle Stimulating Hormone)", "unit": "mIU/mL", "referenceRange": "Follicular: 3.5 - 12.5", "type": "number"},
+            {"label": "LH (Luteinizing Hormone)", "unit": "mIU/mL", "referenceRange": "Follicular: 2.4 - 12.6", "type": "number"},
+            {"label": "Prolactin", "unit": "ng/mL", "referenceRange": "4.8 - 23.3 (M), 5.0 - 26.0 (F)", "type": "number"},
+            {"label": "Testosterone (Total)", "unit": "ng/dL", "referenceRange": "240 - 950 (M), 8 - 60 (F)", "type": "number"}
+        ]
+    }') ON CONFLICT (hospital_id, test_name) DO UPDATE SET template_schema = EXCLUDED.template_schema;
+
+    -- --- Tumor Markers --- --
+    INSERT INTO public.lab_test_catalog (hospital_id, chem_id, test_name, price, template_schema)
+    VALUES (def_hosp_id, chem_id, 'PSA (Prostate Specific Antigen)', 8500, '{
+        "fields": [
+            {"label": "Total PSA", "unit": "ng/mL", "referenceRange": "< 4.0 (Normal), > 10.0 (High Risk)", "type": "number"}
+        ]
+    }') ON CONFLICT (hospital_id, test_name) DO UPDATE SET template_schema = EXCLUDED.template_schema;
+
+    INSERT INTO public.lab_test_catalog (hospital_id, chem_id, test_name, price, template_schema)
+    VALUES (def_hosp_id, chem_id, 'CEA & AFP', 15000, '{
+        "fields": [
+            {"label": "CEA (Carcinoembryonic Antigen)", "unit": "ng/mL", "referenceRange": "< 3.0 (Non-smoker), < 5.0 (Smoker)", "type": "number"},
+            {"label": "AFP (Alpha-Fetoprotein)", "unit": "ng/mL", "referenceRange": "< 10.0", "type": "number"}
+        ]
+    }') ON CONFLICT (hospital_id, test_name) DO UPDATE SET template_schema = EXCLUDED.template_schema;
+
+    -- --- Immunology --- --
+    INSERT INTO public.lab_test_catalog (hospital_id, sero_id, test_name, price, template_schema)
+    VALUES (def_hosp_id, sero_id, 'CRP & RA Factor', 5500, '{
+        "fields": [
+            {"label": "C-Reactive Protein (CRP)", "unit": "mg/dL", "referenceRange": "< 0.3", "type": "number"},
+            {"label": "Rheumatoid Factor (RA)", "unit": "IU/mL", "referenceRange": "< 14", "type": "number"},
+            {"label": "ASO Titre", "unit": "IU/mL", "referenceRange": "< 200", "type": "number"}
+        ]
+    }') ON CONFLICT (hospital_id, test_name) DO UPDATE SET template_schema = EXCLUDED.template_schema;
+
+    -- --- Parasitology --- --
+    INSERT INTO public.lab_test_catalog (hospital_id, micro_id, test_name, price, template_schema)
+    VALUES (def_hosp_id, micro_id, 'Malaria Parasite (MP) - Microscopy', 2500, '{
+        "fields": [
+            {"label": "Thick Film", "defaultValue": "No Malaria Parasite Seen (+)"},
+            {"label": "Thin Film (Species Identification)", "defaultValue": "P. Falciparum"},
+            {"label": "Parasite Density", "unit": "/uL"}
+        ]
+    }') ON CONFLICT (hospital_id, test_name) DO UPDATE SET template_schema = EXCLUDED.template_schema;
+
+    INSERT INTO public.lab_test_catalog (hospital_id, micro_id, test_name, price, template_schema)
+    VALUES (def_hosp_id, micro_id, 'H. Pylori (Stool Antigen)', 4500, '{
+        "fields": [
+            {"label": "H. Pylori Status", "type": "select", "options": ["Negative", "Positive"]}
+        ]
+    }') ON CONFLICT (hospital_id, test_name) DO UPDATE SET template_schema = EXCLUDED.template_schema;
+
     -- Urinalysis (Macro & Micro)
     INSERT INTO public.lab_test_catalog (hospital_id, micro_id, test_name, price, template_schema)
     VALUES (def_hosp_id, micro_id, 'Urinalysis (Full Routine)', 2500, '{
