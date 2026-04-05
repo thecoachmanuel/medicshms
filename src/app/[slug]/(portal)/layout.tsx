@@ -125,7 +125,7 @@ export default function PortalLayout({
     <div className="flex h-screen bg-slate-50/50 overflow-hidden">
       <Sidebar isOpen={sidebarOpen} toggleSidebar={() => setSidebarOpen(false)} />
       
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-64 relative">
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-64 relative z-40">
         <div className="absolute top-0 right-0 w-1/3 h-1/4 bg-primary-600/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
         <AdminHeader toggleSidebar={() => setSidebarOpen(true)} />
         

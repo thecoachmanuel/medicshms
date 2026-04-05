@@ -152,12 +152,12 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={toggleSidebar} />
+        <div className="fixed inset-0 bg-black/50 z-[190] lg:hidden" onClick={toggleSidebar} />
       )}
 
       <aside className={cn(
-        "fixed top-0 left-0 h-full bg-white border-r border-gray-200 z-50 transition-transform duration-300 w-64 flex flex-col",
-        isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        "fixed top-0 left-0 h-full bg-white border-r border-gray-200 transition-transform duration-300 w-64 flex flex-col",
+        isOpen ? "translate-x-0 z-[200]" : "-translate-x-full lg:translate-x-0 z-30"
       )}>
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <Link href={slug ? `/${slug}` : "/"} className="hover:opacity-80 transition-opacity">
