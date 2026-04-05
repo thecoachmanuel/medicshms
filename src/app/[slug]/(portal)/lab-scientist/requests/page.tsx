@@ -10,6 +10,7 @@ import { twMerge } from 'tailwind-merge';
 import { useSearchParams } from 'next/navigation';
 import CreateLabRequestModal from '@/components/clinical/CreateLabRequestModal';
 import LabResultEntryModal from '@/components/lab/LabResultEntryModal';
+import { LabResultReport } from '@/components/lab/LabResultReport';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -37,6 +38,7 @@ export default function LabRequestsPage() {
   const [globalSearch, setGlobalSearch] = useState('');
   const [assignedUnits, setAssignedUnits] = useState<any[]>([]);
   const [selectedUnitId, setSelectedUnitId] = useState<string>('all');
+  const [printRequest, setPrintRequest] = useState<any>(null);
 
   const filteredRequests = (requests || []).filter(req => {
     const searchLow = globalSearch.toLowerCase();
@@ -141,124 +143,13 @@ export default function LabRequestsPage() {
     }
   };
 
-  const handlePrint = async (req: any) => {
-    // Fetch hospital settings for branding
-    const { siteSettingsAPI } = await import('@/lib/api');
-    const settingsRes = await siteSettingsAPI.get() as any;
-    const settings = settingsRes.data || {};
-
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Lab Report - ${req.patient?.full_name}</title>
-            <style>
-              @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
-              body { font-family: 'Inter', sans-serif; padding: 50px; color: #1e293b; max-width: 900px; margin: 0 auto; background: #fff; }
-              .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 4px solid #f1f5f9; padding-bottom: 30px; margin-bottom: 40px; }
-              .hospital-info h1 { font-size: 28px; font-weight: 900; color: #0f172a; margin: 0; text-transform: uppercase; letter-spacing: -0.02em; }
-              .hospital-info p { font-size: 13px; color: #64748b; margin: 4px 0; font-weight: 500; }
-              .report-title { text-align: center; margin-bottom: 40px; }
-              .report-title h2 { font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #334155; background: #f8fafc; display: inline-block; padding: 10px 30px; border-radius: 12px; }
-              .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px; }
-              .detail-item { border-left: 3px solid #e2e8f0; padding-left: 20px; }
-              .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; font-weight: 700; margin-bottom: 4px; }
-              .value { font-size: 15px; font-weight: 600; color: #1e293b; }
-              .results-section { background: #fff; border: 2px solid #f1f5f9; border-radius: 20px; padding: 40px; margin-bottom: 40px; min-height: 200px; position: relative; }
-              .results-content { line-height: 1.8; font-size: 15px; white-space: pre-wrap; }
-              .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 80px; font-weight: 900; color: #f1f5f9; z-index: -1; pointer-events: none; white-space: nowrap; }
-              .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 60px; padding-top: 30px; border-top: 2px solid #f1f5f9; }
-              .signature-box { text-align: center; width: 200px; }
-              .signature-line { border-top: 2px solid #e2e8f0; margin-top: 40px; padding-top: 10px; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; }
-              @media print { body { padding: 20px; } .no-print { display: none; } }
-            </style>
-          </head>
-          <body>
-            <div class="header">
-              <div class="hospital-info">
-                 ${settings.hospital_logo ? `<img src="${settings.hospital_logo}" style="height: 60px; margin-bottom: 15px; object-fit: contain;" />` : ''}
-                 <h1>${settings.hospital_name || 'Medical Diagnostic Center'}</h1>
-                 <p>${settings.address || 'Clinic HQ Sector 4'}</p>
-                 <p>Contact: ${settings.contact_email || 'diagnostics@hospital.com'}</p>
-                 ${settings.cin_number ? `<p>CIN: ${settings.cin_number}</p>` : ''}
-              </div>
-              <div style="text-align: right;">
-                 <div class="value" style="font-size: 12px; color: #64748b;">REPORT ID</div>
-                 <div class="value" style="font-size: 18px;">#${req.id.slice(-8).toUpperCase()}</div>
-              </div>
-            </div>
-
-            <div class="report-title">
-              <h2>Diagnostic Laboratory Certificate</h2>
-            </div>
-            
-            <div class="details-grid">
-              <div class="detail-item">
-                <p class="label">Patient Name</p>
-                <p class="value">${req.patient?.full_name || 'N/A'}</p>
-                <p class="value" style="font-size: 12px; color: #94a3b8;">ID: ${req.patient?.patient_id || 'N/A'}</p>
-              </div>
-              <div class="detail-item">
-                <p class="label">Investigation Protocol</p>
-                <p class="value" style="color: #2563eb;">${req.test_name}</p>
-              </div>
-              <div class="detail-item">
-                <p class="label">Sample Collected</p>
-                <p class="value">${new Date(req.requested_at).toLocaleString()}</p>
-              </div>
-              <div class="detail-item">
-                <p class="label">Authorized Completion</p>
-                <p class="value">${new Date(req.completed_at || req.updated_at).toLocaleString()}</p>
-              </div>
-            </div>
-
-            <div class="results-section">
-              <div class="watermark">CERTIFIED RESULT</div>
-              <p class="label" style="margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">Clinical Observations & quantitative metrics</p>
-              <div class="results-content">
-                ${(() => {
-                  if (req.results?.includes('METRIC_DATA:')) {
-                    const parts = req.results.split('METRIC_DATA:');
-                    const notes = parts[0].trim();
-                    let metrics = {};
-                    try { metrics = JSON.parse(parts[1]); } catch(e) {}
-                    
-                    return `
-                      <div style="margin-bottom: 30px;">${notes}</div>
-                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #fcfcfc; padding: 25px; border-radius: 12px; border: 1px solid #f1f5f9;">
-                        ${Object.entries(metrics).map(([k, v]) => `
-                          <div style="border-bottom: 1px dotted #e2e8f0; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-end;">
-                            <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">${k}</span>
-                            <span style="font-size: 14px; font-weight: 900; color: #1e293b;">${v}</span>
-                          </div>
-                        `).join('')}
-                      </div>
-                    `;
-                  }
-                  return req.results || 'Investigation successful. Refer to digital attachments for quantitative parameters.';
-                })()}
-              </div>
-            </div>
-
-            <div class="footer">
-              <div style="font-size: 11px; color: #94a3b8; max-width: 300px;">
-                This document is electronically generated and contains clinical data verified by the hospital's pathology department.
-              </div>
-              <div class="signature-box">
-                <p class="value" style="color: #2563eb; margin-bottom: -30px;">${req.handled_by_profile?.name || user?.name || 'Authorized Scientist'}</p>
-                <div class="signature-line">Chief Scientific Officer</div>
-              </div>
-            </div>
-            
-            <script>
-              window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 500); }
-            </script>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-    }
+  const handlePrint = (req: any) => {
+    setPrintRequest(req);
+    // Use a small timeout to ensure data is passed to the component before print trigger
+    setTimeout(() => {
+      window.print();
+      setPrintRequest(null);
+    }, 100);
   };
 
   return (
@@ -539,6 +430,25 @@ export default function LabRequestsPage() {
         onClose={() => setShowNewModal(false)}
         onSuccess={() => fetchRequests(activeTab)}
       />
+      {printRequest && (
+        <div className="hidden">
+          <LabResultReport 
+            request={printRequest}
+            patient={printRequest.patient}
+            results={(() => {
+              if (printRequest.results?.includes('METRIC_DATA:')) {
+                try {
+                  const metrics = JSON.parse(printRequest.results.split('METRIC_DATA:')[1]);
+                  return Object.entries(metrics).map(([k, v]) => ({ label: k, value: v }));
+                } catch(e) { return []; }
+              }
+              return [];
+            })()}
+            scientistName={printRequest.handled_by_profile?.name || user?.name}
+            comments={printRequest.results?.split('METRIC_DATA:')[0].trim()}
+          />
+        </div>
+      )}
     </div>
   );
 }
