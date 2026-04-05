@@ -12,6 +12,7 @@ import {
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import toast from 'react-hot-toast';
+import { useParams } from 'next/navigation';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -192,6 +193,8 @@ interface Props {
 }
 
 export default function LabResultEntryModal({ request, onClose, onSuccess }: Props) {
+  const params = useParams();
+  const slug = params?.slug as string;
   const [loading, setLoading] = useState(false);
   const [showLibrary, setShowLibrary] = useState(true);
   const [catalog, setCatalog] = useState<any[]>([]);
@@ -340,7 +343,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
     setLoading(true);
     try {
       const { labAPI, siteSettingsAPI } = await import('@/lib/api');
-      const settingsRes = await siteSettingsAPI.get() as any;
+      const settingsRes = await siteSettingsAPI.get({ slug }) as any;
       const settings = settingsRes.data || {};
       
       // Combine structured data - using a map of labels for the final result output

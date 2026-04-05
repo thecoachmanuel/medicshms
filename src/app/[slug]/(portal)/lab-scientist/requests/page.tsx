@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { TestTubes, Search, CheckCircle, UploadCloud, Printer, Download, Eye, FileText, Clock, User, ChevronRight, X, AlertCircle, Info } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useParams } from 'next/navigation';
 import CreateLabRequestModal from '@/components/clinical/CreateLabRequestModal';
 import LabResultEntryModal from '@/components/lab/LabResultEntryModal';
 
@@ -18,6 +18,8 @@ function cn(...inputs: ClassValue[]) {
 export default function LabRequestsPage() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
+  const params = useParams();
+  const slug = params?.slug as string;
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'Pending' | 'Collected' | 'Completed'>('Pending');
@@ -148,9 +150,9 @@ export default function LabRequestsPage() {
   };
 
   const handlePrint = async (req: any) => {
-    // Fetch hospital settings for branding
+    // Fetch exact hospital settings for branding via slug
     const { siteSettingsAPI } = await import('@/lib/api');
-    const settingsRes = await siteSettingsAPI.get() as any;
+    const settingsRes = await siteSettingsAPI.get({ slug }) as any;
     const settings = settingsRes.data || {};
 
     const printWindow = window.open('', '_blank');
@@ -173,7 +175,7 @@ export default function LabRequestsPage() {
                 print-color-adjust: exact;
               }
               
-              .container { max-width: 800px; margin: 0 auto; min-height: 1000px; display: flex; flex-col: column; }
+              .container { max-width: 800px; margin: 0 auto; min-height: 1000px; display: flex; flex-direction: column; }
               
               .header { 
                 display: flex; 
