@@ -24,7 +24,29 @@ export async function GET(
       return NextResponse.json({ success: false, message: 'Bill not found' }, { status: 404 });
     }
 
+    // Secondary Lookup for Standalone Bills (No Appointment)
+    let patientData: any = null;
+    if (!bill.public_appointments && bill.patient_id) {
+      const { data: patient } = await (supabaseAdmin || supabase)
+        .from('patients')
+        .select('*')
+        .eq('patient_id', bill.patient_id)
+        .single();
+      patientData = patient;
+    }
+
     const signatureUrl = bill.generated_by_signature ? getFileUrl(bill.generated_by_signature) : '';
+
+    // Calculate Age Fallback
+    const calculateAge = (dob: string) => {
+      if (!dob) return 0;
+      const birthDate = new Date(dob);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+      return age;
+    };
 
     const result = {
       ...bill,
@@ -37,14 +59,14 @@ export async function GET(
       paymentStatus: bill.payment_status,
       paymentMethod: bill.payment_method,
       transactionId: bill.transaction_id,
-      // Pass flattened fields for ViewInvoiceModal
-      fullName: bill.public_appointments.full_name,
-      patientId: bill.public_appointments.patient_id,
-      appointmentId: bill.public_appointments.appointment_id,
-      gender: bill.public_appointments.gender,
-      age: bill.public_appointments.age,
-      department: bill.public_appointments.doctors?.department?.name,
-      publicAppointment: {
+      // Standalone Fallbacks
+      fullName: bill.public_appointments?.full_name || patientData?.full_name || 'Individual Patient',
+      patientId: bill.public_appointments?.patient_id || bill.patient_id || 'N/A',
+      appointmentId: bill.public_appointments?.appointment_id || 'STANDALONE',
+      gender: bill.public_appointments?.gender || patientData?.gender || 'N/A',
+      age: bill.public_appointments?.age || calculateAge(patientData?.date_of_birth),
+      department: bill.public_appointments?.doctors?.department?.name || 'Laboratory',
+      publicAppointment: bill.public_appointments ? {
         ...bill.public_appointments,
         appointmentId: bill.public_appointments.appointment_id,
         patientId: bill.public_appointments.patient_id,
@@ -53,7 +75,7 @@ export async function GET(
           ...bill.public_appointments.doctors,
           user: bill.public_appointments.doctors?.profiles
         }
-      },
+      } : null,
       generatedBySignatureUrl: signatureUrl
     };
 

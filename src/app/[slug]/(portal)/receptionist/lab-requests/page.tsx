@@ -231,7 +231,7 @@ export default function ReceptionistLabRequestsPage() {
                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100/50 text-[10px] font-black uppercase tracking-wider w-fit">
                               <CheckCircle className="w-3 h-3" /> Settled
                             </span>
-                          ) : req.payment_status === 'Billed' || req.bill_id ? (
+                          ) : (req.payment_status === 'Billed' || req.bill_id) ? (
                             <div className="flex items-center gap-2">
                               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100/50 text-[10px] font-black uppercase tracking-wider">
                                 <Clock className="w-3 h-3" /> Invoiced
@@ -239,7 +239,11 @@ export default function ReceptionistLabRequestsPage() {
                               <button 
                                 onClick={() => {
                                   setShowInvoiceId(req.bill_id);
-                                  setShowInvoicePatient(req.patient);
+                                  setShowInvoicePatient({
+                                    ...req.patient,
+                                    fullName: req.patient?.full_name || req.patient?.profile?.name,
+                                    patientId: req.patient?.patient_id
+                                  });
                                 }}
                                 className="p-1.5 hover:bg-white rounded-lg transition-all text-gray-400 hover:text-indigo-600 hover:shadow-sm border border-transparent hover:border-gray-100"
                                 title="Update Payment / Reference"

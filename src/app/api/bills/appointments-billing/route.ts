@@ -60,13 +60,29 @@ export async function GET(request: Request) {
     const { data: unbilledAppointments, error: aptError } = await aptQuery.order('created_at', { ascending: false });
     if (aptError) throw aptError;
 
-    // 4. Transform Bills into the View Schema (Use patientMap)
+    // 4. Fetch standalone Lab Requests that aren't billed yet
+    const billedRequestIds = (allBills || [])
+      .filter(b => b.clinical_request_id) // We'll assume clinical_request_id is in bills or notes
+      .map(b => b.clinical_request_id); 
+    
+    // Wait, we don't have clinical_request_id in bills yet in the schema?
+    // Actually, we use payment_status = 'Billed' in clinical_requests.
+    const { data: unbilledLabRequests } = await (supabaseAdmin || supabase)
+      .from('clinical_requests')
+      .select('*, patient:patients!patient_id(full_name, patient_id, gender, date_of_birth)')
+      .eq('hospital_id', userProfile?.hospital_id)
+      .eq('type', 'Laboratory')
+      .eq('payment_status', 'Pending')
+      .is('appointment_id', null) // Only standalone ones to avoid duplicates with appointments
+      .order('requested_at', { ascending: false });
+
+    // 5. Transform Bills into the View Schema (Use patientMap)
     const billEntries = (allBills || []).map(bill => {
       const apt = bill.appointment;
       const patient = patientMap[bill.patient_id];
       return {
         _id: bill.id,
-        fullName: patient?.full_name || apt?.full_name || 'Unknown',
+        fullName: patient?.full_name || apt?.full_name || 'Individual Patient',
         patientId: patient?.patient_id || bill.patient_id || apt?.patient_id || 'N/A',
         appointmentId: apt?.appointment_id || 'STANDALONE',
         appointmentDate: apt?.appointment_date || bill.created_at,
@@ -94,8 +110,8 @@ export async function GET(request: Request) {
       };
     });
 
-    // 4. Transform Unbilled Appointments
-    const unbilledEntries = (unbilledAppointments || []).map(apt => ({
+    // 6. Transform Unbilled Appointments
+    const unbilledAptEntries = (unbilledAppointments || []).map(apt => ({
       _id: apt.id,
       fullName: apt.full_name,
       patientId: apt.patient_id,
@@ -110,8 +126,24 @@ export async function GET(request: Request) {
       bill: null
     }));
 
-    // 5. Merge and Sort
-    let merged = [...billEntries, ...unbilledEntries].sort((a, b) => 
+    // 7. Transform Unbilled Lab Requests
+    const unbilledLabEntries = (unbilledLabRequests || []).map(req => ({
+      _id: req.id,
+      fullName: req.patient?.full_name || 'Individual Patient',
+      patientId: req.patient_id,
+      appointmentId: 'STANDALONE',
+      appointmentDate: req.requested_at,
+      appointmentTime: '',
+      department: 'Laboratory',
+      gender: req.patient?.gender || '',
+      age: 0,
+      doctorName: req.requested_by_name || 'Direct Request',
+      appointmentStatus: 'Billed (Diagnostic)',
+      bill: null
+    }));
+
+    // 8. Merge and Sort
+    let merged = [...billEntries, ...unbilledAptEntries, ...unbilledLabEntries].sort((a, b) => 
       new Date(b.appointmentDate).getTime() - new Date(a.appointmentDate).getTime()
     );
 
