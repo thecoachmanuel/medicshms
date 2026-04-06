@@ -114,10 +114,12 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
             .balance-due { color: ${balance > 0 ? '#dc2626' : '#059669'}; font-size: 16px; border-top: 1px dashed #d1d5db; padding-top: 8px; margin-top: 8px; }
             .footer { margin-top: 100px; text-align: center; border-top: 1px solid #f3f4f6; padding-top: 30px; }
             .footer p { font-size: 12px; color: #9ca3af; font-weight: 500; }
-            @media print { body { padding: 20px; } .no-print { display: none; } }
+            .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 150px; font-weight: 900; color: rgba(0,0,0,0.03); z-index: -1; pointer-events: none; white-space: nowrap; }
+            @media print { body { padding: 0; } .no-print { display: none; } .watermark { color: rgba(0,0,0,0.05); } }
           </style>
         </head>
         <body>
+          <div class="watermark">${bill.paymentStatus.toUpperCase()}</div>
           <div class="header">
             <div style="display: flex; align-items: center; gap: 20px;">
               ${template?.hospitalLogoUrl ? `<img src="${template.hospitalLogoUrl}" style="height: 80px; object-contain: contain;" />` : ''}

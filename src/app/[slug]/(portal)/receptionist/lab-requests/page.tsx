@@ -226,35 +226,45 @@ export default function ReceptionistLabRequestsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-5">
-                       <div className="flex flex-col gap-1.5">
+                        <div className="flex flex-col gap-1.5">
                           {req.payment_status === 'Paid' ? (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100/50 text-[10px] font-black uppercase tracking-wider w-fit">
-                              <CheckCircle className="w-3 h-3" /> Settled
-                            </span>
-                          ) : (req.payment_status === 'Billed' || req.bill_id) ? (
-                            <div className="flex items-center gap-2">
-                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100/50 text-[10px] font-black uppercase tracking-wider">
-                                <Clock className="w-3 h-3" /> Invoiced
+                            <div className="flex flex-col gap-0.5">
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100/50 text-[10px] font-black uppercase tracking-wider w-fit">
+                                <CheckCircle className="w-3 h-3" /> Settled
                               </span>
-                              <button 
-                                onClick={() => {
-                                  setShowInvoiceId(req.bill_id);
-                                  setShowInvoicePatient({
-                                    ...req.patient,
-                                    fullName: req.patient?.full_name || req.patient?.profile?.name,
-                                    patientId: req.patient?.patient_id
-                                  });
-                                }}
-                                className="p-1.5 hover:bg-white rounded-lg transition-all text-gray-400 hover:text-indigo-600 hover:shadow-sm border border-transparent hover:border-gray-100"
-                                title="Update Payment / Reference"
-                              >
-                                <FileText className="w-4 h-4" />
-                              </button>
+                              {req.transaction_id && (
+                                <p className="text-[9px] text-emerald-400 font-bold ml-1 uppercase truncate max-w-[100px]">TRX: {req.transaction_id}</p>
+                              )}
+                            </div>
+                          ) : (req.payment_status === 'Billed' || req.bill_id) ? (
+                            <div className="flex flex-col gap-1.5">
+                              <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100/50 text-[10px] font-black uppercase tracking-wider">
+                                  <Clock className="w-3 h-3" /> Invoiced
+                                </span>
+                                <button 
+                                  onClick={() => {
+                                    setShowInvoiceId(req.bill_id);
+                                    setShowInvoicePatient({
+                                      ...req.patient,
+                                      fullName: req.patient?.full_name || req.patient?.profile?.name,
+                                      patientId: req.patient?.patient_id
+                                    });
+                                  }}
+                                  className="p-1.5 hover:bg-white rounded-lg transition-all text-gray-400 hover:text-blue-600 hover:shadow-sm border border-transparent hover:border-blue-100"
+                                  title="Record Payment / Add Reference"
+                                >
+                                  <FileText className="w-4 h-4" />
+                                </button>
+                              </div>
+                              {req.transaction_id && (
+                                <p className="text-[9px] text-blue-400 font-bold ml-1 uppercase truncate max-w-[100px]">REF: {req.transaction_id}</p>
+                              )}
                             </div>
                           ) : (
                             <div className="flex items-center gap-2">
                               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-100/50 text-[10px] font-black uppercase tracking-wider">
-                                Unpaid
+                                UNPAID
                               </span>
                               <button 
                                 onClick={() => handleAuthorizeBilling(req)}

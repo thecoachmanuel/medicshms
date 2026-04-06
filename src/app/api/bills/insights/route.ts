@@ -14,27 +14,26 @@ export async function GET(request: Request) {
     const status = searchParams.get('status');
 
     let query = (supabaseAdmin || supabase)
-      .from('public_appointments')
-      .select('*, bills!inner(*)')
+      .from('bills')
+      .select('*, appointment:public_appointments!public_appointment_id(*)')
       .eq('hospital_id', profile?.hospital_id)
-      .order('appointment_date', { ascending: false });
+      .order('created_at', { ascending: false });
 
-    if (dateFrom) query = query.gte('appointment_date', dateFrom);
-    if (dateTo) query = query.lte('appointment_date', dateTo);
-    if (department) query = query.eq('department', department);
-    if (status) query = query.eq('bills.payment_status', status);
+    if (dateFrom) query = query.gte('created_at', dateFrom);
+    if (dateTo) query = query.lte('created_at', dateTo);
+    if (status) query = query.eq('payment_status', status);
 
-    const { data, error } = await query;
+    const { data: bills, error } = await query;
     if (error) throw error;
 
-    const merged = (data || []).map(apt => {
-      const bill = (apt as any).bills;
+    const merged = (bills || []).map(bill => {
+      const apt = bill.appointment;
       return {
-        fullName: apt.full_name,
-        patientId: apt.patient_id,
-        appointmentId: apt.appointment_id,
-        appointmentDate: apt.appointment_date,
-        department: apt.department,
+        fullName: apt?.full_name || 'Individual Patient',
+        patientId: apt?.patient_id || bill.patient_id || 'N/A',
+        appointmentId: apt?.appointment_id || 'STANDALONE',
+        appointmentDate: apt?.appointment_date || bill.created_at,
+        department: apt?.department || 'Laboratory',
         billNumber: bill.bill_number,
         totalAmount: bill.total_amount,
         paidAmount: bill.paid_amount || 0,
@@ -46,9 +45,9 @@ export async function GET(request: Request) {
 
     const analytics = {
       totalInvoices: merged.length,
-      totalRevenue: merged.reduce((sum, m) => sum + m.totalAmount, 0),
-      totalPaid: merged.reduce((sum, m) => sum + m.paidAmount, 0),
-      totalDue: merged.reduce((sum, m) => sum + m.dueAmount, 0),
+      totalRevenue: merged.reduce((sum, m) => sum + (m.totalAmount || 0), 0),
+      totalPaid: merged.reduce((sum, m) => sum + (m.paidAmount || 0), 0),
+      totalDue: merged.reduce((sum, m) => sum + (m.dueAmount || 0), 0),
       statusBreakdown: {
         paid: merged.filter(m => m.paymentStatus === 'Paid').length,
         pending: merged.filter(m => m.paymentStatus === 'Pending').length,

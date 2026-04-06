@@ -28,22 +28,31 @@ export default function BillingList() {
   const [generateModal, setGenerateModal] = useState<any>(null);
   const [viewModal, setViewModal] = useState<any>(null);
   const [editModal, setEditModal] = useState<any>(null);
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(true);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    setLoadingAnalytics(true);
     try {
-      const res = await billingAPI.getAppointmentsOverview({
-        page: pagination.page,
-        limit: pagination.limit,
-        status: statusFilter !== 'all' ? statusFilter : undefined,
-        search: searchTerm || undefined
-      }) as any;
+      const [res, insightRes] = await Promise.all([
+        billingAPI.getAppointmentsOverview({
+          page: pagination.page,
+          limit: pagination.limit,
+          status: statusFilter !== 'all' ? statusFilter : undefined,
+          search: searchTerm || undefined
+        }),
+        billingAPI.getInsights({})
+      ]) as any[];
+
       setData(res.data || []);
       setPagination(prev => ({ ...prev, total: res.pagination?.total || 0, pages: res.pagination?.pages || 0 }));
+      setAnalytics(insightRes.analytics);
     } catch {
       toast.error('Failed to load billing records');
     } finally {
       setLoading(false);
+      setLoadingAnalytics(false);
     }
   }, [pagination.page, statusFilter, searchTerm]);
 
@@ -119,6 +128,31 @@ export default function BillingList() {
       {/* Background Decor */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-50/20 via-transparent to-white -z-10" />
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.015] -z-10" />
+
+      {/* Financial Insight Belt */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        {[
+          { label: 'Total Revenue', value: analytics?.totalRevenue || 0, color: 'emerald', icon: <ArrowUpRight className="w-4 h-4" /> },
+          { label: 'Cash at Hand', value: analytics?.totalPaid || 0, color: 'amber', icon: <CheckCircle2 className="w-4 h-4" /> },
+          { label: 'Outstanding Debt', value: analytics?.totalDue || 0, color: 'rose', icon: <AlertCircle className="w-4 h-4" /> },
+          { label: 'Total Invoices', value: analytics?.totalInvoices || 0, color: 'indigo', icon: <RefreshCw className="w-4 h-4" />, isCount: true }
+        ].map((card, i) => (
+          <div key={i} className="bg-white/60 backdrop-blur-md border border-white/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+             <div className={`absolute top-0 right-0 w-24 h-24 bg-${card.color}-500/5 rounded-full -mr-8 -mt-8 group-hover:scale-150 transition-all duration-500`}></div>
+             <div className="relative flex items-center justify-between">
+                <div className="space-y-1">
+                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{card.label}</p>
+                   <p className={`text-xl font-black text-${card.color}-600`}>
+                     {card.isCount ? card.value : `₦${card.value.toLocaleString('en-NG')}`}
+                   </p>
+                </div>
+                <div className={`w-10 h-10 rounded-xl bg-${card.color}-50 flex items-center justify-center text-${card.color}-600 border border-${card.color}-100/50`}>
+                   {card.icon}
+                </div>
+             </div>
+          </div>
+        ))}
+      </div>
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>

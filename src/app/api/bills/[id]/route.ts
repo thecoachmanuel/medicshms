@@ -147,6 +147,12 @@ export async function PUT(
     updateData.paid_amount = currentPaid;
     updateData.due_amount = Math.max(0, totalAmount - currentPaid);
 
+    // Audit Logging
+    const timestamp = new Date().toLocaleString('en-NG');
+    const author = userProfile?.name || userProfile?.email || 'Staff';
+    const auditNote = `\n[${timestamp}] Updated by ${author}: Paid ₦${currentPaid.toLocaleString()}, Method: ${paymentMethod || 'N/A'}`;
+    updateData.notes = (bill.notes || '') + auditNote;
+
     // Use explicit status override if provided, otherwise auto-calculate
     if (paymentStatus) {
       updateData.payment_status = paymentStatus;
@@ -171,6 +177,19 @@ export async function PUT(
       .single();
 
     if (updateError) throw updateError;
+
+    // --- AUTO-SYNC LOGIC ---
+    // Update any clinical requests associated with this bill
+    await (supabaseAdmin || supabase)
+      .from('clinical_requests')
+      .update({ payment_status: updateData.payment_status })
+      .eq('bill_id', id);
+    
+    // Also update if it's an appointment bill (optional, based on hospital flow)
+    if (bill.public_appointment_id) {
+        // We could also update the appointment record if needed
+    }
+    // -----------------------
 
     return NextResponse.json({ success: true, data: { ...updatedBill, _id: updatedBill.id } });
   } catch (error: any) {
