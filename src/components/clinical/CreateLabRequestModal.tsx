@@ -149,7 +149,7 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
       const timestamp = new Date().getTime().toString().slice(-4);
       setRequestData(prev => ({ 
         ...prev, 
-        lab_number: `${prefix}-${unique}${timestamp}` 
+        lab_number: `${prefix}${unique}${timestamp}` 
       }));
     }
   }, [selectedTests, requestData.lab_number]);

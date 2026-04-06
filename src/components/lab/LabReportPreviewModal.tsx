@@ -228,10 +228,11 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
                 <div className="text-right">
                   <div className="demo-label">ACCESSION NUMBER</div>
                   <div className="text-xl font-black" style={{ color: settings.primary_color || '#4f46e5' }}>
-                    #{(() => {
+                    {(() => {
                       const testInitial = (requests[0]?.test_name || 'LAB').substring(0, 3).toUpperCase();
                       const uniqueId = requests[0]?.lab_number || requests[0]?.id.slice(-8).toUpperCase();
-                      return `${testInitial}-${uniqueId}`;
+                      // If it already starts with the prefix, just use it, otherwise prepend (fallback only)
+                      return uniqueId.startsWith(testInitial) ? uniqueId : `${testInitial}${uniqueId}`;
                     })()}
                   </div>
                   <div className="demo-label mt-2">REPORT REFERENCE</div>
