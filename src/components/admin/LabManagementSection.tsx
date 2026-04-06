@@ -44,7 +44,7 @@ export default function LabManagementSection() {
       const [uRes, cRes, sRes, aRes] = await Promise.all([
         labAPI.getUnits(),
         labAPI.getCatalog(),
-        usersAPI.getUsersByRole('lab_scientist'),
+        usersAPI.getUsersByRole('Lab Scientist'),
         labAPI.getAssignments()
       ]);
       setUnits(uRes.data || []);

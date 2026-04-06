@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
-import { normalizeRole } from '@/lib/auth-helpers';
 
 // Get users by role
 export async function GET(
@@ -11,12 +10,11 @@ export async function GET(
   const { error: authError, profile: adminProfile, supabase: supabaseClient } = await withAuth(request, ['Admin', 'Lab Scientist']);
   if (authError) return authError;
 
-  const { role: rawRole } = await params;
-  const role = normalizeRole(rawRole);
+  const { role } = await params;
   const client = (supabaseAdmin || supabaseClient);
 
   try {
-    const validRoles = ['admin', 'doctor', 'receptionist', 'nurse', 'lab_scientist', 'pharmacist', 'radiologist'];
+    const validRoles = ['Admin', 'Doctor', 'Receptionist', 'Nurse', 'Lab Scientist', 'Pharmacist', 'Radiologist'];
     if (!validRoles.includes(role)) {
       return NextResponse.json({ message: 'Invalid role' }, { status: 400 });
     }
@@ -35,13 +33,13 @@ export async function GET(
     // Fetch role-specific details (including department)
     let specializationTable = '';
     switch (role) {
-      case 'doctor': specializationTable = 'doctors'; break;
-      case 'nurse': specializationTable = 'nurses'; break;
-      case 'lab_scientist': specializationTable = 'lab_scientists'; break;
-      case 'pharmacist': specializationTable = 'pharmacists'; break;
-      case 'radiologist': specializationTable = 'radiologists'; break;
-      case 'receptionist': specializationTable = 'receptionists'; break;
-      case 'admin': specializationTable = 'admins'; break;
+      case 'Doctor': specializationTable = 'doctors'; break;
+      case 'Nurse': specializationTable = 'nurses'; break;
+      case 'Lab Scientist': specializationTable = 'lab_scientists'; break;
+      case 'Pharmacist': specializationTable = 'pharmacists'; break;
+      case 'Radiologist': specializationTable = 'radiologists'; break;
+      case 'Receptionist': specializationTable = 'receptionists'; break;
+      case 'Admin': specializationTable = 'admins'; break;
     }
 
     if (specializationTable) {
