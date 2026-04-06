@@ -76,7 +76,10 @@ export async function POST(
     // or just mark as Billed
     await client
       .from('clinical_requests')
-      .update({ payment_status: 'Billed' })
+      .update({ 
+        payment_status: 'Billed',
+        bill_id: bill.id 
+      })
       .eq('id', requestId);
 
     return NextResponse.json({ 

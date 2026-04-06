@@ -12,6 +12,7 @@ import {
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import CreateLabRequestModal from '@/components/clinical/CreateLabRequestModal';
+import ViewInvoiceModal from '@/components/billing/ViewInvoiceModal';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -26,6 +27,8 @@ export default function ReceptionistLabRequestsPage() {
 
   const [catalog, setCatalog] = useState<any[]>([]);
   const [mappingRequest, setMappingRequest] = useState<any | null>(null);
+  const [showInvoiceId, setShowInvoiceId] = useState<string | null>(null);
+  const [showInvoicePatient, setShowInvoicePatient] = useState<any | null>(null);
 
   const fetchRequests = async () => {
     setLoading(true);
@@ -223,14 +226,42 @@ export default function ReceptionistLabRequestsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-5">
-                       <div className="space-y-1.5">
-                          <p className="text-xs font-black text-gray-900">₦ {req.test_price?.toLocaleString()}</p>
-                          <span className={cn(
-                            "inline-flex px-2 py-0.5 rounded-md text-[9px] font-black uppercase border",
-                            req.payment_status === 'Paid' ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-rose-50 text-rose-600 border-rose-100"
-                          )}>
-                            {req.payment_status || 'Unpaid'}
-                          </span>
+                       <div className="flex flex-col gap-1.5">
+                          {req.payment_status === 'Paid' ? (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100/50 text-[10px] font-black uppercase tracking-wider w-fit">
+                              <CheckCircle className="w-3 h-3" /> Settled
+                            </span>
+                          ) : req.payment_status === 'Billed' || req.bill_id ? (
+                            <div className="flex items-center gap-2">
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100/50 text-[10px] font-black uppercase tracking-wider">
+                                <Clock className="w-3 h-3" /> Invoiced
+                              </span>
+                              <button 
+                                onClick={() => {
+                                  setShowInvoiceId(req.bill_id);
+                                  setShowInvoicePatient(req.patient);
+                                }}
+                                className="p-1.5 hover:bg-white rounded-lg transition-all text-gray-400 hover:text-indigo-600 hover:shadow-sm border border-transparent hover:border-gray-100"
+                                title="Update Payment / Reference"
+                              >
+                                <FileText className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-100/50 text-[10px] font-black uppercase tracking-wider">
+                                Unpaid
+                              </span>
+                              <button 
+                                onClick={() => handleAuthorizeBilling(req)}
+                                className="p-1.5 hover:bg-white rounded-lg transition-all text-gray-400 hover:text-indigo-600 hover:shadow-sm border border-transparent hover:border-gray-100"
+                                title="Generate Invoice"
+                              >
+                                <FileText className="w-4 h-4" />
+                              </button>
+                            </div>
+                          )}
+                          <p className="text-[10px] font-bold text-gray-400 ml-1">Valuation: ₦ {req.test_price?.toLocaleString() || 0}</p>
                        </div>
                     </td>
                      <td className="px-6 py-5">
@@ -266,6 +297,13 @@ export default function ReceptionistLabRequestsPage() {
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onSuccess={fetchRequests}
+      />
+
+      <ViewInvoiceModal 
+        isOpen={!!showInvoiceId}
+        onClose={() => { setShowInvoiceId(null); setShowInvoicePatient(null); fetchRequests(); }}
+        billId={showInvoiceId || ''}
+        appointment={showInvoicePatient}
       />
 
       {/* Protocol Mapping Modal */}

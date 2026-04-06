@@ -14,12 +14,11 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const skip = (page - 1) * limit;
 
-    // 1. Fetch ALL bills for this hospital with patient and appointment info
+    // 1. Fetch ALL bills for this hospital with appointment info (Remove invalid patient join)
     const { data: allBills, error: billError } = await (supabaseAdmin || supabase)
       .from('bills')
       .select(`
         *,
-        patient:patients!patient_id(full_name, patient_id, gender, date_of_birth),
         appointment:public_appointments!public_appointment_id(*)
       `)
       .eq('hospital_id', userProfile?.hospital_id)
@@ -27,7 +26,24 @@ export async function GET(request: Request) {
 
     if (billError) throw billError;
 
-    // 2. Fetch ALL appointments that DON'T have bills yet
+    // 2. Fetch all related patients manually since patient_id is a TEXT code, not a UUID FK
+    const uniquePatientIds = [...new Set((allBills || []).map(b => b.patient_id).filter(Boolean))];
+    let patientMap: Record<string, any> = {};
+    
+    if (uniquePatientIds.length > 0) {
+      const { data: patients, error: pError } = await (supabaseAdmin || supabase)
+        .from('patients')
+        .select('full_name, patient_id, gender, date_of_birth')
+        .in('patient_id', uniquePatientIds);
+      
+      if (!pError && patients) {
+        patients.forEach(p => {
+          patientMap[p.patient_id] = p;
+        });
+      }
+    }
+
+    // 3. Fetch ALL appointments that DON'T have bills yet
     const billedAppointmentIds = (allBills || [])
       .filter(b => b.public_appointment_id)
       .map(b => b.public_appointment_id);
@@ -44,18 +60,19 @@ export async function GET(request: Request) {
     const { data: unbilledAppointments, error: aptError } = await aptQuery.order('created_at', { ascending: false });
     if (aptError) throw aptError;
 
-    // 3. Transform Bills into the View Schema
+    // 4. Transform Bills into the View Schema (Use patientMap)
     const billEntries = (allBills || []).map(bill => {
       const apt = bill.appointment;
+      const patient = patientMap[bill.patient_id];
       return {
         _id: bill.id,
-        fullName: bill.patient?.full_name || apt?.full_name || 'Unknown',
-        patientId: bill.patient?.patient_id || apt?.patient_id || 'N/A',
+        fullName: patient?.full_name || apt?.full_name || 'Unknown',
+        patientId: patient?.patient_id || bill.patient_id || apt?.patient_id || 'N/A',
         appointmentId: apt?.appointment_id || 'STANDALONE',
         appointmentDate: apt?.appointment_date || bill.created_at,
         appointmentTime: apt?.appointment_time || '',
         department: apt?.department || 'Laboratory',
-        gender: bill.patient?.gender || apt?.gender || '',
+        gender: patient?.gender || apt?.gender || '',
         age: apt?.age || 0,
         doctorName: (apt?.doctors as any)?.profiles?.name || null,
         appointmentStatus: apt?.appointment_status || 'Standalone',
