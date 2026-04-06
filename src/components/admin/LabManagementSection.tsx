@@ -355,7 +355,9 @@ export default function LabManagementSection() {
               </form>
            </div>
         </div>
-      )}      {isCatalogModalOpen && (
+      )}
+
+      {isCatalogModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
            <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-md" onClick={() => setIsCatalogModalOpen(false)}></div>
            <div className={cn(
