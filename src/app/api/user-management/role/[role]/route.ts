@@ -10,12 +10,13 @@ export async function GET(
   const { error: authError, profile: adminProfile, supabase: supabaseClient } = await withAuth(request, ['Admin', 'Lab Scientist']);
   if (authError) return authError;
 
-  const { role } = await params;
+  const { role: rawRole } = await params;
+  const role = rawRole === 'Clinical Scientist' ? 'Lab Scientist' : rawRole;
   const client = (supabaseAdmin || supabaseClient);
 
   try {
-    const validRoles = ['Admin', 'Doctor', 'Receptionist', 'Nurse', 'Lab Scientist', 'Pharmacist', 'Radiologist'];
-    if (!validRoles.includes(role)) {
+    const validRoles = ['Admin', 'Doctor', 'Receptionist', 'Nurse', 'Lab Scientist', 'Pharmacist', 'Radiologist', 'Clinical Scientist'];
+    if (!validRoles.includes(rawRole)) {
       return NextResponse.json({ message: 'Invalid role' }, { status: 400 });
     }
 
@@ -32,7 +33,8 @@ export async function GET(
 
     // Fetch role-specific details (including department)
     let specializationTable = '';
-    switch (role) {
+    const lookupRole = role; // Use normalized role for table mapping
+    switch (lookupRole) {
       case 'Doctor': specializationTable = 'doctors'; break;
       case 'Nurse': specializationTable = 'nurses'; break;
       case 'Lab Scientist': specializationTable = 'lab_scientists'; break;

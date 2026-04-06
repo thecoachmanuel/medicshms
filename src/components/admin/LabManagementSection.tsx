@@ -44,7 +44,7 @@ export default function LabManagementSection() {
       const [uRes, cRes, sRes, aRes] = await Promise.all([
         labAPI.getUnits(),
         labAPI.getCatalog(),
-        usersAPI.getUsersByRole('Lab Scientist'),
+        usersAPI.getUsersByRole('Clinical Scientist'),
         labAPI.getAssignments()
       ]);
       setUnits(uRes.data || []);
@@ -239,12 +239,12 @@ export default function LabManagementSection() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {assignments.filter(a => a.scientist?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || a.unit?.name?.toLowerCase().includes(searchTerm.toLowerCase())).map(a => (
+                {assignments.filter(a => a.scientist?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || a.unit?.name?.toLowerCase().includes(searchTerm.toLowerCase())).map(a => (
                   <tr key={a.id} className="hover:bg-gray-50/30 transition-colors group">
                     <td className="p-5">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-[10px] font-black text-primary-600 uppercase">{a.scientist?.full_name?.charAt(0)}</div>
-                        <span className="text-xs font-black text-gray-700 uppercase tracking-tight">{a.scientist?.full_name || 'Legacy User'}</span>
+                        <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-[10px] font-black text-primary-600 uppercase">{a.scientist?.name?.charAt(0)}</div>
+                        <span className="text-xs font-black text-gray-700 uppercase tracking-tight">{a.scientist?.name || 'Legacy User'}</span>
                       </div>
                     </td>
                     <td className="p-5">
@@ -504,7 +504,7 @@ export default function LabManagementSection() {
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Clinical Scientist</label>
                     <select name="scientist_id" required className="input py-4 text-sm font-bold appearance-none">
                        <option value="">SELECT PERSONNEL...</option>
-                       {scientists.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+                       {scientists.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>
                  </div>
                  <div className="space-y-2">
