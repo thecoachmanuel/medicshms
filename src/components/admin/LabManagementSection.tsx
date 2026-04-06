@@ -204,8 +204,8 @@ export default function LabManagementSection() {
              </button>
           </div>
 
-          <div className="table-container border-2 border-gray-50">
-            <table className="w-full text-left">
+          <div className="overflow-x-auto rounded-[1.5rem] border border-gray-100 shadow-inner">
+            <table className="w-full text-left min-w-[600px]">
               <thead>
                 <tr className="bg-gray-50/50">
                   <th className="p-5 text-[10px] font-black uppercase text-gray-500 tracking-widest">Scientist</th>
@@ -263,7 +263,18 @@ export default function LabManagementSection() {
                     <div className="absolute top-0 right-0 px-3 py-1 bg-amber-100 text-amber-700 text-[8px] font-black uppercase tracking-tighter rounded-bl-xl border-l border-b border-amber-200">Auto-Indexed</div>
                   )}
                   <div className="flex items-start justify-between mb-4">
-                    <h4 className="font-black text-gray-900 uppercase text-xs leading-relaxed max-w-[80%]">{item.test_name}</h4>
+                    <div className="space-y-1 max-w-[80%]">
+                      <h4 className="font-black text-gray-900 uppercase text-xs leading-relaxed">{item.test_name}</h4>
+                      {item.template_schema?.fields?.length > 0 ? (
+                        <span className="inline-flex items-center gap-1 text-[8px] font-black text-emerald-500 uppercase tracking-tighter bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100/50">
+                          <CheckCircle className="w-2 h-2" /> Protocol Ready
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[8px] font-black text-amber-500 uppercase tracking-tighter bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100/50">
+                          <AlertCircle className="w-2 h-2" /> No Protocol
+                        </span>
+                      )}
+                    </div>
                     <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{item.unit?.name || 'General'}</span>
                   </div>
                   <div className="flex items-baseline gap-1">

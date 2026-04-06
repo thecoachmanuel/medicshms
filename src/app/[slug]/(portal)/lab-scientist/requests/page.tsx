@@ -175,11 +175,11 @@ export default function LabRequestsPage() {
               </div>
               Diagnostics Hub
             </h1>
-            <p className="text-gray-500 font-medium mt-1 ml-15">Advanced laboratory matrix for clinical investigation.</p>
+            <p className="text-gray-500 font-medium mt-1 md:ml-15">Advanced laboratory matrix for clinical investigation.</p>
           </div>
           
           {assignedUnits.length > 0 && (
-            <div className="flex gap-2 p-1 bg-white/50 border border-gray-100 rounded-2xl w-fit ml-15 shadow-sm">
+            <div className="flex gap-2 p-1 bg-white/50 border border-gray-100 rounded-2xl w-fit md:ml-15 shadow-sm">
               <button 
                 onClick={() => setSelectedUnitId('all')}
                 className={cn(
@@ -306,8 +306,8 @@ export default function LabRequestsPage() {
               <p className="font-black uppercase tracking-widest text-[10px]">No matches found in clinical index</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+            <div className="overflow-x-auto no-scrollbar">
+              <table className="w-full text-left border-collapse min-w-[1000px]">
                 <thead>
                   <tr className="bg-gray-50/20 border-b border-gray-100">
                     <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Patient Profile</th>

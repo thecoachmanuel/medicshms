@@ -244,21 +244,6 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
       }
 
       const promises = selectedTests.map(async (test) => {
-        if (test.is_new && !isDoctor && test.test_price > 0) {
-          try {
-            await labAPI.upsertCatalogItem({
-              test_name: test.test_name,
-              price: test.test_price,
-              unit_id: test.unit_id,
-              is_auto_created: true
-            });
-          } catch (e: any) {
-            if (e.response?.status === 409) {
-              throw new Error('Database Schema Error: template_schema column is missing.');
-            }
-          }
-        }
-
         return labAPI.createRequest({
           patient_id: patientId,
           test_name: test.test_name,

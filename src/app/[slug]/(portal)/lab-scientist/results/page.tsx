@@ -98,7 +98,7 @@ function LabResultsContent() {
             </div>
             Clinical Archives
           </h1>
-          <p className="text-gray-500 font-medium mt-1 ml-15">Historical laboratory investigation records and verified results.</p>
+          <p className="text-gray-500 font-medium mt-1 md:ml-15">Historical laboratory investigation records and verified results.</p>
         </div>
       </div>
 
@@ -202,13 +202,13 @@ function LabResultsContent() {
       </div>
       {/* Floating Action Bar */}
       {selectedIds.length > 0 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-10 duration-500">
-           <div className="bg-gray-900/90 backdrop-blur-2xl px-8 py-5 rounded-[2.5rem] border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center gap-8">
-              <div className="flex flex-col">
+        <div className="fixed bottom-4 md:bottom-8 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 z-[100] animate-in slide-in-from-bottom-10 duration-500">
+           <div className="bg-gray-900/90 backdrop-blur-2xl px-6 md:px-8 py-4 md:py-5 rounded-[2rem] md:rounded-[2.5rem] border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex flex-col md:flex-row items-center gap-4 md:gap-8">
+              <div className="flex flex-col text-center md:text-left">
                 <span className="text-emerald-400 text-[10px] font-black uppercase tracking-widest">Protocol Selection</span>
                 <span className="text-white font-black text-sm">{selectedIds.length} Result(s) Prepared</span>
               </div>
-              <div className="w-px h-10 bg-gray-700" />
+              <div className="hidden md:block w-px h-10 bg-gray-700" />
               <div className="flex items-center gap-3">
                  <button 
                    onClick={() => setSelectedIds([])}

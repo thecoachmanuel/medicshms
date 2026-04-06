@@ -310,17 +310,19 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
   };
 
   const handleSaveAsMaster = async () => {
-    if (!selectedTemplate) return;
+    if (fields.length === 0) {
+      return toast.error('Define protocol parameters before saving');
+    }
     setLoading(true);
     try {
       const { labAPI } = await import('@/lib/api');
       await labAPI.upsertCatalogItem({
-        test_name: selectedTemplate.test_name || selectedTemplate.name,
+        test_name: request.test_name,
         template_schema: { fields },
-        hospital_id: selectedTemplate.hospital_id,
-        unit_id: selectedTemplate.unit_id
+        hospital_id: selectedTemplate?.hospital_id,
+        unit_id: request.unit_id || selectedTemplate?.unit_id
       });
-      toast.success('Master Template Repository Updated');
+      toast.success(`Protocol for "${request.test_name}" synchronized with Global Catalog`);
       fetchCatalog();
     } catch (e) {
       toast.error('Failed to update master template');
