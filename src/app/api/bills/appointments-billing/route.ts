@@ -29,18 +29,21 @@ export async function GET(request: Request) {
 
     if (billError) throw billError;
 
-    // 2. Fetch all related patients manually since patient_id is a TEXT code, not a UUID FK
+    // 2. Fetch all related patients manually since we want to handle potential ID mismatches (UUID vs custom string)
     const uniquePatientIds = [...new Set((allBills || []).map(b => b.patient_id).filter(Boolean))];
     let patientMap: Record<string, any> = {};
     
     if (uniquePatientIds.length > 0) {
+      // We check both 'id' (UUID) and 'patient_id' (String) to be extremely robust
       const { data: patients, error: pError } = await (supabaseAdmin || supabase)
         .from('patients')
-        .select('full_name, patient_id, gender, date_of_birth')
-        .in('patient_id', uniquePatientIds);
+        .select('full_name, patient_id, id, gender, date_of_birth')
+        .or(`id.in.(${uniquePatientIds.join(',')}),patient_id.in.(${uniquePatientIds.join(',')})`);
       
       if (!pError && patients) {
         patients.forEach(p => {
+          // Map by both so lookups always succeed regardless of which ID is stored in bill.patient_id
+          patientMap[p.id] = p;
           patientMap[p.patient_id] = p;
         });
       }

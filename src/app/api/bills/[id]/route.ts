@@ -200,3 +200,51 @@ export async function PUT(
     return NextResponse.json({ success: false, message: error.message }, { status: 400 });
   }
 }
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { profile: userProfile, error: authError } = await withAuth(request, ['Admin', 'Receptionist']);
+  if (authError) return authError;
+
+  const { id } = await params;
+
+  try {
+    const client = (supabaseAdmin || supabase);
+
+    // 1. Fetch the bill first to know associated data 
+    const { data: bill, error: fetchError } = await client
+      .from('bills')
+      .select('*')
+      .eq('id', id)
+      .eq('hospital_id', userProfile?.hospital_id)
+      .single();
+
+    if (fetchError || !bill) {
+      return NextResponse.json({ success: false, message: 'Bill not found' }, { status: 404 });
+    }
+
+    // 2. REVERT: Update any clinical requests associated with this bill back to Pending
+    await client
+      .from('clinical_requests')
+      .update({ 
+        payment_status: 'Pending',
+        bill_id: null 
+      })
+      .eq('bill_id', id);
+
+    // 3. DELETE the bill record
+    const { error: deleteError } = await client
+      .from('bills')
+      .delete()
+      .eq('id', id)
+      .eq('hospital_id', userProfile?.hospital_id);
+
+    if (deleteError) throw deleteError;
+
+    return NextResponse.json({ success: true, message: 'Payment record deleted and clinical requests reverted' });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+  }
+}

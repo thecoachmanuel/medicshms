@@ -4,9 +4,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Plus, Eye, Edit2, ChevronLeft, ChevronRight, Loader2, 
   AlertCircle, CheckCircle2, XCircle, ArrowUpRight, RefreshCw, Search,
-  Download
+  Download, Trash2
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '@/context/AuthContext';
 import { billingAPI, departmentsAPI } from '@/lib/api';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -18,18 +19,8 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export default function BillingList() {
-  const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 });
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  const [generateModal, setGenerateModal] = useState<any>(null);
-  const [viewModal, setViewModal] = useState<any>(null);
-  const [editModal, setEditModal] = useState<any>(null);
-  const [analytics, setAnalytics] = useState<any>(null);
   const [loadingAnalytics, setLoadingAnalytics] = useState(true);
+  const { user } = useAuth();
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -59,6 +50,23 @@ export default function BillingList() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this payment record? Any associated clinical requests will be reverted to Pending status.')) {
+      return;
+    }
+
+    try {
+      toast.loading('Deleting record...');
+      await billingAPI.delete(id);
+      toast.dismiss();
+      toast.success('Record deleted successfully');
+      fetchData();
+    } catch (err) {
+      toast.dismiss();
+      toast.error('Failed to delete record');
+    }
+  };
 
   const filters = [
     { key: 'all', label: 'All Invoices' },
@@ -325,6 +333,15 @@ export default function BillingList() {
                           >
                             <Edit2 className="w-5 h-5" />
                           </button>
+                          {user?.role === 'Admin' && (
+                            <button 
+                              onClick={() => handleDelete(item.bill._id)}
+                              className="p-3 bg-white border border-gray-200 rounded-2xl text-gray-400 hover:text-rose-600 hover:border-rose-100 hover:bg-rose-50 transition-all active:scale-90 shadow-sm"
+                              title="Delete Payment Record"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </button>
+                          )}
                         </>
                       )}
                     </div>

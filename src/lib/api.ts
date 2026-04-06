@@ -176,6 +176,7 @@ export const billingAPI = {
   getInsights: (params: any) => api.get('/bills/insights', { params }),
   download: (params?: any) => api.get('/bills/download', { params }),
   generateForLab: (requestId: string, data: any) => api.post(`/bills/generate-lab/${requestId}`, data),
+  delete: (id: string) => api.delete(`/bills/${id}`),
 };
 
 export const dashboardAPI = {
