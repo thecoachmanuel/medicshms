@@ -67,13 +67,16 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { profile: userProfile, error: authError } = await withAuth(request, ['Admin', 'Receptionist']);
+  const { profile: userProfile, error: authError } = await withAuth(request, ['Admin', 'Receptionist', 'Lab Scientist']);
   if (authError) return authError;
 
   const { id } = await params;
 
   try {
-    const { services, discount, roundOff, paidAmount, paymentMethod, transactionId, notes, paymentStatus } = await request.json();
+    const body = await request.json();
+    const { services, discount, roundOff, paidAmount, paymentMethod, notes, paymentStatus } = body;
+    // Map paymentReference (frontend) to transactionId (backend)
+    const transactionId = body.transactionId || body.paymentReference;
 
     const { data: bill, error: fetchError } = await (supabaseAdmin || supabase)
       .from('bills')

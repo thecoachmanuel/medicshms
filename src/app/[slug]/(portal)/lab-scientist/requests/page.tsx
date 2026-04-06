@@ -11,6 +11,7 @@ import { useSearchParams, useParams, useRouter, usePathname } from 'next/navigat
 import CreateLabRequestModal from '@/components/clinical/CreateLabRequestModal';
 import LabResultEntryModal from '@/components/lab/LabResultEntryModal';
 import LabReportPreviewModal from '@/components/lab/LabReportPreviewModal';
+import ViewInvoiceModal from '@/components/billing/ViewInvoiceModal';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -46,6 +47,8 @@ export default function LabRequestsPage() {
   const [selectedUnitId, setSelectedUnitId] = useState<string>('all');
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [showPreview, setShowPreview] = useState<any[] | null>(null);
+  const [showInvoiceId, setShowInvoiceId] = useState<string | null>(null);
+  const [showInvoiceAppointment, setShowInvoiceAppointment] = useState<any | null>(null);
 
   const filteredRequests = (requests || []).filter(req => {
     const searchLow = globalSearch.toLowerCase();
@@ -381,17 +384,19 @@ export default function LabRequestsPage() {
                               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-100/50 text-[10px] font-black uppercase tracking-wider">
                                 UNPAID
                               </span>
-                              {req.is_critical && (
-                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-600 text-white border border-rose-700 text-[10px] font-black uppercase tracking-wider animate-pulse">
-                                  CRITICAL
-                                </span>
-                              )}
                               <button 
-                                onClick={() => handleGenerateBill(req)}
+                                onClick={() => {
+                                  if (req.bill_id) {
+                                    setShowInvoiceId(req.bill_id);
+                                    setShowInvoiceAppointment(req.patient);
+                                  } else {
+                                    handleGenerateBill(req);
+                                  }
+                                }}
                                 className="p-1.5 hover:bg-white rounded-lg transition-all text-gray-400 hover:text-blue-600 hover:shadow-sm border border-transparent hover:border-gray-100"
-                                title="Generate Invoice"
+                                title={req.bill_id ? "Update Payment" : "Generate Invoice"}
                               >
-                                <FileText className="w-4 h-4" />
+                                {req.bill_id ? <Download className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
                               </button>
                             </div>
                           )}
@@ -400,15 +405,28 @@ export default function LabRequestsPage() {
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-5">
+                      <td className="px-6 py-5 text-sm">
                         <div className="space-y-1">
                           <p className="text-xs font-black text-gray-900 tracking-widest">{new Date(req.requested_at).toLocaleDateString()}</p>
                           <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none">{new Date(req.requested_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                         </div>
                       </td>
                       <td className="px-6 py-5 text-right">
-                        {activeTab === 'Pending' ? (
-                          <div className="flex justify-end gap-2">
+
+                        <div className="flex items-center justify-end gap-2">
+                          {req.bill_id && (
+                            <button 
+                              onClick={() => {
+                                setShowInvoiceId(req.bill_id);
+                                setShowInvoiceAppointment(req.patient);
+                              }}
+                              className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-all shadow-sm"
+                              title="Update Payment/Reference"
+                            >
+                              <FileText className="w-5 h-5" />
+                            </button>
+                          )}
+                          {activeTab === 'Pending' ? (
                             <button 
                               onClick={() => handleMarkCollected(req.id)}
                               className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100 active:scale-95 flex items-center gap-2"
@@ -416,36 +434,36 @@ export default function LabRequestsPage() {
                               <TestTubes className="w-3.5 h-3.5" />
                               Receive Sample
                             </button>
-                          </div>
-                        ) : activeTab === 'Collected' ? (
-                            <button 
-                              onClick={() => handleOpenUpdate(req)}
-                              className="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg shadow-gray-200 active:scale-95"
-                            >
-                              Input Result
-                            </button>
-                        ) : (
-                          <div className="flex items-center justify-end gap-3 transition-all duration-300 group-hover:translate-x-[-4px]">
-                            {req.file_url && (
-                              <a 
-                                href={req.file_url} 
-                                target="_blank" 
-                                rel="noreferrer" 
-                                className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-all shadow-sm"
-                                title="View Certificate"
+                          ) : activeTab === 'Collected' ? (
+                              <button 
+                                onClick={() => handleOpenUpdate(req)}
+                                className="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg shadow-gray-200 active:scale-95"
                               >
-                                <Eye className="w-5 h-5" />
-                              </a>
-                            )}
-                            <button 
-                              onClick={() => handlePrint(req)} 
-                              className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-all shadow-sm"
-                              title="Print Report"
-                            >
-                              <Printer className="w-5 h-5" />
-                            </button>
-                          </div>
-                        )}
+                                Input Result
+                              </button>
+                          ) : (
+                            <div className="flex items-center justify-end gap-3 transition-all duration-300 group-hover:translate-x-[-4px]">
+                              {req.file_url && (
+                                <a 
+                                  href={req.file_url} 
+                                  target="_blank" 
+                                  rel="noreferrer" 
+                                  className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-all shadow-sm"
+                                  title="View Certificate"
+                                >
+                                  <Eye className="w-5 h-5" />
+                                </a>
+                              )}
+                              <button 
+                                onClick={() => handlePrint(req)} 
+                                className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-all shadow-sm"
+                                title="Print Report"
+                              >
+                                <Printer className="w-5 h-5" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -478,6 +496,19 @@ export default function LabRequestsPage() {
           requests={showPreview}
           slug={slug}
           onClose={() => setShowPreview(null)}
+        />
+      )}
+
+      {/* Invoice Modal for Scientists */}
+      {showInvoiceId && (
+        <ViewInvoiceModal 
+          billId={showInvoiceId}
+          appointment={showInvoiceAppointment}
+          onClose={() => {
+            setShowInvoiceId(null);
+            setShowInvoiceAppointment(null);
+          }}
+          onUpdated={() => fetchRequests(activeTab)}
         />
       )}
     </div>
