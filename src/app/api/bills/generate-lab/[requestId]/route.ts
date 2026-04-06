@@ -27,6 +27,14 @@ export async function POST(
       return NextResponse.json({ success: false, message: 'Lab request not found' }, { status: 404 });
     }
 
+    // Duplicate Prevention
+    if (labRequest.bill_id || labRequest.payment_status === 'Billed' || labRequest.payment_status === 'Paid') {
+      return NextResponse.json({ 
+        success: false, 
+        message: 'An invoice already exists for this diagnostic request' 
+      }, { status: 400 });
+    }
+
     // 2. Determine the price (test_price from request, or default to 0)
     const price = Number(labRequest.test_price || 0);
     const testName = labRequest.test_name || 'Laboratory Test';

@@ -220,18 +220,23 @@ export default function BillingList() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-5">
-                    {item.bill ? (
-                      <div className="space-y-1.5">
-                        <span className="px-3 py-1.5 bg-gray-900 text-white rounded-lg text-[10px] font-black uppercase tracking-[0.2em] border border-gray-700 shadow-sm">
-                          {item.bill.billNumber}
-                        </span>
-                        <p className="text-[10px] text-amber-600 font-black uppercase tracking-widest">{item.department}</p>
-                      </div>
-                    ) : (
-                      <span className="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em] bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-100/30">Unassigned</span>
-                    )}
-                  </td>
+                    <td className="px-6 py-5">
+                      {item.bill ? (
+                        <div className="space-y-1.5">
+                          <span className="px-3 py-1.5 bg-gray-900 text-white rounded-lg text-[10px] font-black uppercase tracking-[0.2em] border border-gray-700 shadow-sm">
+                            {item.bill.billNumber}
+                          </span>
+                          <p className="text-[10px] text-amber-600 font-black uppercase tracking-widest">{item.department}</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-1.5">
+                          <span className="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em] bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-100/30">
+                            Awaiting Billing
+                          </span>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">{item.department}</p>
+                        </div>
+                      )}
+                    </td>
                   <td className="px-6 py-5">
                     {item.bill ? (
                       <div className="space-y-1.5">

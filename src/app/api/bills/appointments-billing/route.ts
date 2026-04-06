@@ -14,12 +14,15 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const skip = (page - 1) * limit;
 
-    // 1. Fetch ALL bills for this hospital with appointment info (Remove invalid patient join)
+    // 1. Fetch ALL bills for this hospital with appointment info (Join with departments for name)
     const { data: allBills, error: billError } = await (supabaseAdmin || supabase)
       .from('bills')
       .select(`
         *,
-        appointment:public_appointments!public_appointment_id(*)
+        appointment:public_appointments!public_appointment_id(
+          *,
+          unit:departments!department_id(name)
+        )
       `)
       .eq('hospital_id', userProfile?.hospital_id)
       .order('created_at', { ascending: false });
@@ -87,7 +90,7 @@ export async function GET(request: Request) {
         appointmentId: apt?.appointment_id || 'STANDALONE',
         appointmentDate: apt?.appointment_date || bill.created_at,
         appointmentTime: apt?.appointment_time || '',
-        department: apt?.department || 'Laboratory',
+        department: (apt as any)?.unit?.name || apt?.department || 'Laboratory',
         gender: patient?.gender || apt?.gender || '',
         age: apt?.age || 0,
         doctorName: (apt?.doctors as any)?.profiles?.name || null,
@@ -118,7 +121,7 @@ export async function GET(request: Request) {
       appointmentId: apt.appointment_id,
       appointmentDate: apt.appointment_date,
       appointmentTime: apt.appointment_time,
-      department: apt.department,
+      department: (apt as any)?.profiles?.department?.name || apt.department || 'General Clinic',
       gender: apt.gender,
       age: apt.age,
       doctorName: (apt.doctors as any)?.profiles?.name || null,
