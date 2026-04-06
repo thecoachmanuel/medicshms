@@ -19,6 +19,17 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export default function BillingList() {
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 });
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const [generateModal, setGenerateModal] = useState<any>(null);
+  const [viewModal, setViewModal] = useState<any>(null);
+  const [editModal, setEditModal] = useState<any>(null);
+  const [analytics, setAnalytics] = useState<any>(null);
   const [loadingAnalytics, setLoadingAnalytics] = useState(true);
   const { user } = useAuth();
 
