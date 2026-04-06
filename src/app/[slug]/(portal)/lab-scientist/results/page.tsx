@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
+import { useParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { labAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -14,6 +15,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 function LabResultsContent() {
+  const { slug } = useParams();
   const { user } = useAuth();
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -230,6 +232,7 @@ function LabResultsContent() {
       {previewRequests && (
         <LabReportPreviewModal 
           requests={previewRequests}
+          slug={slug as string}
           onClose={() => setPreviewRequests(null)}
         />
       )}

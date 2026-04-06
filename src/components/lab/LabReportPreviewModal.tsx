@@ -36,20 +36,21 @@ interface Metric {
 
 interface LabReportPreviewModalProps {
   requests: any[];
+  slug: string;
   onClose: () => void;
 }
 
-export default function LabReportPreviewModal({ requests, onClose }: LabReportPreviewModalProps) {
+export default function LabReportPreviewModal({ requests, slug, onClose }: LabReportPreviewModalProps) {
   const [settings, setSettings] = useState<any>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('🧬 Laboratory Preview Mounted with', requests?.length, 'results');
+    console.log('🧬 Laboratory Preview Mounted for', slug, 'with', requests?.length, 'results');
     async function fetchSettings() {
       try {
-        const res = await siteSettingsAPI.get() as any;
+        const res = await siteSettingsAPI.get({ slug }) as any;
         setSettings(res.data || {});
-        console.log('✅ Clinical branding synchronized');
+        console.log('✅ Clinical branding synchronized for:', res.data?.hospital_name);
       } catch (e) {
         console.error('❌ Failed to fetch hospital settings');
       } finally {
@@ -57,7 +58,7 @@ export default function LabReportPreviewModal({ requests, onClose }: LabReportPr
       }
     }
     fetchSettings();
-  }, [requests]);
+  }, [requests, slug]);
 
   if (!requests || requests.length === 0) {
     console.error('🚫 No requests provided to Laboratory Preview');
@@ -82,9 +83,9 @@ export default function LabReportPreviewModal({ requests, onClose }: LabReportPr
         <head>
           <title>Laboratory Report - ${requests[0]?.patient?.full_name || 'Patient'}</title>
           <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
             body { 
-              font-family: 'Inter', -apple-system, sans-serif; 
+              font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; 
               padding: 0; 
               margin: 0; 
               color: #0f172a; 
@@ -202,11 +203,13 @@ export default function LabReportPreviewModal({ requests, onClose }: LabReportPr
               
               <div className="header">
                 <div className="hospital-info">
-                  {settings.hospital_logo && <img src={settings.hospital_logo} alt="Hospital Logo" className="hospital-logo" />}
-                  <h1>{settings.hospital_name || 'Laboratory Diagnostic Hub'}</h1>
-                  <p>{settings.address || 'Hospital Address'}</p>
+                  {(settings.logo_url || settings.hospital_logo) && (
+                    <img src={settings.logo_url || settings.hospital_logo} alt="Hospital Logo" className="hospital-logo" />
+                  )}
+                  <h1>{settings.hospital_name || 'Medical Diagnostic Center'}</h1>
+                  <p>{settings.address || 'Clinical Headquarters'}</p>
                   <p>{settings.contact_email || 'diagnostics@hospital.com'} • {settings.contact_phone || '+234 000 000 0000'}</p>
-                  {settings.cin_number && <p>CIN: {settings.cin_number}</p>}
+                  {settings.cin_number && <p>REG: {settings.cin_number}</p>}
                 </div>
                 <div className="text-right">
                   <div className="demo-label">ACCESSION NUMBER</div>

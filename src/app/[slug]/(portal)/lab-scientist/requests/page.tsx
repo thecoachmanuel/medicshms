@@ -10,6 +10,7 @@ import { twMerge } from 'tailwind-merge';
 import { useSearchParams, useParams, useRouter, usePathname } from 'next/navigation';
 import CreateLabRequestModal from '@/components/clinical/CreateLabRequestModal';
 import LabResultEntryModal from '@/components/lab/LabResultEntryModal';
+import LabReportPreviewModal from '@/components/lab/LabReportPreviewModal';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -44,6 +45,7 @@ export default function LabRequestsPage() {
   const [assignedUnits, setAssignedUnits] = useState<any[]>([]);
   const [selectedUnitId, setSelectedUnitId] = useState<string>('all');
   const [selectedDate, setSelectedDate] = useState<string>('');
+  const [showPreview, setShowPreview] = useState<any[] | null>(null);
 
   const filteredRequests = (requests || []).filter(req => {
     const searchLow = globalSearch.toLowerCase();
@@ -153,298 +155,10 @@ export default function LabRequestsPage() {
     }
   };
 
-  const handlePrint = async (req: any) => {
-    // Fetch exact hospital settings for branding via slug
-    const { siteSettingsAPI } = await import('@/lib/api');
-    const settingsRes = await siteSettingsAPI.get({ slug }) as any;
-    const settings = settingsRes.data || {};
-
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Lab Report - ${req.patient?.full_name}</title>
-            <style>
-              @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-              
-              @page { size: A4; margin: 0; }
-              body { 
-                font-family: 'Plus Jakarta Sans', sans-serif; 
-                margin: 0; 
-                padding: 30px; 
-                color: #0f172a; 
-                background: #fff;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-              }
-              
-              .container { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; }
-              
-              .header { 
-                display: flex; 
-                justify-content: space-between; 
-                align-items: center; 
-                border-bottom: 1.5px solid ${settings.primary_color || '#2563eb'}20; 
-                padding-bottom: 15px; 
-                margin-bottom: 15px; 
-              }
-              
-              .hospital-brand { display: flex; align-items: center; gap: 12px; }
-              .logo-box { 
-                width: 50px; 
-                height: 50px; 
-                background: ${settings.primary_color || '#2563eb'}05; 
-                border-radius: 10px; 
-                display: flex; 
-                align-items: center; 
-                justify-content: center;
-                border: 0.5px solid ${settings.primary_color || '#2563eb'}10;
-              }
-              .logo { max-height: 34px; max-width: 34px; object-fit: contain; }
-              
-              .hospital-details h1 { 
-                font-size: 18px; 
-                font-weight: 800; 
-                color: #0f172a; 
-                margin: 0; 
-                letter-spacing: -0.01em; 
-                text-transform: uppercase;
-              }
-              .hospital-details p { font-size: 9px; color: #64748b; margin: 1px 0; font-weight: 600; }
-              
-              .report-type { 
-                text-align: center; 
-                margin-bottom: 15px; 
-              }
-              .report-type h2 { 
-                font-size: 11px; 
-                font-weight: 800; 
-                text-transform: uppercase; 
-                letter-spacing: 0.1em; 
-                color: ${settings.primary_color || '#2563eb'}; 
-                background: ${settings.primary_color || '#2563eb'}08; 
-                display: inline-block; 
-                padding: 4px 16px; 
-                border-radius: 99px;
-              }
-              
-              .patient-meta { 
-                display: grid; 
-                grid-template-columns: repeat(3, 1fr); 
-                gap: 12px; 
-                background: #f8fafc; 
-                padding: 12px; 
-                border-radius: 12px; 
-                margin-bottom: 15px;
-                border: 0.5px solid #f1f5f9;
-              }
-              .meta-item .label { font-size: 7.5px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; font-weight: 800; margin-bottom: 3px; }
-              .meta-item .value { font-size: 11px; font-weight: 700; color: #1e293b; }
-              
-              .results-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-              .results-table th { 
-                text-align: left; 
-                padding: 8px 12px; 
-                background: #f1f5f9; 
-                font-size: 8.5px; 
-                font-weight: 800; 
-                text-transform: uppercase; 
-                color: #64748b;
-              }
-              .results-table td { 
-                padding: 8px 12px; 
-                border-bottom: 1px solid #f1f5f9; 
-                font-size: 11px;
-                font-weight: 600;
-              }
-              
-              .critical { color: #e11d48; font-weight: 800; }
-              .unit-tag { font-size: 8px; opacity: 0.6; margin-left: 2px; }
-              
-              .comments-box { 
-                background: #fff; 
-                border: 1.5px solid ${settings.primary_color || '#2563eb'}10; 
-                border-radius: 12px; 
-                padding: 15px; 
-                margin-bottom: 20px;
-                position: relative;
-              }
-              .comments-label { 
-                position: absolute; 
-                top: -10px; 
-                left: 20px; 
-                background: #fff; 
-                padding: 0 10px; 
-                font-size: 9px; 
-                font-weight: 800; 
-                color: ${settings.primary_color || '#2563eb'}; 
-                text-transform: uppercase;
-                letter-spacing: 0.1em;
-              }
-              .comments-content { font-size: 11.5px; line-height: 1.5; color: #334155; white-space: pre-wrap; }
-              
-              .accession-badge { 
-                display: inline-block; 
-                padding: 3px 8px; 
-                background: ${settings.primary_color || '#2563eb'}10; 
-                color: ${settings.primary_color || '#2563eb'}; 
-                border-radius: 4px; 
-                font-size: 9px; 
-                font-weight: 800; 
-                margin-top: 3px;
-              }
-              
-              .footer { 
-                margin-top: 20px; 
-                padding-top: 15px; 
-                border-top: 1px solid #f8fafc; 
-                display: flex; 
-                justify-content: space-between; 
-                align-items: flex-end; 
-              }
-              .signature-zone { text-align: center; width: 180px; }
-              .sig-line { 
-                border-top: 1px solid #e2e8f0; 
-                margin-top: 5px; 
-                padding-top: 5px; 
-                font-size: 9px; 
-                font-weight: 700; 
-                color: #64748b; 
-                text-transform: uppercase; 
-              }
-              
-              .watermark { 
-                position: fixed; 
-                top: 50%; 
-                left: 50%; 
-                transform: translate(-50%, -50%) rotate(-45deg); 
-                font-size: 100px; 
-                font-weight: 900; 
-                color: #f1f5f9; 
-                z-index: -10; 
-                pointer-events: none; 
-                opacity: 0.5;
-                white-space: nowrap;
-              }
-              
-              @media print { 
-                body { padding: 40px; } 
-                .no-print { display: none; } 
-              }
-            </style>
-          </head>
-          <body>
-            <div class="watermark">CERTIFIED REPORT</div>
-            <div class="container">
-              <div class="header">
-                <div class="hospital-brand">
-                  <div class="logo-box">
-                    ${(req.hospital_details?.hospital_logo || settings.logo_url) ? `<img src="${req.hospital_details?.hospital_logo || settings.logo_url}" class="logo" />` : ''}
-                  </div>
-                  <div class="hospital-details">
-                    <h1>${req.hospital_details?.hospital_name || settings.hospital_name || 'Medical Diagnostic Center'}</h1>
-                    <p>${req.hospital_details?.address || settings.address || 'Clinical Headquarters'}</p>
-                    <p>${req.hospital_details?.contact_email || settings.contact_email || 'diagnostics@hospital.com'}</p>
-                    ${(req.hospital_details?.cin_number || settings.cin_number) ? `<p>REG: ${req.hospital_details?.cin_number || settings.cin_number}</p>` : ''}
-                  </div>
-                </div>
-                <div style="text-align: right;">
-                  <div class="label" style="font-size: 9px; color: #94a3b8; font-weight: 800; letter-spacing: 0.1em;">ACCESSION ID</div>
-                  <div class="value" style="font-size: 16px; font-weight: 800;">#${req.id.slice(-8).toUpperCase()}</div>
-                  ${req.lab_number ? `<div class="accession-badge">ACC NO: ${req.lab_number}</div>` : ''}
-                </div>
-              </div>
-
-              <div class="report-type">
-                <h2>Laboratory Report</h2>
-              </div>
-
-              <div class="patient-meta">
-                <div class="meta-item">
-                  <p class="label">Patient Name</p>
-                  <p class="value">${req.patient?.full_name}</p>
-                  <p class="value" style="font-size: 10px; color: #64748b; margin-top: 4px;">
-                    ID: ${req.patient?.patient_id || '-'}
-                  </p>
-                </div>
-                <div class="meta-item">
-                  <p class="label">Demographics</p>
-                  <p class="value">${req.patient_age || 'N/A'} • ${req.patient_gender || 'N/A'}</p>
-                  <p class="value" style="font-size: 10px; color: #64748b; margin-top: 4px;">
-                    REQUESTING DOCTOR: ${req.requested_by_name || 'HOSPITAL CLINIC'}
-                  </p>
-                </div>
-                <div class="meta-item">
-                  <p class="label">Timeline</p>
-                  <p class="value">${new Date(req.completed_at || req.updated_at).toLocaleDateString()} ${new Date(req.completed_at || req.updated_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
-                  <p class="value" style="font-size: 10px; color: #64748b; margin-top: 4px;">COLLECTED: ${new Date(req.requested_at).toLocaleDateString()}</p>
-                </div>
-              </div>
-
-              <div class="comments-box">
-                <span class="comments-label">CLINICAL SUMMARY & ANALYTICAL METRICS</span>
-                <div class="comments-content">
-                  ${(() => {
-                    const summary = req.clinical_summary || '';
-                    if (req.results?.includes('METRIC_DATA:')) {
-                      const parts = req.results.split('METRIC_DATA:');
-                      const notes = parts[0].trim();
-                      let metrics = {};
-                      try { metrics = JSON.parse(parts[1]); } catch(e) {}
-                      
-                      return `
-                        ${summary ? `<div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed #e2e8f0; font-size: 12px;"><strong>Clinical Summary:</strong><br/>${summary}</div>` : ''}
-                        ${notes ? `<div style="margin-bottom: 20px; font-size: 12px;">${notes}</div>` : ''}
-                        <table class="results-table">
-                          <thead>
-                            <tr>
-                              <th>Investigation Parameter</th>
-                              <th>Result Value</th>
-                              <th>Reference Range</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            ${Object.entries(metrics).map(([k, v]: any) => `
-                              <tr>
-                                <td>${k}</td>
-                                <td><span class="${v?.toLowerCase()?.includes('high') || v?.toLowerCase()?.includes('low') ? 'critical' : ''}">${v}</span></td>
-                                <td style="color: #64748b; font-size: 11px;">${v?.split('(')[1]?.replace(')', '') || '-'}</td>
-                              </tr>
-                            `).join('')}
-                          </tbody>
-                        </table>
-                      `;
-                    }
-                    return `
-                      ${summary ? `<div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed #e2e8f0; font-size: 12px;"><strong>Clinical Summary:</strong><br/>${summary}</div>` : ''}
-                      <div style="font-size: 12px;">${req.results || 'Result interpreted as Normal. Refer to digital analysis for quantitative parameters.'}</div>
-                    `;
-                  })()}
-                </div>
-              </div>
-
-              <div class="footer">
-                <div style="font-size: 9px; color: #94a3b8; max-width: 320px; line-height: 1.6;">
-                  This report is electronically verified and digitally signed. It is intended for clinical use by medical practitioners. Clinical correlation is recommended.
-                </div>
-                <div class="signature-zone">
-                  <p class="value" style="color: ${settings.primary_color || '#2563eb'}; font-size: 14px;">${req.handled_by_profile?.name || user?.name || 'Chief Lab Scientist'}</p>
-                  <div class="sig-line">Lab. Scientist / Authorized Signatory</div>
-                  <p style="font-size: 8px; color: #94a3b8; margin-top: 4px;">${new Date().toLocaleString()}</p>
-                </div>
-              </div>
-            </div>
-
-            <script>
-              window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 700); }
-            </script>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-    }
+  const handlePrint = (req: any) => {
+    setShowPreview([req]);
   };
+;
 
   return (
     <div className="relative min-h-[calc(100vh-10rem)] space-y-8 pb-12">
@@ -757,6 +471,15 @@ export default function LabRequestsPage() {
         onClose={() => setShowNewModal(false)}
         onSuccess={() => fetchRequests(activeTab)}
       />
+
+      {/* Preview Modal for Consistency */}
+      {showPreview && (
+        <LabReportPreviewModal 
+          requests={showPreview}
+          slug={slug}
+          onClose={() => setShowPreview(null)}
+        />
+      )}
     </div>
   );
 }
