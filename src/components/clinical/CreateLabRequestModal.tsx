@@ -140,6 +140,20 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
     });
   };
 
+  // Auto-generate Accession Number
+  useEffect(() => {
+    if (selectedTests.length === 1 && !requestData.lab_number) {
+      const testName = selectedTests[0].test_name || 'LAB';
+      const prefix = testName.substring(0, 3).toUpperCase();
+      const unique = Math.floor(1000 + Math.random() * 9000); // 4-digit unique
+      const timestamp = new Date().getTime().toString().slice(-4);
+      setRequestData(prev => ({ 
+        ...prev, 
+        lab_number: `${prefix}-${unique}${timestamp}` 
+      }));
+    }
+  }, [selectedTests, requestData.lab_number]);
+
   const fetchServices = async () => {
     try {
       const res = await servicesAPI.getAll() as any;
@@ -477,7 +491,7 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Lab Accession No.</label>
-                  <input placeholder="e.g. LAB-2024-001" className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold text-gray-900" 
+                  <input placeholder="Auto-generated on test selection..." className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold text-gray-900" 
                     value={requestData.lab_number} onChange={e => setRequestData({...requestData, lab_number: e.target.value})} />
                 </div>
               </div>

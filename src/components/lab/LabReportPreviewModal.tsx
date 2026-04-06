@@ -167,7 +167,7 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
   };
 
   return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
       <div className="bg-white rounded-[2.5rem] w-full max-w-[210mm] max-h-[95vh] flex flex-col shadow-2xl overflow-hidden border border-gray-100">
         
         <div className="flex justify-between items-center px-10 py-6 border-b border-gray-100 shrink-0 bg-white">
@@ -228,7 +228,11 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
                 <div className="text-right">
                   <div className="demo-label">ACCESSION NUMBER</div>
                   <div className="text-xl font-black" style={{ color: settings.primary_color || '#4f46e5' }}>
-                    #{requests[0]?.lab_number || requests[0]?.id.slice(-8).toUpperCase()}
+                    #{(() => {
+                      const testInitial = (requests[0]?.test_name || 'LAB').substring(0, 3).toUpperCase();
+                      const uniqueId = requests[0]?.lab_number || requests[0]?.id.slice(-8).toUpperCase();
+                      return `${testInitial}-${uniqueId}`;
+                    })()}
                   </div>
                   <div className="demo-label mt-2">REPORT REFERENCE</div>
                   <div className="font-bold text-xs uppercase">{new Date().getTime().toString(36).toUpperCase()}</div>
