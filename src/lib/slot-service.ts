@@ -39,7 +39,7 @@ export const SlotService = {
     if (!defaults) return [];
 
     // 2. Determine Day Availability
-    const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'lowercase' });
+    const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     const workingDay = (config?.working_days || [])?.find((d: WorkingDay) => d.day === dayName);
     
     if (workingDay && !workingDay.enabled) return [];
