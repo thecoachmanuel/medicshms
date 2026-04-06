@@ -9,7 +9,7 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ requestId: string }> }
 ) {
-  const { error: authError, profile: userProfile } = await withAuth(request, ['Admin', 'Lab Scientist', 'Receptionist']);
+  const { error: authError, profile: userProfile } = await withAuth(request, ['Admin', 'Lab Scientist', 'Receptionist', 'Doctor', 'Radiologist', 'Pharmacist', 'Clinical Scientist']);
   if (authError) return authError;
 
   const { requestId } = await params;

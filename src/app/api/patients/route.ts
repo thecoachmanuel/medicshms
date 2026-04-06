@@ -60,7 +60,7 @@ export async function GET(request: Request) {
 
 // POST create patient profile
 export async function POST(request: Request) {
-  const { error: authError, profile: userProfile } = await withAuth(request, ['Admin', 'Receptionist', 'Patient', 'Nurse']);
+  const { error: authError, profile: userProfile } = await withAuth(request, ['Admin', 'Receptionist', 'Patient', 'Nurse', 'Doctor', 'Lab Scientist', 'Clinical Scientist', 'Radiologist', 'Pharmacist']);
   
   if (authError) return authError;
 

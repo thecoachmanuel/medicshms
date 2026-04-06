@@ -82,7 +82,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { profile, error: authError } = await withAuth(request, ['Admin', 'Receptionist']);
+  const { profile, error: authError } = await withAuth(request, ['Admin', 'Receptionist', 'Doctor', 'Lab Scientist', 'Clinical Scientist', 'Radiologist', 'Pharmacist']);
   if (authError) return authError;
 
   const { id } = await params;
