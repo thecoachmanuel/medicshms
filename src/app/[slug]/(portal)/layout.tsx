@@ -129,7 +129,7 @@ export default function PortalLayout({
         <div className="absolute top-0 right-0 w-1/3 h-1/4 bg-primary-600/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
         <AdminHeader toggleSidebar={() => setSidebarOpen(true)} />
         
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative z-10">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative">
           {children}
         </main>
       </div>

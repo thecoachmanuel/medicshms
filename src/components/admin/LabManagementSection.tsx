@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Plus, Edit3, Trash2, Users, BookOpen, 
   FlaskConical, Search, Loader2, Save,
-  X, AlertCircle, Info, Beaker
+  X, AlertCircle, Info, Beaker, CheckCircle
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { labAPI, usersAPI } from '@/lib/api';
