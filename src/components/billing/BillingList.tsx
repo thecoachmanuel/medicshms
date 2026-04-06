@@ -237,7 +237,9 @@ export default function BillingList() {
                 <tr key={item._id} className="group hover:bg-amber-50/20 transition-all duration-300">
                   <td className="px-6 py-5">
                     <div className="space-y-1">
-                      <span className="text-xs font-black text-gray-900">#APT-{item.appointmentId}</span>
+                      <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${item.appointmentId === 'STANDALONE' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-gray-900 text-white'}`}>
+                        {item.appointmentId === 'STANDALONE' ? 'DIAGNOSTIC' : `#APT-${item.appointmentId}`}
+                      </span>
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                         {new Date(item.appointmentDate).toLocaleDateString('en-NG', { day: '2-digit', month: 'short' })}
                       </p>
@@ -245,8 +247,8 @@ export default function BillingList() {
                   </td>
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-[1rem] bg-amber-50 border border-amber-100/50 flex items-center justify-center shadow-sm shadow-amber-100/20 group-hover:bg-white group-hover:scale-110 transition-all duration-300">
-                        <span className="text-amber-600 font-black text-xs">{item.fullName[0]}</span>
+                      <div className="w-10 h-10 rounded-[1rem] bg-indigo-50 border border-indigo-100/50 flex items-center justify-center shadow-sm shadow-indigo-100/20 group-hover:bg-white group-hover:scale-110 transition-all duration-300">
+                        <span className="text-indigo-600 font-black text-xs">{(item.fullName || 'P')[0]}</span>
                       </div>
                       <div>
                         <p className="text-sm font-black text-gray-900 leading-none mb-1.5">{item.fullName}</p>
