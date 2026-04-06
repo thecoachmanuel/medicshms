@@ -106,18 +106,18 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
               body { background: none; }
               .page { margin: 0; border: none; border-radius: 0; width: 100%; min-height: 100%; padding: 10mm; }
             }
-            .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 25px; }
+            .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid ${settings.primary_color || '#000'}; padding-bottom: 15px; margin-bottom: 25px; }
             .hospital-logo { height: 60px; object-fit: contain; margin-bottom: 10px; }
             .hospital-info h1 { font-size: 22px; font-weight: 900; margin: 0; text-transform: uppercase; color: #1e293b; }
             .hospital-info p { font-size: 11px; color: #64748b; margin: 2px 0; font-weight: 500; }
             .report-type { text-align: center; margin-bottom: 25px; }
-            .report-type h2 { font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; background: #f8fafc; display: inline-block; padding: 6px 20px; border: 1px solid #e2e8f0; border-radius: 6px; }
+            .report-type h2 { font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; background: ${settings.primary_color || '#f8fafc'}08; color: ${settings.primary_color || '#1e293b'}; display: inline-block; padding: 6px 20px; border: 1px solid ${settings.primary_color || '#e2e8f0'}30; border-radius: 6px; }
             .demographics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #e2e8f0; }
             .demo-item { display: flex; flex-direction: column; }
             .demo-label { font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px; }
             .demo-value { font-size: 12px; font-weight: 700; color: #1e293b; }
             .test-group { margin-bottom: 30px; }
-            .test-header { background: #1e293b; color: white; padding: 6px 15px; border-radius: 4px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+            .test-header { background: ${settings.primary_color || '#1e293b'}; color: white; padding: 6px 15px; border-radius: 4px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
             table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
             th { text-align: left; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; padding: 8px 10px; border-bottom: 1px solid #e2e8f0; }
             td { padding: 10px; font-size: 12px; border-bottom: 1px solid #f1f5f9; color: #334155; }
@@ -127,9 +127,10 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
             .footer { position: absolute; bottom: 15mm; left: 15mm; right: 15mm; border-top: 1px solid #e2e8f0; padding-top: 15px; display: flex; justify-content: space-between; align-items: flex-end; }
             @media print { .footer { bottom: 10mm; left: 10mm; right: 10mm; } }
             .signature-box { text-align: center; width: 180px; }
-            .signature-line { border-top: 1px solid #94a3b8; margin-bottom: 5px; }
+            .signature-line { border-top: 1px solid ${settings.primary_color || '#94a3b8'}50; margin-bottom: 5px; }
             .signature-text { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; }
             .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 100px; font-weight: 950; color: rgba(241, 245, 249, 0.5); pointer-events: none; z-index: -1; }
+            .text-hospital { color: ${settings.primary_color || '#1e293b'}; }
           </style>
         </head>
         <body>
@@ -166,7 +167,7 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
       <div className="bg-white rounded-[2.5rem] w-full max-w-[210mm] max-h-[95vh] flex flex-col shadow-2xl overflow-hidden border border-gray-100">
         
         <div className="flex justify-between items-center px-10 py-6 border-b border-gray-100 shrink-0 bg-white">
@@ -182,10 +183,15 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
           <div className="flex items-center gap-4">
             <button 
               onClick={handlePrint}
-              className="flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-600 transition-all active:scale-95 shadow-lg shadow-gray-200"
+              disabled={loading}
+              className={cn(
+                "flex items-center gap-2 px-6 py-3 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-gray-200",
+                loading ? "bg-gray-400 cursor-not-allowed opacity-50" : "bg-gray-900 hover:bg-gray-800"
+              )}
+              style={!loading && settings.primary_color ? { backgroundColor: settings.primary_color } : {}}
             >
               <Printer className="w-4 h-4" />
-              Print Certificate
+              {loading ? 'Syncing...' : 'Print Certificate'}
             </button>
             <button 
               onClick={onClose}
@@ -196,7 +202,15 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-12 bg-gray-50/50">
+        <div className="flex-1 overflow-y-auto p-12 bg-gray-50/50 relative">
+          {loading && (
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-md">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-12 h-12 border-4 border-gray-200 border-t-indigo-600 rounded-full animate-spin" />
+                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest animate-pulse">Syncing Clinical Branding...</p>
+              </div>
+            </div>
+          )}
           <div id="report-container" className="mx-auto">
             <div className="page bg-white shadow-sm mx-auto">
               <div className="watermark">LAB CERTIFIED</div>
@@ -213,7 +227,9 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
                 </div>
                 <div className="text-right">
                   <div className="demo-label">ACCESSION NUMBER</div>
-                  <div className="text-xl font-black text-indigo-600">#{requests[0]?.lab_number || requests[0]?.id.slice(-8).toUpperCase()}</div>
+                  <div className="text-xl font-black" style={{ color: settings.primary_color || '#4f46e5' }}>
+                    #{requests[0]?.lab_number || requests[0]?.id.slice(-8).toUpperCase()}
+                  </div>
                   <div className="demo-label mt-2">REPORT REFERENCE</div>
                   <div className="font-bold text-xs uppercase">{new Date().getTime().toString(36).toUpperCase()}</div>
                 </div>
@@ -287,7 +303,7 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
               })}
 
               <div className="footer">
-                <div className="text-[9px] text-gray-400 max-w-[350px]">Laboratory verified according to international clinical standards.</div>
+                <div className="text-[9px] text-gray-400 max-w-[350px]"></div>
                 <div className="signature-box">
                   <div className="signature-line"></div>
                   <div className="signature-text">Authorized Scientist</div>
