@@ -302,33 +302,41 @@ export default function StaffManagement() {
                   <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Direct Uplink</label>
                   <input required type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full mt-3 px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="+00 000 000" />
                 </div>
-                {!editingStaff && (
-                  <div className="grid grid-cols-2 gap-8 col-span-2">
-                    <div>
-                      <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Professional Role</label>
-                      <div className="relative mt-3">
-                        <select required value={formData.role} onChange={e => setFormData({...formData, role: e.target.value as User['role']})} className="w-full appearance-none px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-gray-700 focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all cursor-pointer">
-                          {roles.map(r => <option key={r} value={r}>{r}</option>)}
-                        </select>
-                        <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
-                          <Users className="w-5 h-5" />
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Clinical Unit</label>
-                      <div className="relative mt-3">
-                        <select required value={formData.departmentId} onChange={e => setFormData({...formData, departmentId: e.target.value})} className="w-full appearance-none px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-gray-700 focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all cursor-pointer">
-                          <option value="">Select Unit</option>
-                          {departments.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
-                        </select>
-                        <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
-                          <Users className="w-5 h-5" />
-                        </div>
+                <div className="grid grid-cols-2 gap-8 col-span-2">
+                  <div>
+                    <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Professional Role</label>
+                    <div className="relative mt-3">
+                      <select 
+                        disabled={!!editingStaff}
+                        value={formData.role} 
+                        onChange={e => setFormData({...formData, role: e.target.value as User['role']})} 
+                        className="w-full appearance-none px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-gray-700 focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all cursor-pointer disabled:bg-gray-50 disabled:text-gray-400"
+                      >
+                        {roles.map(r => <option key={r} value={r}>{r}</option>)}
+                      </select>
+                      <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
+                        <Users className="w-5 h-5" />
                       </div>
                     </div>
                   </div>
-                )}
+                  <div>
+                    <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Clinical Unit</label>
+                    <div className="relative mt-3">
+                      <select 
+                        required 
+                        value={formData.departmentId} 
+                        onChange={e => setFormData({...formData, departmentId: e.target.value})} 
+                        className="w-full appearance-none px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-gray-700 focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all cursor-pointer"
+                      >
+                        <option value="">Select Unit</option>
+                        {departments.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
+                      </select>
+                      <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
+                        <Users className="w-5 h-5" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
               
               <div className="flex items-center justify-between p-8 bg-emerald-50/20 rounded-[2.5rem] border border-emerald-100/30">

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin, supabase } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
+import { BillingService } from '@/lib/billing-service';
 
 export async function GET(request: Request) {
   const { error: authError, profile } = await withAuth(request, ['Radiologist', 'Doctor', 'Admin']);
@@ -60,6 +61,27 @@ export async function POST(request: Request) {
       .single();
 
     if (error) throw error;
+
+    // AUTOMATED BILLING Integration
+    try {
+      await BillingService.generateAutoInvoice({
+        hospitalId: profile?.hospital_id,
+        patientId: patient_id,
+        sourceType: 'Radiology',
+        sourceId: data.id,
+        userProfile: profile,
+        services: [{
+          id: 'radiology-investigation',
+          name: test_name || 'Radiology Investigation',
+          price: 15000, // Default radiology fee
+          quantity: 1,
+          total: 15000
+        }]
+      });
+    } catch (billingError) {
+      console.error('[Auto-Billing Failed] Radiology:', billingError);
+    }
+
     return NextResponse.json(data, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });

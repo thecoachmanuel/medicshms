@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
 import { calculateAge } from '@/lib/utils';
+import { BillingService } from '@/lib/billing-service';
 
 // GET all public appointments (Admin/Receptionist)
 export async function GET(request: Request) {
@@ -132,6 +133,29 @@ export async function POST(request: Request) {
       .single();
 
     if (error) throw error;
+
+    // AUTOMATED BILLING Integration
+    // For manual admin/receptionist creation, we create a default consultation invoice
+    try {
+      await BillingService.generateAutoInvoice({
+        hospitalId: userProfile?.hospital_id,
+        patientId: patientId || appointment.patient_id,
+        sourceType: 'Appointment',
+        sourceId: appointment.id,
+        userProfile,
+        services: [{
+          id: 'consultation',
+          name: 'Medical Consultation',
+          price: 5000, // Default fee, can be made dynamic based on department
+          quantity: 1,
+          total: 5000
+        }],
+        doctorId: doctorAssigned
+      });
+    } catch (billingError) {
+      console.error('[Auto-Billing Failed] Appointment:', billingError);
+    }
+
     return NextResponse.json({ ...appointment, _id: appointment.id }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 400 });

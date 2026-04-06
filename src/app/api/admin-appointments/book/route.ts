@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
 import { sendEmail } from '@/lib/services/emailService';
+import { BillingService } from '@/lib/billing-service';
 
 export async function POST(request: Request) {
   const { error: authError, profile: userProfile } = await withAuth(request, ['Admin', 'Receptionist']);
@@ -138,6 +139,27 @@ export async function POST(request: Request) {
       p_patient_id: appointment.patient_id,
       p_entry: medicalRecordEntry
     });
+
+    // AUTOMATED BILLING Integration
+    try {
+      await BillingService.generateAutoInvoice({
+        hospitalId: userProfile?.hospital_id,
+        patientId: appointment.patient_id,
+        sourceType: 'Appointment',
+        sourceId: appointment.id,
+        userProfile,
+        services: [{
+          id: 'consultation',
+          name: 'General Consultation',
+          price: 5000,
+          quantity: 1,
+          total: 5000
+        }],
+        doctorId: appointment.doctor_assigned_id
+      });
+    } catch (billingError) {
+      console.error('[Auto-Billing Failed] Booked Appointment:', billingError);
+    }
 
     // 4. Send confirmation email (non-blocking)
     try {

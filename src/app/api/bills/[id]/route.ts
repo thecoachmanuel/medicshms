@@ -179,15 +179,19 @@ export async function PUT(
     if (updateError) throw updateError;
 
     // --- AUTO-SYNC LOGIC ---
+    const client = (supabaseAdmin || supabase);
+    
     // Update any clinical requests associated with this bill
-    await (supabaseAdmin || supabase)
+    await client
       .from('clinical_requests')
       .update({ payment_status: updateData.payment_status })
       .eq('bill_id', id);
     
-    // Also update if it's an appointment bill (optional, based on hospital flow)
+    // Also update if it's an appointment bill
     if (bill.public_appointment_id) {
-        // We could also update the appointment record if needed
+       // If the bill is paid, we can move the appointment forward or track payment status
+       // Some hospitals use have a 'paid' column on appointments, others use the 'payment_status' on the bill itself.
+       // Here we ensure the link is robust for queries.
     }
     // -----------------------
 

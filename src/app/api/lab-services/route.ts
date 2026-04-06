@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin, supabase } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
+import { BillingService } from '@/lib/billing-service';
 
 export async function GET(request: Request) {
   const { error: authError, profile, supabase: supabaseClient } = await withAuth(request, ['Lab Scientist', 'Doctor', 'Admin', 'Receptionist']);
@@ -96,6 +97,29 @@ export async function POST(request: Request) {
       .single();
 
     if (error) throw error;
+
+    // AUTOMATED BILLING Integration
+    if (test_price && test_price > 0 && data) {
+      try {
+        await BillingService.generateAutoInvoice({
+          hospitalId: profile?.hospital_id,
+          patientId: patient_id,
+          sourceType: 'Laboratory',
+          sourceId: data.id,
+          userProfile: profile,
+          services: [{
+            id: service_id || 'manual',
+            name: test_name,
+            price: Number(test_price),
+            quantity: 1,
+            total: Number(test_price)
+          }]
+        });
+      } catch (billingError) {
+        console.error('[Auto-Billing Failed] Lab Service:', billingError);
+      }
+    }
+
     return NextResponse.json(data, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
