@@ -61,6 +61,8 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
     requested_by_name: '',
     clinical_summary: ''
   });
+  const [isCustomSpecimen, setIsCustomSpecimen] = useState(false);
+  const [customSpecimen, setCustomSpecimen] = useState('');
 
   useEffect(() => {
     if (isOpen && user) {
@@ -138,6 +140,8 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
       requested_by_name: isDoctor ? (user?.name || '') : '',
       clinical_summary: ''
     });
+    setIsCustomSpecimen(false);
+    setCustomSpecimen('');
   };
 
   // Auto-generate Accession Number
@@ -251,7 +255,8 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
           unit_id: test.unit_id,
           patient_age: pAge,
           patient_gender: pGender,
-          ...requestData
+          ...requestData,
+          specimen_type: isCustomSpecimen ? customSpecimen : requestData.specimen_type
         });
       });
 
@@ -511,10 +516,33 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Specimen Source</label>
-                  <select className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold text-gray-900 appearance-none" 
-                    value={requestData.specimen_type} onChange={e => setRequestData({...requestData, specimen_type: e.target.value})}>
-                    <option>Venous Blood</option><option>Capillary Blood</option><option>Mid-stream Urine</option><option>Stool</option><option>CSF</option>
-                  </select>
+                  <div className="space-y-2">
+                    <select className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold text-gray-900 appearance-none" 
+                      value={isCustomSpecimen ? 'custom' : requestData.specimen_type} onChange={e => {
+                        if (e.target.value === 'custom') {
+                          setIsCustomSpecimen(true);
+                        } else {
+                          setIsCustomSpecimen(false);
+                          setRequestData({...requestData, specimen_type: e.target.value});
+                        }
+                      }}>
+                      <option>Venous Blood</option>
+                      <option>Capillary Blood</option>
+                      <option>Mid-stream Urine</option>
+                      <option>Stool</option>
+                      <option>CSF</option>
+                      <option value="custom">Other / Manual Entry</option>
+                    </select>
+                    {isCustomSpecimen && (
+                      <input 
+                        placeholder="Enter specimen source manually..." 
+                        className="w-full px-6 py-4 bg-white border-2 border-blue-100 rounded-2xl outline-none font-bold text-gray-900 focus:border-blue-500 transition-all animate-in slide-in-from-top-2"
+                        value={customSpecimen}
+                        onChange={e => setCustomSpecimen(e.target.value)}
+                        autoFocus
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
 
