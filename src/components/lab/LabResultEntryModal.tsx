@@ -253,6 +253,16 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
     }
   }, [request]);
 
+  // Auto-apply matching protocol from catalog
+  useEffect(() => {
+    if (request && catalog.length > 0 && fields.length === 0) {
+      const match = catalog.find(i => i.test_name.toLowerCase() === request.test_name.toLowerCase());
+      if (match && match.template_schema?.fields?.length > 0) {
+        handleApplyTemplate(match);
+      }
+    }
+  }, [request, catalog, fields.length]);
+
   const handleApplyTemplate = (template: any) => {
     const schema = template.template_schema || (TEMPLATES.find(t => t.id === template.id) as any)?.template_schema || { fields: template.fields || [] };
     setSelectedTemplate(template);

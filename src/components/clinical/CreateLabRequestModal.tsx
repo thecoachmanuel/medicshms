@@ -6,7 +6,7 @@ import {
   Clock, AlertCircle, TestTubes, Info, 
   Phone, Mail, Calendar, Loader2 
 } from 'lucide-react';
-import { labAPI, patientsAPI, servicesAPI } from '@/lib/api';
+import { labAPI, patientsAPI, servicesAPI, billingAPI } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
 import { clsx, type ClassValue } from 'clsx';
@@ -255,7 +255,23 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
         });
       });
 
-      await Promise.all(promises);
+      const results = await Promise.all(promises);
+      
+      // AUTO-BILLING INTEGRATION
+      try {
+        const billingPromises = results.map(async (res: any) => {
+          const requestId = res.data?.id || res.id;
+          if (requestId) {
+            return billingAPI.generateForLab(requestId, {});
+          }
+        });
+        await Promise.all(billingPromises);
+        toast.success(`Invoices generated for all investigations`);
+      } catch (billingError) {
+        console.error('Auto-billing failed:', billingError);
+        toast.error('Billing sync failed, please generate manually if needed');
+      }
+
       toast.success(`${selectedTests.length} investigations authorized`);
       onSuccess?.();
       onClose();

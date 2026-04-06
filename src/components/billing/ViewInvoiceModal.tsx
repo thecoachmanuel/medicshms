@@ -28,6 +28,7 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
 
   const [paymentStatus, setPaymentStatus] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
+  const [paymentReference, setPaymentReference] = useState('');
   const [paidAmount, setPaidAmount] = useState<number>(0);
   const [saving, setSaving] = useState(false);
   const [template, setTemplate] = useState<any>(null);
@@ -52,6 +53,7 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
       const res = await billingAPI.getById(billId) as any;
       setBill(res.data);
       setPaymentMethod(res.data.paymentMethod || '');
+      setPaymentReference(res.data.paymentReference || '');
       setPaidAmount(res.data.paidAmount || 0);
       setPaymentStatus(res.data.paymentStatus || '');
     } catch {
@@ -68,6 +70,7 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
       await billingAPI.update(billId, { 
         paidAmount, 
         paymentMethod,
+        paymentReference,
         paymentStatus 
       });
       toast.success('Payment updated');
@@ -142,6 +145,7 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
               <div style="font-weight: 800; font-size: 16px;">#${bill.billNumber}</div>
               <div style="font-size: 13px; color: #4b5563; margin-top: 4px;">Date: ${new Date(bill.createdAt).toLocaleDateString('en-NG', { dateStyle: 'long' })}</div>
               <div style="font-size: 13px; color: #4b5563;">Appt ID: #${bill.appointmentId}</div>
+              ${bill.paymentReference ? `<div style="font-size: 11px; color: #6b7280; font-weight: 800; margin-top: 5px;">REF: ${bill.paymentReference}</div>` : ''}
             </div>
           </div>
 
@@ -272,6 +276,9 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
                   <p className="text-xs font-bold text-gray-900">#{bill.appointmentId}</p>
                   <p className="text-xs text-gray-500 font-medium">{new Date(bill.createdAt).toLocaleDateString('en-NG', { dateStyle: 'long' })}</p>
                   <p className="text-xs text-gray-500 font-medium">{bill.department}</p>
+                  {bill.paymentReference && (
+                    <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mt-2 border-t border-emerald-50 pt-1 inline-block">REF: {bill.paymentReference}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -329,16 +336,16 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
 
           <div className="p-10 bg-gray-50 border-t border-gray-100">
             <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6">Update Payment Status</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-end">
               <div className="space-y-4">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Payment Method</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {['Cash', 'UPI', 'Card'].map(m => (
+                <div className="grid grid-cols-2 gap-2">
+                  {['Cash', 'Transfer', 'Card', 'POS'].map(m => (
                     <button 
                       key={m}
                       onClick={() => setPaymentMethod(m)}
                       className={cn(
-                        "py-2 px-4 rounded-xl text-xs font-bold border transition-all",
+                        "py-2 px-2 rounded-xl text-[10px] font-bold border transition-all",
                         paymentMethod === m ? "bg-gray-900 text-white border-gray-900" : "bg-white text-gray-400 border-gray-100 hover:border-gray-300"
                       )}
                     >
@@ -346,6 +353,16 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
                     </button>
                   ))}
                 </div>
+              </div>
+              <div className="space-y-4">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Reference ID</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. TRX-992... (Bank/POS Ref)"
+                  value={paymentReference}
+                  onChange={e => setPaymentReference(e.target.value)}
+                  className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-xs font-bold text-gray-900 outline-none focus:ring-2 focus:ring-gray-900/5"
+                />
               </div>
               <div className="space-y-4">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Payment Status</label>
@@ -366,19 +383,19 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
               </div>
               <div className="space-y-4">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Amount Paid (₦)</label>
-                <div className="flex gap-4">
+                <div className="flex flex-col gap-2">
                   <input 
                     type="number" 
                     value={paidAmount}
                     onChange={e => setPaidAmount(Number(e.target.value))}
-                    className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm font-black text-primary-600 outline-none"
+                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm font-black text-primary-600 outline-none"
                   />
                   <button 
                     onClick={handleUpdatePayment}
                     disabled={saving}
-                    className="px-6 bg-primary-600 text-white rounded-xl text-xs font-bold hover:bg-primary-700 whitespace-nowrap"
+                    className="w-full py-2 bg-primary-600 text-white rounded-xl text-xs font-bold hover:bg-primary-700 transition-all shadow-lg active:scale-95"
                   >
-                    {saving ? '...' : 'Update Invoice'}
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Update Invoice'}
                   </button>
                 </div>
               </div>

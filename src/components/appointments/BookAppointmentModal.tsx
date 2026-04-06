@@ -37,7 +37,9 @@ export default function BookAppointmentModal({ onClose, onSuccess }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [lookupMobile, setLookupMobile] = useState('');
+  const [lookupName, setLookupName] = useState('');
   const [lookupLoading, setLookupLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [existingPatientId, setExistingPatientId] = useState('');
 
   const [departments, setDepartments] = useState<any[]>([]);
@@ -72,15 +74,39 @@ export default function BookAppointmentModal({ onClose, onSuccess }: Props) {
     doctorsAPI.getAll().then(r => setDoctors(r.data || [])).catch(console.error);
   }, []);
 
-  useEffect(() => {
-    if (formData.appointmentDate && formData.department) {
-      setSlotsLoading(true);
-      appointmentsAPI.getTimeSlots(formData.appointmentDate, formData.department)
-        .then((res: any) => setTimeSlots(res.timeSlots || []))
-        .catch(console.error)
-        .finally(() => setSlotsLoading(false));
+  const handleSearch = async (term: string) => {
+    setLookupName(term);
+    if (term.length < 2) {
+      setSearchResults([]);
+      return;
     }
-  }, [formData.appointmentDate, formData.department]);
+    setLookupLoading(true);
+    try {
+      const res = await (await import('@/lib/api')).patientsAPI.getAll({ search: term }) as any;
+      setSearchResults(res.data || []);
+    } catch (e) {
+      console.error('Search failed');
+    } finally {
+      setLookupLoading(false);
+    }
+  };
+
+  const selectPatient = (p: any) => {
+    setFormData(prev => ({
+      ...prev,
+      fullName: p.fullName || '',
+      gender: p.gender || '',
+      emailAddress: p.emailAddress || '',
+      mobileNumber: p.mobileNumber || '',
+      knownAllergies: p.knownAllergies || 'No',
+      allergiesDetails: p.allergiesDetails || '',
+      existingConditions: p.existingConditions || '',
+      address: p.address || '',
+      dateOfBirth: p.dateOfBirth || '',
+    }));
+    setExistingPatientId(p.patientId || p.id || '');
+    setPhase('form');
+  };
 
   const handleLookup = async () => {
     if (!lookupMobile || lookupMobile.length < 10) return toast.error('Enter valid mobile');
@@ -88,19 +114,7 @@ export default function BookAppointmentModal({ onClose, onSuccess }: Props) {
     try {
       const res: any = await appointmentsAPI.lookupPatient(lookupMobile);
       const p = res.data;
-      setFormData(prev => ({
-        ...prev,
-        fullName: p.fullName || '',
-        gender: p.gender || '',
-        emailAddress: p.emailAddress || '',
-        mobileNumber: p.mobileNumber || lookupMobile,
-        knownAllergies: p.knownAllergies || 'No',
-        allergiesDetails: p.allergiesDetails || '',
-        existingConditions: p.existingConditions || '',
-        address: p.address || '',
-      }));
-      setExistingPatientId(p.patientId || '');
-      setPhase('form');
+      selectPatient(p);
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'No records found');
     } finally {
@@ -130,6 +144,16 @@ export default function BookAppointmentModal({ onClose, onSuccess }: Props) {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    if (formData.appointmentDate && formData.department) {
+      setSlotsLoading(true);
+      appointmentsAPI.getTimeSlots(formData.appointmentDate, formData.department)
+        .then((res: any) => setTimeSlots(res.timeSlots || []))
+        .catch(console.error)
+        .finally(() => setSlotsLoading(false));
+    }
+  }, [formData.appointmentDate, formData.department]);
 
   const filteredDoctors = doctors.filter(d => 
     !formData.department || d.department?.name === formData.department
@@ -188,30 +212,70 @@ export default function BookAppointmentModal({ onClose, onSuccess }: Props) {
           )}
 
           {phase === 'lookup' && (
-            <div className="py-8 space-y-6">
-              <div className="text-center space-y-2">
-                <h3 className="text-lg font-bold text-gray-900">Find Records</h3>
-                <p className="text-sm text-gray-500">Enter patient mobile number to fetch details.</p>
+            <div className="py-2 space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="text-center space-y-1">
+                <h3 className="text-xl font-bold text-gray-900">Find Records</h3>
+                <p className="text-xs text-gray-500 font-medium uppercase tracking-widest">Identify Patient to continue</p>
               </div>
-              <div className="max-w-md mx-auto space-y-4">
-                <div className="relative">
-                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input 
-                    type="tel" 
-                    placeholder="10-digit mobile number" 
-                    value={lookupMobile}
-                    onChange={(e) => setLookupMobile(e.target.value)}
-                    className="input w-full pl-12 h-14 text-lg font-bold"
-                  />
+
+              <div className="space-y-6">
+                <div className="space-y-3">
+                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Search by Name or ID</label>
+                   <div className="relative group">
+                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
+                     <input 
+                       type="text" autoFocus placeholder="e.g. John Doe or PAT-1234"
+                       className="w-full pl-12 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-bold text-gray-900 shadow-sm"
+                       value={lookupName}
+                       onChange={(e) => handleSearch(e.target.value)}
+                     />
+                   </div>
                 </div>
-                <button 
-                  onClick={handleLookup}
-                  disabled={lookupLoading}
-                  className="btn-primary w-full h-12 text-base"
-                >
-                  {lookupLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Search Records'}
-                </button>
-                <button onClick={() => setPhase('select')} className="btn-secondary w-full h-12 border-none">Go Back</button>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"></div></div>
+                  <div className="relative flex justify-center text-[10px]"><span className="px-3 bg-white text-gray-400 font-black uppercase tracking-widest">OR USE PHONE</span></div>
+                </div>
+
+                <div className="flex gap-3">
+                  <div className="relative flex-1">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input 
+                      type="tel" placeholder="10-digit mobile" 
+                      className="w-full pl-12 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-bold text-gray-900"
+                      value={lookupMobile}
+                      onChange={(e) => setLookupMobile(e.target.value)}
+                    />
+                  </div>
+                  <button onClick={handleLookup} disabled={lookupLoading} className="px-8 bg-gray-900 text-white rounded-2xl font-bold hover:bg-gray-800 transition-colors">
+                    {lookupLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Lookup'}
+                  </button>
+                </div>
+
+                {searchResults.length > 0 && (
+                  <div className="space-y-2 max-h-60 overflow-y-auto pr-2 no-scrollbar">
+                    {searchResults.map(p => (
+                      <button 
+                        key={p.patientId || p.id}
+                        onClick={() => selectPatient(p)}
+                        className="w-full flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl hover:border-emerald-200 hover:bg-emerald-50/50 transition-all group text-left"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 font-bold text-emerald-600">
+                            {p.fullName?.[0]}
+                          </div>
+                          <div>
+                            <p className="font-bold text-gray-900 leading-none mb-1">{p.fullName}</p>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">#{p.patientId} • {p.mobileNumber}</p>
+                          </div>
+                        </div>
+                        <ArrowRight className="w-5 h-5 text-gray-200 group-hover:text-emerald-500 transition-colors" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+                
+                <button onClick={() => setPhase('select')} className="w-full py-4 text-xs font-black text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-colors">Cancel</button>
               </div>
             </div>
           )}

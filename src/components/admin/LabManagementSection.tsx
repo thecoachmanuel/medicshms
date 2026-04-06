@@ -51,8 +51,9 @@ export default function LabManagementSection() {
       setCatalog(cRes.data || []);
       setScientists(sRes.data || []);
       setAssignments(aRes.data || []);
-    } catch (error) {
-      toast.error('Failed to load laboratory matrix data');
+    } catch (error: any) {
+      console.error('Laboratory Matrix Load Error:', error);
+      toast.error('Failed to load laboratory matrix data: ' + (error.message || 'Check connection'));
     } finally {
       setLoading(false);
     }

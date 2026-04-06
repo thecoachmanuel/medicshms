@@ -7,7 +7,7 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ role: string }> }
 ) {
-  const { error: authError, profile: adminProfile, supabase: supabaseClient } = await withAuth(request, ['Admin']);
+  const { error: authError, profile: adminProfile, supabase: supabaseClient } = await withAuth(request, ['Admin', 'Lab Scientist']);
   if (authError) return authError;
 
   const { role } = await params;
