@@ -29,8 +29,16 @@ export async function GET(
     if (!bill.public_appointments && bill.patient_id) {
       const { data: patient } = await (supabaseAdmin || supabase)
         .from('patients')
-        .select('*')
+        .select('*, profiles!user_id(email, name)')
         .eq('patient_id', bill.patient_id)
+        .single();
+      patientData = patient;
+    } else if (bill.public_appointments) {
+      // Even for appointment bills, get the full patient record for contact info
+      const { data: patient } = await (supabaseAdmin || supabase)
+        .from('patients')
+        .select('*, profiles!user_id(email, name)')
+        .eq('patient_id', bill.public_appointments.patient_id)
         .single();
       patientData = patient;
     }
@@ -59,13 +67,17 @@ export async function GET(
       paymentStatus: bill.payment_status,
       paymentMethod: bill.payment_method,
       transactionId: bill.transaction_id,
-      // Standalone Fallbacks
+      // Comprehensive Patient Details
       fullName: bill.public_appointments?.full_name || patientData?.full_name || 'Individual Patient',
       patientId: bill.public_appointments?.patient_id || bill.patient_id || 'N/A',
       appointmentId: bill.public_appointments?.appointment_id || 'STANDALONE',
       gender: bill.public_appointments?.gender || patientData?.gender || 'N/A',
       age: bill.public_appointments?.age || calculateAge(patientData?.date_of_birth),
       department: bill.public_appointments?.doctors?.department?.name || 'Laboratory',
+      // Contact Info
+      phone: patientData?.mobile_number || bill.public_appointments?.mobile_number || 'N/A',
+      email: patientData?.profiles?.email || 'N/A',
+      address: patientData?.address || 'N/A',
       publicAppointment: bill.public_appointments ? {
         ...bill.public_appointments,
         appointmentId: bill.public_appointments.appointment_id,

@@ -139,6 +139,11 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
               <div style="font-weight: 800; font-size: 18px;">${bill.fullName}</div>
               <div style="font-size: 13px; color: #4b5563; margin-top: 4px;">ID: #${bill.patientId}</div>
               <div style="font-size: 13px; color: #4b5563;">${bill.gender} | ${bill.age} Years</div>
+              <div style="font-size: 12px; color: #6b7280; margin-top: 8px; font-weight: 600;">
+                <span style="display: block;">📞 ${bill.phone}</span>
+                <span style="display: block;">✉️ ${bill.email}</span>
+                <span style="display: block;">🏠 ${bill.address}</span>
+              </div>
             </div>
             <div style="text-align: right">
               <div class="section-title">Invoice Details</div>

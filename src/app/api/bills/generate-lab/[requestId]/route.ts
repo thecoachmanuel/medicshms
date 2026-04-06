@@ -19,7 +19,7 @@ export async function POST(
     // 1. Fetch the lab request details
     const { data: labRequest, error: fetchError } = await client
       .from('clinical_requests')
-      .select('*, patient:patient_id(*)')
+      .select('*')
       .eq('id', requestId)
       .single();
 
