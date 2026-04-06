@@ -299,12 +299,17 @@ export default function ReceptionistLabRequestsPage() {
         onSuccess={fetchRequests}
       />
 
-      <ViewInvoiceModal 
-        isOpen={!!showInvoiceId}
-        onClose={() => { setShowInvoiceId(null); setShowInvoicePatient(null); fetchRequests(); }}
-        billId={showInvoiceId || ''}
-        appointment={showInvoicePatient}
-      />
+      {showInvoiceId && (
+        <ViewInvoiceModal 
+          billId={showInvoiceId}
+          appointment={showInvoicePatient}
+          onClose={() => {
+            setShowInvoiceId(null);
+            setShowInvoicePatient(null);
+          }}
+          onUpdated={() => fetchRequests()}
+        />
+      )}
 
       {/* Protocol Mapping Modal */}
       {mappingRequest && (
