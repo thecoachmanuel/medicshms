@@ -32,6 +32,7 @@ export default function EditInvoiceModal({ billId, appointment, onClose, onUpdat
   const [services, setServices] = useState<Service[]>([]);
   const [discount, setDiscount] = useState<number>(0);
   const [roundOff, setRoundOff] = useState<number>(0);
+  const [paymentStatus, setPaymentStatus] = useState<string>('Pending');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -47,6 +48,7 @@ export default function EditInvoiceModal({ billId, appointment, onClose, onUpdat
       setServices(b.services || []);
       setDiscount(b.discount || 0);
       setRoundOff(b.roundOff || 0);
+      setPaymentStatus(b.paymentStatus || 'Pending');
     } catch {
       toast.error('Failed to load invoice');
     } finally {
@@ -82,7 +84,8 @@ export default function EditInvoiceModal({ billId, appointment, onClose, onUpdat
       await billingAPI.update(billId, {
         services,
         discount: Number(discount),
-        roundOff: Number(roundOff)
+        roundOff: Number(roundOff),
+        paymentStatus
       });
       toast.success('Invoice updated successfully');
       onUpdated();
@@ -179,6 +182,19 @@ export default function EditInvoiceModal({ billId, appointment, onClose, onUpdat
                   onChange={e => setRoundOff(Number(e.target.value) || 0)}
                   className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all"
                 />
+              </div>
+              <div className="space-y-1.5 md:col-span-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Bill Status</label>
+                <select
+                  value={paymentStatus}
+                  onChange={e => setPaymentStatus(e.target.value)}
+                  className="w-full bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 text-sm font-black text-emerald-900 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all appearance-none"
+                >
+                  <option value="Pending">Pending (Not Paid)</option>
+                  <option value="Partial">Partial (Incomplete Payment)</option>
+                  <option value="Paid">Paid (Full Settlement)</option>
+                  <option value="Cancelled">Cancelled (Invalidate Bill)</option>
+                </select>
               </div>
             </div>
 

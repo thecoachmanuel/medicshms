@@ -205,7 +205,12 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
     if (selectedTests.find(t => t.test_name === test.test_name)) {
       return toast.error('Test already added to batch');
     }
-    setSelectedTests([...selectedTests, test]);
+    // Ensure price is mapped correctly (Catalog uses 'price', Form expects 'test_price')
+    const preparedTest = {
+      ...test,
+      test_price: test.test_price || test.price || 0
+    };
+    setSelectedTests([...selectedTests, preparedTest]);
     setTestSearchTerm('');
     setShowCatalogSuggestions(false);
   };
