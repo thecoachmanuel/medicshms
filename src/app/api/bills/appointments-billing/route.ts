@@ -76,7 +76,6 @@ export async function GET(request: Request) {
       .eq('type', 'Laboratory')
       .eq('payment_status', 'Pending')
       .is('appointment_id', null)
-      .not('id', 'in', `(${billedRequestIds.length > 0 ? billedRequestIds.join(',') : '00000000-0000-0000-0000-000000000000'})`)
       .order('requested_at', { ascending: false });
 
     // 5. Transform Bills into the View Schema (Use patientMap)

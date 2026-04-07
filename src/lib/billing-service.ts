@@ -61,9 +61,19 @@ export const BillingService = {
     }
 
     // 1. Prepare/Append Services
-    let finalizedServices = [...(services || [])];
+    let newServices = (services || []).map(s => ({
+      ...s,
+      amount: s.amount || s.price || s.total || 0, // Ensure 'amount' field for UI compatibility
+      price: s.price || s.amount || 0,
+      total: s.total || s.price || s.amount || 0,
+      quantity: s.quantity || 1
+    }));
+
+    let finalizedServices = [...newServices];
+
     if (existingBill) {
-       finalizedServices = [...(existingBill.services || []), ...finalizedServices];
+       // Append to existing services
+       finalizedServices = [...(existingBill.services || []), ...newServices];
     } else if (sourceType === 'Appointment' && finalizedServices.length === 0) {
       const { data: apt } = await client.from('public_appointments').select('doctor_assigned_id, department').eq('id', sourceId).single();
       let fee = 5000;
@@ -71,7 +81,7 @@ export const BillingService = {
          const { data: doctor } = await client.from('doctors').select('fees').eq('id', apt.doctor_assigned_id).single();
          if (doctor?.fees) fee = doctor.fees;
       }
-      finalizedServices = [{ id: 'consultation', name: 'Medical Consultation', price: fee, quantity: 1, total: fee }];
+      finalizedServices = [{ id: 'consultation', name: 'Medical Consultation', price: fee, amount: fee, quantity: 1, total: fee }];
     }
 
     // 2. Calculate totals
