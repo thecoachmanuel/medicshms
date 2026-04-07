@@ -31,6 +31,7 @@ export default function PatientsList({ role }: Props) {
   const slug = params?.slug as string;
   const portalRole = role.toLowerCase();
   const isDoctor = role === 'Doctor';
+  const canOnboardPatients = role === 'Admin' || role === 'Receptionist' || role === 'Lab Scientist';
   const isAdminOrReceptionist = role === 'Admin' || role === 'Receptionist';
   const [patients, setPatients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -160,13 +161,13 @@ export default function PatientsList({ role }: Props) {
           <button onClick={() => fetchPatients()} className="p-3 bg-white/70 backdrop-blur-md border border-white/50 rounded-2xl hover:bg-white hover:shadow-lg transition-all" title="Synchronize Records">
             <RefreshCw className={cn("w-4 h-4 text-gray-400 font-bold", loading && "animate-spin")} />
           </button>
-          {isAdminOrReceptionist && (
+          {canOnboardPatients && (
             <button onClick={() => setShowRegisterModal(true)} className="btn-primary px-6">
               <User className="w-4 h-4" />
               Onboard Patient
             </button>
           )}
-          {!isDoctor && (
+          {(role === 'Admin' || role === 'Receptionist' || role === 'Lab Scientist') && (
             <button onClick={handleDownloadCSV} className="btn-secondary px-6">
               <Download className="w-4 h-4" />
               Export Archive
@@ -199,7 +200,7 @@ export default function PatientsList({ role }: Props) {
                 <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Primary Contact</th>
                 <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Demographics</th>
                 <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Medical History</th>
-                {isAdminOrReceptionist && (
+                {canOnboardPatients && (
                   <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] text-right">Actions</th>
                 )}
               </tr>
@@ -286,7 +287,7 @@ export default function PatientsList({ role }: Props) {
                         </button>
                       </div>
                   </td>
-                  {isAdminOrReceptionist && (
+                  {canOnboardPatients && (
                     <td className="px-6 py-5 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button 

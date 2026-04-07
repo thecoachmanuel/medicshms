@@ -68,10 +68,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     console.log('Registration request body:', body);
     console.log('Registration user profile role:', userProfile?.role);
-    const isAdmin = userProfile?.role === 'Admin' || userProfile?.role === 'Receptionist';
+    const canLinkUserId = userProfile?.role === 'Admin' || userProfile?.role === 'Receptionist' || userProfile?.role === 'Patient';
     
-    // If not admin, use current user's profile
-    const userId = isAdmin ? body.userId : userProfile?.id;
+    // If not admin/receptionist or self-registering patient, DO NOT use current user's profile ID
+    const userId = canLinkUserId ? (body.userId || userProfile?.id) : null;
     const mobileNumber = body.mobileNumber;
 
     // Check if patient profile already exists within THIS hospital
