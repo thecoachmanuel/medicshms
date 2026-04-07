@@ -47,7 +47,7 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
     mobileNumber: '',
     emailAddress: '',
     gender: 'Male',
-    dateOfBirth: ''
+    dateOfBirth: null
   });
   
   const [selectedTests, setSelectedTests] = useState<any[]>([]);

@@ -110,7 +110,7 @@ export async function POST(request: Request) {
       email_address: body.emailAddress,
       mobile_number: body.mobileNumber,
       gender: body.gender,
-      date_of_birth: body.dateOfBirth,
+      date_of_birth: body.dateOfBirth && body.dateOfBirth.trim() !== '' ? body.dateOfBirth : null,
       age: calculateAge(body.dateOfBirth),
       blood_group: body.bloodGroup,
       address: body.address,
