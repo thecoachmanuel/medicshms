@@ -47,7 +47,7 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
     mobileNumber: '',
     emailAddress: '',
     gender: 'Male',
-    dateOfBirth: null
+    dateOfBirth: ''
   });
   
   const [selectedTests, setSelectedTests] = useState<any[]>([]);
@@ -263,19 +263,6 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
 
       const results = await Promise.all(promises);
       
-      // AUTO-BILLING (Silent background task)
-      try {
-        const billingPromises = results.map(async (res: any) => {
-          const requestId = res.data?.id || res.id;
-          if (requestId) {
-            return billingAPI.generateForLab(requestId, {});
-          }
-        });
-        await Promise.all(billingPromises);
-      } catch (billingError) {
-        console.error('Auto-billing failed:', billingError);
-      }
-
       toast.success('Job Authorized & Invoiced Successfully');
       onSuccess?.();
       onClose();

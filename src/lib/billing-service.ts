@@ -20,6 +20,7 @@ export interface BillingServiceOptions {
   roundOff?: number;
   notes?: string;
   doctorId?: string;
+  appointmentId?: string;
 }
 
 export const BillingService = {
@@ -29,134 +30,115 @@ export const BillingService = {
   async generateAutoInvoice(options: BillingServiceOptions) {
     const { 
       hospitalId, patientId, services, sourceType, sourceId, 
-      userProfile, discount = 0, roundOff = 0, notes, doctorId 
+      userProfile, discount = 0, roundOff = 0, notes, doctorId,
+      appointmentId
     } = options;
 
     const client = (supabaseAdmin || supabase);
 
-    // 0. Robust Fee Detection (for Appointments if services not provided)
-    let finalizedServices = [...(services || [])];
-    if (sourceType === 'Appointment' && finalizedServices.length === 0) {
-      // Try to fetch doctor fee or department fee
-      const { data: apt } = await client
-        .from('public_appointments')
-        .select('doctor_assigned_id, department')
-        .eq('id', sourceId)
-        .single();
+    // 0. Consolidation Check: If a bill already exists for this clinical request, SKIP
+    if (sourceType === 'Laboratory' || sourceType === 'Radiology' || sourceType === 'Pharmacy') {
+      const { data: existingReqBill } = await client
+        .from('bills')
+        .select('id')
+        .eq('clinical_request_id', sourceId)
+        .maybeSingle();
       
-      let fee = 5000; // Final fallback
-      let serviceName = 'Medical Consultation';
+      if (existingReqBill) return existingReqBill;
+    }
 
+    // 0.1 Check for Existing Appointment Bill to Consolidate
+    let existingBill = null;
+    const aptIdToFetch = appointmentId || (sourceType === 'Appointment' ? sourceId : null);
+    if (aptIdToFetch) {
+      const { data: found } = await client
+        .from('bills')
+        .select('*')
+        .eq('public_appointment_id', aptIdToFetch)
+        .eq('payment_status', 'Pending')
+        .maybeSingle();
+      existingBill = found;
+    }
+
+    // 1. Prepare/Append Services
+    let finalizedServices = [...(services || [])];
+    if (existingBill) {
+       finalizedServices = [...(existingBill.services || []), ...finalizedServices];
+    } else if (sourceType === 'Appointment' && finalizedServices.length === 0) {
+      const { data: apt } = await client.from('public_appointments').select('doctor_assigned_id, department').eq('id', sourceId).single();
+      let fee = 5000;
       if (apt?.doctor_assigned_id) {
          const { data: doctor } = await client.from('doctors').select('fees').eq('id', apt.doctor_assigned_id).single();
          if (doctor?.fees) fee = doctor.fees;
-      } else if (apt?.department) {
-         const { data: dept } = await client.from('departments').select('default_consultation_fee').eq('name', apt.department).single();
-         if (dept?.default_consultation_fee) fee = dept.default_consultation_fee;
       }
-
-      finalizedServices = [{
-        id: 'consultation',
-        name: serviceName,
-        price: fee,
-        quantity: 1,
-        total: fee
-      }];
+      finalizedServices = [{ id: 'consultation', name: 'Medical Consultation', price: fee, quantity: 1, total: fee }];
     }
 
-    // 1. Calculate totals
+    // 2. Calculate totals
     const subtotal = finalizedServices.reduce((sum, s) => sum + s.total, 0);
-    const totalAmount = Math.max(0, subtotal - discount + roundOff);
+    const disc = existingBill?.discount || discount;
+    const rnd = existingBill?.round_off || roundOff;
+    const totalAmount = Math.max(0, subtotal - disc + rnd);
 
-    // 2. Generate specialized invoice numbers with prefix
+    // 3. Generate specialized invoice numbers with prefix
     const prefix = sourceType === 'Laboratory' ? 'INV-LAB' :
                    sourceType === 'Radiology' ? 'INV-RAD' :
                    sourceType === 'Appointment' ? 'INV-APT' : 'INV-GEN';
 
-    // We use a robust format: [Prefix]-[YYMMDD]-[8-char-RandomSuffix] for high collision resistance
     const dateStr = new Date().toISOString().slice(2, 10).replace(/-/g, '');
-    const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase() + 
-                         Math.random().toString(36).substring(2, 6).toUpperCase();
+    const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
     const billNumber = `${prefix}-${dateStr}-${randomSuffix}`;
 
-    // 3. Fetch generating staff signature if available
-    let signatureKey = '';
-    const { data: staffProfile } = await client
-      .from('profiles')
-      .select('role')
-      .eq('id', userProfile.id)
-      .single();
-
-    if (staffProfile) {
-      let specTable = '';
-      if (staffProfile.role === 'Admin') specTable = 'admins';
-      else if (staffProfile.role === 'Receptionist') specTable = 'receptionists';
-      else if (staffProfile.role === 'Doctor') specTable = 'doctors';
-      else if (staffProfile.role === 'Lab Scientist') specTable = 'lab_scientists';
-
-      if (specTable) {
-        const { data: spec } = await client
-          .from(specTable)
-          .select('digital_signature')
-          .eq('user_id', userProfile.id)
-          .single();
-        signatureKey = spec?.digital_signature || '';
-      }
-    }
-
-    // 4. Create the bill
+    // 4. Prepare bill data
     const billData: any = {
       hospital_id: hospitalId,
       patient_id: patientId,
       bill_number: billNumber,
       services: finalizedServices,
       subtotal,
-      discount,
-      round_off: roundOff,
+      discount: disc,
+      round_off: rnd,
       total_amount: totalAmount,
-      paid_amount: 0,
-      due_amount: totalAmount,
+      paid_amount: existingBill?.paid_amount || 0,
+      due_amount: totalAmount - (existingBill?.paid_amount || 0),
       payment_status: 'Pending',
       payment_method: 'Pending',
       notes: notes || `Automated billing for ${sourceType} service`,
-      generated_by: {
-        name: userProfile?.name,
-        role: userProfile?.role
-      },
-      generated_by_signature: signatureKey
+      generated_by: { name: userProfile?.name, role: userProfile?.role }
     };
 
-    // Link source-specific fields
-    if (sourceType === 'Appointment') {
-      billData.public_appointment_id = sourceId;
-    }
-    if (doctorId) {
-      billData.doctor_id = doctorId;
+    if (sourceType === 'Appointment') billData.public_appointment_id = sourceId;
+    else if (sourceType === 'Laboratory' || sourceType === 'Radiology' || sourceType === 'Pharmacy') {
+      billData.clinical_request_id = sourceId;
+      if (appointmentId) billData.public_appointment_id = appointmentId;
     }
 
-    const { data: bill, error: billError } = await client
-      .from('bills')
-      .insert([billData])
-      .select()
-      .single();
+    let finalBill: any = null;
+    if (existingBill) {
+      const { data: updated, error: updateError } = await client.from('bills').update({
+        services: finalizedServices,
+        subtotal,
+        total_amount: totalAmount,
+        due_amount: totalAmount - (existingBill.paid_amount || 0)
+      }).eq('id', existingBill.id).select().single();
+      if (updateError) throw updateError;
+      finalBill = updated;
+    } else {
+      const { data: created, error: createError } = await client.from('bills').insert([billData]).select().single();
+      if (createError) throw createError;
+      finalBill = created;
+    }
 
-    if (billError) throw billError;
-
-    // 5. Update the source record with the bill_id and mark as Billed
+    // 5. Update source record
     if (sourceType === 'Laboratory' || sourceType === 'Radiology' || sourceType === 'Pharmacy') {
-      await client
-        .from('clinical_requests')
-        .update({ 
-          bill_id: bill.id,
-          payment_status: 'Billed'
-        })
-        .eq('id', sourceId);
-    } else if (sourceType === 'Appointment') {
+      await client.from('clinical_requests').update({ bill_id: finalBill.id, payment_status: 'Billed' }).eq('id', sourceId);
+    }
+ else if (sourceType === 'Appointment') {
       // In the current schema, some appointment tables might not have bill_id col, 
       // but we ensure the status is at least 'Invoiced' conceptually
       // We can add a more explicit link if the table supports it.
     }
 
-    return bill;
+    return finalBill;
   }
 };

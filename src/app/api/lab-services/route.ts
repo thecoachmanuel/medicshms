@@ -106,6 +106,7 @@ export async function POST(request: Request) {
           patientId: patient_id,
           sourceType: 'Laboratory',
           sourceId: data.id,
+          appointmentId: appointment_id,
           userProfile: profile,
           services: [{
             id: service_id || 'manual',
