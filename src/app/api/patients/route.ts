@@ -75,18 +75,25 @@ export async function POST(request: Request) {
     const mobileNumber = body.mobileNumber;
 
     // Check if patient profile already exists within THIS hospital
-    const query = (supabaseAdmin || supabase)
-      .from('patients')
-      .select('id')
-      .eq('hospital_id', userProfile?.hospital_id);
+    let existingProfile = null;
+    const shouldCheck = userId || (mobileNumber && !mobileNumber.startsWith('RAPID-'));
 
-    if (userId) {
-      query.eq('user_id', userId);
-    } else if (mobileNumber) {
-      query.eq('mobile_number', mobileNumber);
+    if (shouldCheck) {
+      const query = (supabaseAdmin || supabase)
+        .from('patients')
+        .select('id')
+        .eq('hospital_id', userProfile?.hospital_id);
+
+      if (userId) {
+        query.eq('user_id', userId);
+      } else if (mobileNumber) {
+        query.eq('mobile_number', mobileNumber);
+      }
+      
+      const { data } = await query.maybeSingle();
+      existingProfile = data;
     }
-    
-    const { data: existingProfile } = await query.maybeSingle();
+
     if (existingProfile) return NextResponse.json({ message: 'Patient profile already exists in this hospital' }, { status: 400 });
 
     const dateStr = new Date().toISOString().slice(2, 10).replace(/-/g, '');

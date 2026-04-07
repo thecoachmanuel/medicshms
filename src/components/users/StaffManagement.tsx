@@ -369,7 +369,14 @@ export default function StaffManagement() {
                   <div>
                     <p className="text-[11px] font-black uppercase tracking-[0.3em] mb-1.5 text-amber-700">Security Requirement</p>
                     <p className="text-[13px] font-medium leading-relaxed opacity-80">
-                      Standard initialization key generated: <span className="font-black underline decoration-2 decoration-amber-500 underline-offset-4">hms@{formData.role.toLowerCase().replace(' ', '')}</span>. Cipher rotation mandatory on primary uplink.
+                      Standard initialization key generated: <span className="font-black underline decoration-2 decoration-amber-500 underline-offset-4">
+                        hms@{
+                          formData.role === 'Lab Scientist' ? 'lab' : 
+                          formData.role === 'Pharmacist' ? 'pharmacy' : 
+                          formData.role === 'Radiologist' ? 'radiology' : 
+                          formData.role.toLowerCase().replace(' ', '')
+                        }
+                      </span>. Cipher rotation mandatory on primary uplink.
                     </p>
                   </div>
                 </div>

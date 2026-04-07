@@ -319,7 +319,7 @@ export default function BillingList() {
                   </td>
                   <td className="px-6 py-5">
                     <div className="flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300 scale-90 group-hover:scale-100">
-                      {!item.bill ? (
+                      {!item.bill && (user?.role === 'Admin' || user?.role === 'Receptionist') ? (
                         <button 
                           onClick={() => setGenerateModal(item)}
                           disabled={item.appointmentStatus === 'Cancelled'}
@@ -328,6 +328,8 @@ export default function BillingList() {
                           <Plus className="w-4 h-4" />
                           Finalize Bill
                         </button>
+                      ) : !item.bill ? (
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-4">Processing...</span>
                       ) : (
                         <>
                           <button 
