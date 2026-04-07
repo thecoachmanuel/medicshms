@@ -66,20 +66,17 @@ export async function GET(request: Request) {
     const { data: unbilledAppointments, error: aptError } = await aptQuery.order('created_at', { ascending: false });
     if (aptError) throw aptError;
 
-    // 4. Fetch standalone Lab Requests that aren't billed yet
-    const billedRequestIds = (allBills || [])
-      .filter(b => b.clinical_request_id) // We'll assume clinical_request_id is in bills or notes
-      .map(b => b.clinical_request_id); 
-    
-    // Wait, we don't have clinical_request_id in bills yet in the schema?
-    // Actually, we use payment_status = 'Billed' in clinical_requests.
+    // Get IDs of lab requests that are already linked to bills to be safe
+    const billedRequestIds = (allBills || []).map(b => b.clinical_request_id).filter(Boolean);
+
     const { data: unbilledLabRequests } = await (supabaseAdmin || supabase)
       .from('clinical_requests')
       .select('*, patient:patients!patient_id(full_name, patient_id, gender, date_of_birth)')
       .eq('hospital_id', userProfile?.hospital_id)
       .eq('type', 'Laboratory')
       .eq('payment_status', 'Pending')
-      .is('appointment_id', null) // Only standalone ones to avoid duplicates with appointments
+      .is('appointment_id', null)
+      .not('id', 'in', `(${billedRequestIds.length > 0 ? billedRequestIds.join(',') : '00000000-0000-0000-0000-000000000000'})`)
       .order('requested_at', { ascending: false });
 
     // 5. Transform Bills into the View Schema (Use patientMap)

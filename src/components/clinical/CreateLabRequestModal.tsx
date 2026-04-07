@@ -193,8 +193,9 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
       setSelectedPatient(newPatient);
       toast.success('Patient enrolled successfully');
       setStage('Configure');
-    } catch (error) {
-      toast.error('Enrollment failed');
+    } catch (error: any) {
+      const msg = error.response?.data?.message || error.message || 'Enrollment failed';
+      toast.error(`Enrollment failed: ${msg}`);
     } finally {
       setLoading(false);
     }

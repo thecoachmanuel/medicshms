@@ -151,7 +151,7 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
               <div class="section-title">Invoice Details</div>
               <div style="font-weight: 800; font-size: 16px;">#${bill.billNumber}</div>
               <div style="font-size: 13px; color: #4b5563; margin-top: 4px;">Date: ${new Date(bill.createdAt).toLocaleDateString('en-NG', { dateStyle: 'long' })}</div>
-              <div style="font-size: 13px; color: #4b5563;">Appt ID: #${bill.appointmentId}</div>
+              <div style="font-size: 13px; color: #4b5563;">Ref ID: #${bill.appointmentId}</div>
               ${bill.paymentReference ? `<div style="font-size: 11px; color: #6b7280; font-weight: 800; margin-top: 5px;">REF: ${bill.paymentReference}</div>` : ''}
             </div>
           </div>

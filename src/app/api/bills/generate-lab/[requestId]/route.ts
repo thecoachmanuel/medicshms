@@ -43,6 +43,12 @@ export async function POST(
       }]
     });
 
+    // 2. Update the source request status to Billed to prevent duplicates
+    await client
+      .from('clinical_requests')
+      .update({ payment_status: 'Billed' })
+      .eq('id', requestId);
+
     return NextResponse.json({ 
       success: true, 
       message: 'Invoice generated successfully',

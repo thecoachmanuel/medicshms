@@ -107,7 +107,7 @@ export default function EditInvoiceModal({ billId, appointment, onClose, onUpdat
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">Edit Invoice</h2>
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{bill.billNumber} • {appointment.fullName}</p>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{bill?.billNumber} • {bill?.fullName || appointment?.fullName}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-white rounded-xl transition-colors">

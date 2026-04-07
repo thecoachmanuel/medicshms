@@ -394,20 +394,6 @@ export default function LabRequestsPage() {
                               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-100/50 text-[10px] font-black uppercase tracking-wider">
                                 UNPAID
                               </span>
-                              <button 
-                                onClick={() => {
-                                  if (req.bill_id) {
-                                    setShowInvoiceId(req.bill_id);
-                                    setShowInvoiceAppointment(req.patient);
-                                  } else {
-                                    handleGenerateBill(req);
-                                  }
-                                }}
-                                className="p-1.5 hover:bg-white rounded-lg transition-all text-gray-400 hover:text-blue-600 hover:shadow-sm border border-transparent hover:border-gray-100"
-                                title={req.bill_id ? "Update Payment" : "Generate Invoice"}
-                              >
-                                {req.bill_id ? <Download className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
-                              </button>
                             </div>
                           )}
                           {req.test_price > 0 && (

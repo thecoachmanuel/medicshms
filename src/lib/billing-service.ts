@@ -68,13 +68,16 @@ export const BillingService = {
     const subtotal = finalizedServices.reduce((sum, s) => sum + s.total, 0);
     const totalAmount = Math.max(0, subtotal - discount + roundOff);
 
-    // 2. Generate specialized invoice numbers
+    // 2. Generate specialized invoice numbers with prefix
     const prefix = sourceType === 'Laboratory' ? 'INV-LAB' :
                    sourceType === 'Radiology' ? 'INV-RAD' :
                    sourceType === 'Appointment' ? 'INV-APT' : 'INV-GEN';
-    
-    // We append a timestamp slice for uniqueness in high-concurrency environments
-    const billNumber = `${prefix}-${Date.now().toString().slice(-8)}`;
+
+    // We use a robust format: [Prefix]-[YYMMDD]-[8-char-RandomSuffix] for high collision resistance
+    const dateStr = new Date().toISOString().slice(2, 10).replace(/-/g, '');
+    const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase() + 
+                         Math.random().toString(36).substring(2, 6).toUpperCase();
+    const billNumber = `${prefix}-${dateStr}-${randomSuffix}`;
 
     // 3. Fetch generating staff signature if available
     let signatureKey = '';
