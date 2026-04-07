@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, Search, User, Plus, 
-  AlertCircle, Loader2 
+  AlertCircle, Loader2, TestTubes, CheckCircle 
 } from 'lucide-react';
-import { labAPI, patientsAPI } from '@/lib/api';
+import { labAPI, patientsAPI, servicesAPI } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
 import { clsx, type ClassValue } from 'clsx';

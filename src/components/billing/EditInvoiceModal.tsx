@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  X, Plus, Trash2, Loader2, Save
+  X, Plus, Trash2, Loader2, Save, Edit2
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { billingAPI } from '@/lib/api';
