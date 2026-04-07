@@ -10,6 +10,7 @@ export interface BillingServiceOptions {
     id: string;
     name: string;
     price: number;
+    amount?: number;
     quantity: number;
     total: number;
   }>;
@@ -30,7 +31,7 @@ export const BillingService = {
   async generateAutoInvoice(options: BillingServiceOptions) {
     const { 
       hospitalId, patientId, services, sourceType, sourceId, 
-      userProfile, discount = 0, roundOff = 0, notes, doctorId,
+      userProfile, discount = 0, roundOff = 0, notes,
       appointmentId
     } = options;
 

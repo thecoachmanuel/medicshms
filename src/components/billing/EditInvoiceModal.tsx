@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  X, Edit2, Plus, Trash2, Loader2, Save, 
-  AlertCircle 
+  X, Plus, Trash2, Loader2, Save
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { billingAPI } from '@/lib/api';
