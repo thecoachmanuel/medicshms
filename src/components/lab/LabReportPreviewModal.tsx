@@ -122,6 +122,7 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
             th { text-align: left; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; padding: 8px 10px; border-bottom: 1px solid #e2e8f0; }
             td { padding: 10px; font-size: 12px; border-bottom: 1px solid #f1f5f9; color: #334155; }
             .font-bold { font-weight: 700; }
+            .font-black { font-weight: 900; }
             .text-critical { color: #e11d48; font-weight: 800; }
             .notes-section { font-size: 11px; line-height: 1.6; color: #475569; padding: 15px; background: #fff; border: 1px dashed #cbd5e1; border-radius: 8px; margin-top: 20px; }
             .footer { position: absolute; bottom: 15mm; left: 15mm; right: 15mm; border-top: 1px solid #e2e8f0; padding-top: 15px; display: flex; justify-content: space-between; align-items: flex-end; }
@@ -256,6 +257,10 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
                 <div className="demo-item">
                   <span className="demo-label">Patient ID</span>
                   <span className="demo-value">#{patient.patient_id || 'N/A'}</span>
+                </div>
+                <div className="demo-item">
+                  <span className="demo-label">Performing Unit</span>
+                  <span className="demo-value font-black text-hospital uppercase">{requests[0]?.unit?.name || 'Main Laboratory'}</span>
                 </div>
                 <div className="demo-item">
                   <span className="demo-label">Requesting Physician</span>

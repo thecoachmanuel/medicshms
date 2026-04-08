@@ -59,6 +59,22 @@ export const BillingService = {
         .eq('payment_status', 'Pending')
         .maybeSingle();
       existingBill = found;
+    } else if (sourceType === 'Laboratory' || sourceType === 'Radiology' || sourceType === 'Pharmacy') {
+      // SMART CONSOLIDATION: Find recent standalone bill for same patient to group tests/services together
+      // This ensures that multiple tests created in the same session appear on one invoice
+      const fiveMinutesAgo = new Date(Date.now() - 300 * 1000).toISOString();
+      const { data: recentBill } = await client
+        .from('bills')
+        .select('*')
+        .eq('patient_id', patientId)
+        .eq('payment_status', 'Pending')
+        .is('public_appointment_id', null)
+        .gt('created_at', fiveMinutesAgo)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      existingBill = recentBill;
     }
 
     // 1. Prepare/Append Services

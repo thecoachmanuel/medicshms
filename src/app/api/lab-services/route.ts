@@ -80,6 +80,26 @@ export async function POST(request: Request) {
       }
     }
 
+    // AUTO-INDEXING: If this is a new test with a valid price, save it to the catalog for future use
+    if (final_price > 0 && final_service_id === 'manual') {
+      try {
+        const { data: newCatItem } = await supabaseClient
+          .from('lab_test_catalog')
+          .insert([{
+            hospital_id: profile?.hospital_id,
+            test_name: test_name,
+            price: final_price,
+            unit_id: unit_id || null,
+            is_auto_created: true
+          }])
+          .select()
+          .single();
+        if (newCatItem) final_service_id = newCatItem.id;
+      } catch (catError) {
+        console.error('[Auto-Indexing Failed]:', catError);
+      }
+    }
+
     const insertData: any = {
       hospital_id: profile?.hospital_id,
       patient_id,
@@ -105,7 +125,7 @@ export async function POST(request: Request) {
 
     // Add financial metadata if provided
     if (final_price > 0) insertData.test_price = final_price;
-    if (final_service_id !== 'manual') insertData.service_id = final_service_id;
+    if (final_service_id && final_service_id !== 'manual') insertData.service_id = final_service_id;
 
     const { data, error } = await supabaseClient
       .from('clinical_requests')

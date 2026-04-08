@@ -100,6 +100,42 @@ export async function GET(request: Request) {
               total: req.test_price || 0
             }]
           });
+
+          // Fallback: If price is STILL 0, try to pull from Test Catalog to fix clinical history
+          if (newBill && newBill.total_amount <= 0 && req.test_name) {
+             const { data: cat } = await (supabaseAdmin || supabase)
+               .from('lab_test_catalog')
+               .select('price, id')
+               .eq('hospital_id', userProfile?.hospital_id)
+               .eq('test_name', req.test_name)
+               .maybeSingle();
+             
+             if (cat?.price > 0) {
+                const updatedPrice = cat.price;
+                const { data: updatedBill } = await (supabaseAdmin || supabase)
+                   .from('bills')
+                   .update({
+                      subtotal: updatedPrice,
+                      total_amount: updatedPrice,
+                      due_amount: updatedPrice,
+                      services: [{
+                        id: req.service_id || 'manual',
+                        name: req.test_name,
+                        price: updatedPrice,
+                        quantity: 1,
+                        total: updatedPrice
+                      }]
+                   })
+                   .eq('id', newBill.id)
+                   .select()
+                   .single();
+                
+                if (updatedBill) {
+                   // Replace the bill in our local variable for this render
+                   Object.assign(newBill, updatedBill);
+                }
+             }
+          }
           if (newBill) {
              // Fake append it to allBills so it renders in this cycle
              fetchedAllBills.unshift({

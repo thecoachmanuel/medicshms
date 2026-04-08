@@ -424,7 +424,11 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
             </div>
             <div>
               <h2 className="text-2xl font-black text-gray-900 tracking-tight">Diagnostic Workspace</h2>
-              <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mt-0.5">Clinical Protocol Entry • Analysis in Progress</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Clinical Protocol Entry</p>
+                <div className="w-1 h-1 rounded-full bg-gray-300" />
+                <p className="text-[10px] text-indigo-600 font-black uppercase tracking-[0.2em]">{request.unit?.name || 'Main Laboratory'}</p>
+              </div>
             </div>
             <button 
               onClick={() => setShowLibrary(!showLibrary)}
