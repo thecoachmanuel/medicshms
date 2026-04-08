@@ -39,7 +39,7 @@ export async function GET(request: Request) {
       const { data: patients, error: pError } = await (supabaseAdmin || supabase)
         .from('patients')
         .select('full_name, patient_id, id, gender, date_of_birth')
-        .or(`id.in.(${uniquePatientIds.join(',')}),patient_id.in.(${uniquePatientIds.join(',')})`);
+        .or(`id.in.("${uniquePatientIds.join('","')}"),patient_id.in.("${uniquePatientIds.join('","')}")`);
       
       if (!pError && patients) {
         patients.forEach(p => {
@@ -104,6 +104,7 @@ export async function GET(request: Request) {
              // Fake append it to allBills so it renders in this cycle
              fetchedAllBills.unshift({
                ...newBill,
+               clinical_request_id: req.id, // Crucial for filtering unbilled entries below
                appointment: null // No appointment for pure lab
              });
              healedCount++;

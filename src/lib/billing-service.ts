@@ -41,7 +41,7 @@ export const BillingService = {
     if (sourceType === 'Laboratory' || sourceType === 'Radiology' || sourceType === 'Pharmacy') {
       const { data: existingReqBill } = await client
         .from('bills')
-        .select('id')
+        .select('*')
         .eq('clinical_request_id', sourceId)
         .maybeSingle();
       
