@@ -139,7 +139,7 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
             <div>
               <div class="section-title">Patient Details</div>
               <div style="font-weight: 800; font-size: 18px;">${bill.fullName}</div>
-              <div style="font-size: 13px; color: #4b5563; margin-top: 4px;">ID: #${bill.patientId}</div>
+              <div style="font-size: 13px; color: #4b5563; margin-top: 4px;">ID: ${bill.patientId}</div>
               <div style="font-size: 13px; color: #4b5563;">${bill.gender} | ${bill.age} Years</div>
               <div style="font-size: 12px; color: #6b7280; margin-top: 8px; font-weight: 600;">
                 <span style="display: block;">📞 ${bill.phone}</span>
@@ -273,7 +273,7 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
                 <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Patient Details</h3>
                 <div className="space-y-1">
                   <p className="text-base font-bold text-gray-900">{bill.fullName}</p>
-                  <p className="text-xs text-gray-500 font-medium">PID: #{bill.patientId}</p>
+                  <p className="text-xs text-gray-500 font-medium">PID: {bill.patientId}</p>
                   <p className="text-xs text-gray-500 font-medium">{bill.gender} | {bill.age} Years</p>
                 </div>
               </div>

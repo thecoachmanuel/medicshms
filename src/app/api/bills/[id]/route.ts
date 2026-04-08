@@ -69,7 +69,7 @@ export async function GET(
       transactionId: bill.transaction_id,
       // Comprehensive Patient Details
       fullName: bill.public_appointments?.full_name || patientData?.full_name || 'Individual Patient',
-      patientId: bill.public_appointments?.patient_id || bill.patient_id || 'N/A',
+      patientId: bill.public_appointments?.patient_id || patientData?.patient_id || bill.patient_id || 'N/A',
       appointmentId: bill.public_appointments?.appointment_id || 'STANDALONE',
       gender: bill.public_appointments?.gender || patientData?.gender || 'N/A',
       age: bill.public_appointments?.age || calculateAge(patientData?.date_of_birth),
@@ -156,6 +156,10 @@ export async function PUT(
     // Use explicit status override if provided, otherwise auto-calculate
     if (paymentStatus) {
       updateData.payment_status = paymentStatus;
+      if (paymentStatus === 'Paid') {
+        updateData.paid_amount = totalAmount;
+        updateData.due_amount = 0;
+      }
     } else {
       if (currentPaid <= 0) {
         updateData.payment_status = 'Pending';

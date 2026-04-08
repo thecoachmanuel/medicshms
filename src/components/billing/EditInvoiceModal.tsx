@@ -194,6 +194,11 @@ export default function EditInvoiceModal({ billId, appointment, onClose, onUpdat
                   <option value="Paid">Paid (Full Settlement)</option>
                   <option value="Cancelled">Cancelled (Invalidate Bill)</option>
                 </select>
+                {paymentStatus === 'Paid' && (
+                  <p className="text-[10px] text-emerald-600 font-bold mt-2 animate-pulse pl-1">
+                    ✨ Full Settlement: System will automatically record ₦{total.toLocaleString()} as paid.
+                  </p>
+                )}
               </div>
             </div>
 
