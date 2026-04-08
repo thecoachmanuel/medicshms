@@ -189,7 +189,18 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
     try {
       const res = await patientsAPI.create(enrollData) as any;
       const newPatient = res.data || res;
-      setSelectedPatient(newPatient);
+      
+      // Explicitly wait to properly load the full patient details from the database
+      // before opening the stage two modal to select the test.
+      let fullPatient = newPatient;
+      try {
+        const fullPatientRes = await patientsAPI.getById(newPatient.id || newPatient._id) as any;
+        fullPatient = fullPatientRes.data || fullPatientRes;
+      } catch (err) {
+        console.error("Failed to fetch full patient details, using created object fallback", err);
+      }
+
+      setSelectedPatient(fullPatient);
       toast.success('Patient enrolled successfully');
       setStage('Configure');
     } catch (error: any) {
@@ -496,12 +507,22 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Priority & Specimen</label>
                   <div className="flex p-1 bg-gray-50 rounded-2xl border border-gray-100">
-                    {(['Routine', 'Urgent', 'Stat'] as const).map(p => (
-                      <button key={p} onClick={() => setRequestData({...requestData, priority: p})} type="button" 
-                        className={cn("flex-1 py-3 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all", requestData.priority === p ? "bg-gray-900 text-white shadow-xl" : "text-gray-400 hover:text-gray-600")}>
-                        {p}
-                      </button>
-                    ))}
+                    {(['Routine', 'Urgent', 'Stat'] as const).map(p => {
+                      const isActive = requestData.priority === p;
+                      let activeClass = "bg-gray-900 text-white shadow-xl";
+                      if (isActive) {
+                        if (p === 'Routine') activeClass = "bg-emerald-500 text-white shadow-emerald-500/30 shadow-lg";
+                        else if (p === 'Urgent') activeClass = "bg-amber-500 text-white shadow-amber-500/30 shadow-lg";
+                        else if (p === 'Stat') activeClass = "bg-red-500 text-white shadow-red-500/30 shadow-lg";
+                      }
+                      
+                      return (
+                        <button key={p} onClick={() => setRequestData({...requestData, priority: p})} type="button" 
+                          className={cn("flex-1 py-3 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all", isActive ? activeClass : "text-gray-400 hover:text-gray-600")}>
+                          {p}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
                 <div className="space-y-2">
