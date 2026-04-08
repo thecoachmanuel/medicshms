@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
+import { BillingService } from '@/lib/billing-service';
 
 export async function GET(request: Request) {
   try {
@@ -78,8 +79,53 @@ export async function GET(request: Request) {
       .is('appointment_id', null)
       .order('requested_at', { ascending: false });
 
+    // AUTO-HEAL: If any lab requests are found unbilled, convert them to bills immediately so they show up perfectly
+    let fetchedAllBills = allBills || [];
+    if (unbilledLabRequests && unbilledLabRequests.length > 0) {
+      let healedCount = 0;
+      for (const req of unbilledLabRequests) {
+        try {
+          const newBill = await BillingService.generateAutoInvoice({
+            hospitalId: userProfile?.hospital_id as string,
+            patientId: req.patient_id,
+            sourceType: 'Laboratory',
+            sourceId: req.id,
+            appointmentId: undefined,
+            userProfile,
+            services: [{
+              id: req.service_id || 'manual',
+              name: req.test_name || 'Lab Test',
+              price: req.test_price || 0,
+              quantity: 1,
+              total: req.test_price || 0
+            }]
+          });
+          if (newBill) {
+             // Fake append it to allBills so it renders in this cycle
+             fetchedAllBills.unshift({
+               ...newBill,
+               appointment: null // No appointment for pure lab
+             });
+             healedCount++;
+          }
+        } catch (e) {
+          console.error("Auto-heal lab bill failed", e);
+        }
+      }
+      
+      if (healedCount > 0) {
+         // Also append patients to patientMap if needed
+         unbilledLabRequests.forEach(req => {
+            if (req.patient) {
+               patientMap[req.patient_id] = req.patient;
+               patientMap[req.patient?.patient_id] = req.patient;
+            }
+         });
+      }
+    }
+
     // 5. Transform Bills into the View Schema (Use patientMap)
-    const billEntries = (allBills || []).map(bill => {
+    const billEntries = fetchedAllBills.map(bill => {
       const apt = bill.appointment;
       const patient = patientMap[bill.patient_id];
       return {
@@ -128,11 +174,11 @@ export async function GET(request: Request) {
       bill: null
     }));
 
-    // 7. Transform Unbilled Lab Requests
-    const unbilledLabEntries = (unbilledLabRequests || []).map(req => ({
+    // 7. Transform Unbilled Lab Requests (These should mostly be 0 now due to auto-heal)
+    const unbilledLabEntries = (unbilledLabRequests || []).filter(r => !fetchedAllBills.find(b => b.clinical_request_id === r.id)).map(req => ({
       _id: req.id,
       fullName: req.patient?.full_name || 'Individual Patient',
-      patientId: req.patient_id,
+      patientId: req.patient?.patient_id || req.patient_id,
       appointmentId: 'STANDALONE',
       appointmentDate: req.requested_at,
       appointmentTime: '',
