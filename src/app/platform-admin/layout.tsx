@@ -6,6 +6,12 @@ import { useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/admin/Sidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { isPlatformAdmin } from '@/lib/auth-helpers';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export default function PlatformAdminLayout({
   children,
@@ -13,6 +19,22 @@ export default function PlatformAdminLayout({
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  useEffect(() => {
+    const savedState = localStorage.getItem('hms_sidebar_collapsed');
+    if (savedState !== null) {
+      setIsCollapsed(savedState === 'true');
+    }
+  }, []);
+
+  const toggleCollapse = () => {
+    setIsCollapsed(prev => {
+      const newVal = !prev;
+      localStorage.setItem('hms_sidebar_collapsed', String(newVal));
+      return newVal;
+    });
+  };
   const { user, loading } = useAuth();
   const router = useRouter();
 
@@ -44,9 +66,17 @@ export default function PlatformAdminLayout({
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <Sidebar isOpen={sidebarOpen} toggleSidebar={() => setSidebarOpen(false)} />
+      <Sidebar 
+        isOpen={sidebarOpen} 
+        toggleSidebar={() => setSidebarOpen(false)} 
+        isCollapsed={isCollapsed}
+        toggleCollapse={toggleCollapse}
+      />
       
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-64">
+      <div className={cn(
+        "flex-1 flex flex-col min-w-0 transition-all duration-300",
+        isCollapsed ? "lg:ml-20" : "lg:ml-64"
+      )}>
         <AdminHeader toggleSidebar={() => setSidebarOpen(true)} />
         
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">

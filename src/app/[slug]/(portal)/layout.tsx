@@ -7,6 +7,12 @@ import Link from 'next/link';
 import { Sidebar } from '@/components/admin/Sidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { useSiteSettings } from '@/context/SettingsContext';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export default function PortalLayout({
   children,
@@ -20,6 +26,22 @@ export default function PortalLayout({
 
   const { settings, loading: settingsLoading, slug } = useSiteSettings();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  useEffect(() => {
+    const savedState = localStorage.getItem('hms_sidebar_collapsed');
+    if (savedState !== null) {
+      setIsCollapsed(savedState === 'true');
+    }
+  }, []);
+
+  const toggleCollapse = () => {
+    setIsCollapsed(prev => {
+      const newVal = !prev;
+      localStorage.setItem('hms_sidebar_collapsed', String(newVal));
+      return newVal;
+    });
+  };
   const { user, loading: authLoading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -123,9 +145,17 @@ export default function PortalLayout({
 
   return (
     <div className="flex h-screen bg-slate-50/50 overflow-hidden">
-      <Sidebar isOpen={sidebarOpen} toggleSidebar={() => setSidebarOpen(false)} />
+      <Sidebar 
+        isOpen={sidebarOpen} 
+        toggleSidebar={() => setSidebarOpen(false)} 
+        isCollapsed={isCollapsed}
+        toggleCollapse={toggleCollapse}
+      />
       
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-64 relative z-40">
+      <div className={cn(
+        "flex-1 flex flex-col min-w-0 relative z-40 transition-all duration-300",
+        isCollapsed ? "lg:ml-20" : "lg:ml-64"
+      )}>
         <div className="absolute top-0 right-0 w-1/3 h-1/4 bg-primary-600/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
         <AdminHeader toggleSidebar={() => setSidebarOpen(true)} />
         

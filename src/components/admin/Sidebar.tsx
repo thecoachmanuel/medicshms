@@ -46,11 +46,13 @@ function cn(...inputs: ClassValue[]) {
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
+  isCollapsed?: boolean;
+  toggleCollapse?: () => void;
 }
 
 import HospitalLogo from '../common/HospitalLogo';
 
-export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
+export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleCollapse }: SidebarProps) => {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -158,30 +160,39 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
       )}
 
       <aside className={cn(
-        "fixed top-0 left-0 h-full bg-white border-r border-gray-200 transition-transform duration-300 w-64 flex flex-col",
-        isOpen ? "translate-x-0 z-[200]" : "-translate-x-full lg:translate-x-0 z-30"
+        "fixed top-0 left-0 h-full bg-white border-r border-gray-200 transition-all duration-300 flex flex-col",
+        isOpen ? "translate-x-0 z-[200]" : "-translate-x-full lg:translate-x-0 z-30",
+        isCollapsed ? "w-20" : "w-64"
       )}>
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <Link href={slug ? `/${slug}` : "/"} className="hover:opacity-80 transition-opacity">
-            <HospitalLogo slug={slug} iconClassName="w-8 h-8" textClassName="text-lg" />
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 min-h-[73px]">
+          <Link href={slug ? `/${slug}` : "/"} className={cn("hover:opacity-80 transition-opacity flex items-center h-full", isCollapsed && "justify-center w-full")}>
+            <HospitalLogo slug={slug} iconClassName="w-8 h-8" textClassName={cn("text-lg", isCollapsed && "hidden")} />
           </Link>
-          <button onClick={toggleSidebar} className="lg:hidden text-gray-500 hover:text-gray-900 transition-colors">
-            <X className="w-6 h-6" />
-          </button>
+          {!isCollapsed && (
+            <button onClick={toggleSidebar} className="lg:hidden text-gray-500 hover:text-gray-900 transition-colors shrink-0">
+              <X className="w-6 h-6" />
+            </button>
+          )}
         </div>
 
-        <div className="p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search"
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            />
-          </div>
+        <div className={cn("p-4 transition-all duration-300", isCollapsed && "px-2 py-4")}>
+          {isCollapsed ? (
+            <div className="flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer" onClick={toggleCollapse} title="Expand Search">
+              <Search className="w-5 h-5 text-gray-400" />
+            </div>
+          ) : (
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search"
+                className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              />
+            </div>
+          )}
         </div>
 
-        <nav className="flex-1 px-4 py-2 overflow-y-auto space-y-1">
+        <nav className={cn("flex-1 py-2 overflow-y-auto space-y-1 no-scrollbar", isCollapsed ? "px-2" : "px-4")}>
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname.startsWith(item.path);
@@ -189,15 +200,17 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
               <Link
                 key={item.path + item.label}
                 href={item.path}
+                title={isCollapsed ? item.label : undefined}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors cursor-pointer",
+                  "flex items-center rounded-lg transition-all duration-300 cursor-pointer overflow-hidden",
+                  isCollapsed ? "justify-center p-3" : "px-4 py-2.5 gap-3",
                   isActive 
                     ? "bg-secondary-900 text-white shadow-lg shadow-secondary-900/10" 
                     : "text-gray-700 hover:bg-secondary-50 hover:text-secondary-600"
                 )}
               >
-                <Icon className="w-5 h-5" />
-                <span className="text-sm font-medium">{item.label}</span>
+                <Icon className={cn("shrink-0 transition-all", isCollapsed ? "w-6 h-6" : "w-5 h-5")} />
+                {!isCollapsed && <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>}
               </Link>
             );
           })}
@@ -205,37 +218,55 @@ export const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
 
         <div className="p-4 border-t border-gray-200">
           <div
-            className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-all"
-            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className={cn("flex items-center p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-all", isCollapsed ? "justify-center" : "gap-3")}
+            onClick={() => {
+              if (isCollapsed && toggleCollapse) toggleCollapse();
+              else setShowProfileMenu(!showProfileMenu);
+            }}
+            title={isCollapsed ? "View Profile" : undefined}
           >
-            <div className="w-10 h-10 bg-secondary-100 rounded-full flex items-center justify-center overflow-hidden">
+            <div className="w-10 h-10 shrink-0 bg-secondary-100 rounded-full flex items-center justify-center overflow-hidden">
               {user?.profilePhoto ? (
                 <img src={user.profilePhoto} alt={user.name} className="w-full h-full object-cover" />
               ) : (
                 <User className="w-5 h-5 text-secondary-600" />
               )}
             </div>
-            <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium text-gray-900 truncate">{user?.name || 'User'}</p>
-              <p className="text-xs text-gray-500 truncate">{user?.email || 'user@hospital.com'}</p>
-            </div>
-            <ChevronDown className={cn("w-4 h-4 text-gray-400 transition-transform", showProfileMenu && "rotate-180")} />
+            {!isCollapsed && (
+              <>
+                <div className="flex-1 overflow-hidden transition-all duration-300">
+                  <p className="text-sm font-medium text-gray-900 truncate">{user?.name || 'User'}</p>
+                  <p className="text-xs text-gray-500 truncate">{user?.email || 'user@hospital.com'}</p>
+                </div>
+                <ChevronDown className={cn("w-4 h-4 text-gray-400 transition-transform shrink-0", showProfileMenu && "rotate-180")} />
+              </>
+            )}
           </div>
 
           <div className={cn(
             "overflow-hidden transition-all duration-300",
-            showProfileMenu ? "max-h-32 opacity-100 mt-2" : "max-h-0 opacity-0"
+            (showProfileMenu && !isCollapsed) ? "max-h-32 opacity-100 mt-2" : "max-h-0 opacity-0 hidden"
           )}>
             <div className="space-y-1">
               <button
                 onClick={() => logout()}
-                className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-red-50 rounded-lg transition-colors text-left"
+                className="w-full flex items-center justify-start gap-3 px-4 py-2.5 hover:bg-red-50 rounded-lg transition-colors text-left"
               >
-                <LogOut className="w-4 h-4 text-red-500" />
+                <LogOut className="w-4 h-4 text-red-500 shrink-0" />
                 <span className="text-sm font-medium text-red-600">Logout</span>
               </button>
             </div>
           </div>
+          
+          {toggleCollapse && (
+            <button 
+              onClick={toggleCollapse} 
+              className="mt-4 hidden lg:flex items-center justify-center w-full py-2 hover:bg-gray-50 text-gray-400 hover:text-gray-700 rounded-lg transition-colors border border-gray-100"
+              title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+               <ChevronDown className={cn("w-4 h-4 transition-transform duration-300", isCollapsed ? "-rotate-90" : "rotate-90")} />
+            </button>
+          )}
         </div>
       </aside>
     </>
