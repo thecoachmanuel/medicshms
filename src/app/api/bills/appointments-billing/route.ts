@@ -110,7 +110,7 @@ export async function GET(request: Request) {
                .eq('test_name', req.test_name)
                .maybeSingle();
              
-             if (cat?.price > 0) {
+             if (cat && cat.price > 0) {
                 const updatedPrice = cat.price;
                 const { data: updatedBill } = await (supabaseAdmin || supabase)
                    .from('bills')
