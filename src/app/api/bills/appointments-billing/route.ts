@@ -76,7 +76,7 @@ export async function GET(request: Request) {
       .eq('hospital_id', userProfile?.hospital_id)
       .eq('type', 'Laboratory')
       .eq('payment_status', 'Pending')
-      .is('appointment_id', null)
+      .is('bill_id', null)
       .order('requested_at', { ascending: false });
 
     // AUTO-HEAL: If any lab requests are found unbilled, convert them to bills immediately so they show up perfectly
@@ -212,7 +212,7 @@ export async function GET(request: Request) {
     }));
 
     // 7. Transform Unbilled Lab Requests (These should mostly be 0 now due to auto-heal)
-    const unbilledLabEntries = (unbilledLabRequests || []).filter(r => !fetchedAllBills.find(b => b.clinical_request_id === r.id)).map(req => ({
+    const unbilledLabEntries = (unbilledLabRequests || []).filter(r => !r.bill_id && !fetchedAllBills.find(b => b.clinical_request_id === r.id || b.id === r.bill_id)).map(req => ({
       _id: req.id,
       fullName: req.patient?.full_name || 'Individual Patient',
       patientId: req.patient?.patient_id || req.patient_id,

@@ -263,20 +263,19 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
         }
       }
 
-      const promises = selectedTests.map(async (test) => {
-        return labAPI.createRequest({
-          patient_id: patientId,
-          test_name: test.test_name,
-          test_price: test.test_price,
-          unit_id: test.unit_id,
-          patient_age: pAge,
-          patient_gender: pGender,
-          ...requestData,
-          specimen_type: isCustomSpecimen ? customSpecimen : requestData.specimen_type
-        });
+      await labAPI.createRequest({
+        patient_id: patientId,
+        patient_age: pAge,
+        patient_gender: pGender,
+        ...requestData,
+        specimen_type: isCustomSpecimen ? customSpecimen : requestData.specimen_type,
+        tests: selectedTests.map(t => ({
+          test_name: t.test_name,
+          test_price: t.test_price,
+          unit_id: t.unit_id,
+          service_id: t.service_id
+        }))
       });
-
-      const results = await Promise.all(promises);
       
       toast.success('Job Authorized & Invoiced Successfully');
       onSuccess?.();

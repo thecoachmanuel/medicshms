@@ -57,108 +57,146 @@ export async function POST(request: Request) {
   if (authError || !supabaseClient) return authError;
 
   try {
+    const body = await request.json();
     const { 
       patient_id, appointment_id, doctor_id, test_name, clinical_notes, 
       test_price, service_id, unit_id, specimen_type, priority, 
-      patient_preparation, collection_instructions 
-    } = await request.json();
+      patient_preparation, collection_instructions,
+      tests // Array of { test_name, test_price, unit_id, service_id }
+    } = body;
 
-    let final_price = test_price ? Number(test_price) : 0;
-    let final_service_id = service_id || 'manual';
-
-    if (!final_price && test_name) {
-      const { data: catalogItem } = await supabaseClient
-        .from('lab_test_catalog')
-        .select('price, id')
-        .eq('hospital_id', profile?.hospital_id)
-        .eq('test_name', test_name)
-        .maybeSingle();
-      
-      if (catalogItem && catalogItem.price) {
-        final_price = catalogItem.price;
-        if (!service_id) final_service_id = catalogItem.id;
-      }
-    }
-
-    // AUTO-INDEXING: If this is a new test with a valid price, save it to the catalog for future use
-    if (final_price > 0 && final_service_id === 'manual') {
-      try {
-        const { data: newCatItem } = await supabaseClient
-          .from('lab_test_catalog')
-          .insert([{
-            hospital_id: profile?.hospital_id,
-            test_name: test_name,
-            price: final_price,
-            unit_id: unit_id || null,
-            is_auto_created: true
-          }])
-          .select()
-          .single();
-        if (newCatItem) final_service_id = newCatItem.id;
-      } catch (catError) {
-        console.error('[Auto-Indexing Failed]:', catError);
-      }
-    }
-
-    const insertData: any = {
-      hospital_id: profile?.hospital_id,
-      patient_id,
-      appointment_id: appointment_id || null,
-      doctor_id: doctor_id || null,
-      type: 'Laboratory',
+    // Standardize tests into an array
+    const testBatch = tests && Array.isArray(tests) ? tests : [{
       test_name,
+      test_price,
+      service_id,
+      unit_id,
       clinical_notes,
-      status: 'Pending',
-      payment_status: 'Pending',
-      unit_id: unit_id || null,
-      specimen_type: specimen_type || 'Venous Blood',
-      priority: priority || 'Routine',
-      patient_preparation: patient_preparation || null,
-      collection_instructions: collection_instructions || null,
-      lab_number: `${(test_name || 'LAB').substring(0, 3).toUpperCase()}${Math.floor(100000 + Math.random() * 900000)}`
-    };
+      specimen_type,
+      priority,
+      patient_preparation,
+      collection_instructions
+    }].filter(t => t.test_name);
 
-    // If a scientist/staff is creating it, we can pre-assign themselves
-    if (profile.role === 'Lab Scientist') {
-      insertData.handled_by = profile.id;
+    if (testBatch.length === 0) {
+      return NextResponse.json({ message: 'No tests provided' }, { status: 400 });
     }
 
-    // Add financial metadata if provided
-    if (final_price > 0) insertData.test_price = final_price;
-    if (final_service_id && final_service_id !== 'manual') insertData.service_id = final_service_id;
+    const createdRequests = [];
+    const billingServices = [];
 
-    const { data, error } = await supabaseClient
-      .from('clinical_requests')
-      .insert([insertData])
-      .select()
-      .single();
+    for (const test of testBatch) {
+      let final_price = test.test_price ? Number(test.test_price) : 0;
+      let final_service_id = test.service_id || 'manual';
 
-    if (error) throw error;
+      // 1. Auto-lookup price if missing
+      if (!final_price && test.test_name) {
+        const { data: catalogItem } = await supabaseClient
+          .from('lab_test_catalog')
+          .select('price, id')
+          .eq('hospital_id', profile?.hospital_id)
+          .eq('test_name', test.test_name)
+          .maybeSingle();
+        
+        if (catalogItem && catalogItem.price) {
+          final_price = catalogItem.price;
+          if (final_service_id === 'manual') final_service_id = catalogItem.id;
+        }
+      }
 
-    // AUTOMATED BILLING Integration
-    if (data) {
+      // 2. Auto-indexing for manual/new entries
+      if (final_price > 0 && final_service_id === 'manual') {
+        try {
+          const { data: newCatItem } = await supabaseClient
+            .from('lab_test_catalog')
+            .upsert([{
+              hospital_id: profile?.hospital_id,
+              test_name: test.test_name,
+              price: final_price,
+              unit_id: test.unit_id || null,
+              is_auto_created: true
+            }], { onConflict: 'hospital_id,test_name' })
+            .select()
+            .single();
+          if (newCatItem) final_service_id = newCatItem.id;
+        } catch (catError) {
+          console.error('[Auto-Indexing Failed]:', catError);
+        }
+      }
+
+      const insertData: any = {
+        hospital_id: profile?.hospital_id,
+        patient_id,
+        appointment_id: appointment_id || null,
+        doctor_id: doctor_id || null,
+        type: 'Laboratory',
+        test_name: test.test_name,
+        clinical_notes: test.clinical_notes || clinical_notes,
+        status: 'Pending',
+        payment_status: 'Pending',
+        unit_id: test.unit_id || unit_id || null,
+        specimen_type: test.specimen_type || specimen_type || 'Venous Blood',
+        priority: test.priority || priority || 'Routine',
+        patient_preparation: test.patient_preparation || patient_preparation || null,
+        collection_instructions: test.collection_instructions || collection_instructions || null,
+        lab_number: test.lab_number || `${(test.test_name || 'LAB').substring(0, 3).toUpperCase()}${Math.floor(100000 + Math.random() * 900000)}`,
+        test_price: final_price,
+        service_id: final_service_id
+      };
+
+      if (profile.role === 'Lab Scientist') {
+        insertData.handled_by = profile.id;
+      }
+
+      const { data, error } = await supabaseClient
+        .from('clinical_requests')
+        .insert([insertData])
+        .select()
+        .single();
+
+      if (error) throw error;
+      createdRequests.push(data);
+      
+      billingServices.push({
+        id: final_service_id,
+        name: test.test_name,
+        price: final_price,
+        quantity: 1,
+        total: final_price,
+        source_id: data.id // Internal ref for linkage after bill is created
+      });
+    }
+
+    // 3. ATOMIC CONSOLIDATED BILLING
+    if (billingServices.length > 0) {
       try {
-        await BillingService.generateAutoInvoice({
+        const finalBill = await BillingService.generateAutoInvoice({
           hospitalId: profile?.hospital_id,
           patientId: patient_id,
           sourceType: 'Laboratory',
-          sourceId: data.id,
+          sourceId: createdRequests[0].id, // Primary tag
           appointmentId: appointment_id,
           userProfile: profile,
-          services: [{
-            id: final_service_id,
-            name: test_name,
-            price: final_price,
-            quantity: 1,
-            total: final_price
-          }]
+          services: billingServices
         });
+
+        if (finalBill) {
+          // Stamp ALL clinical requests with the bill_id for perfect linkage
+          await supabaseClient
+            .from('clinical_requests')
+            .update({ bill_id: finalBill.id, payment_status: 'Billed' })
+            .in('id', createdRequests.map(r => r.id));
+        }
       } catch (billingError) {
-        console.error('[Auto-Billing Failed] Lab Service:', billingError);
+        console.error('[Batch Auto-Billing Failed]:', billingError);
       }
     }
 
-    return NextResponse.json(data, { status: 201 });
+    return NextResponse.json({ 
+      success: true, 
+      requests: createdRequests,
+      message: `${createdRequests.length} tests initialized and invoiced successfully`
+    }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

@@ -309,7 +309,7 @@ export const labAPI = {
   getRequests: (params?: any) => api.get<APIResponse<any[]>>('/lab-services', { params }),
   createRequest: (data: {
     patient_id: string;
-    test_name: string;
+    test_name?: string;
     service_id?: string;
     unit_id?: string;
     test_price?: number;
@@ -322,6 +322,12 @@ export const labAPI = {
     requested_by_name?: string;
     patient_age?: string;
     patient_gender?: string;
+    tests?: Array<{
+      test_name: string;
+      test_price: number;
+      unit_id?: string;
+      service_id?: string;
+    }>;
   }) => api.post<APIResponse<any>>('/lab-services', data),
   updateResult: (data: { 
     request_id: string; 
