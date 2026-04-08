@@ -85,6 +85,11 @@ export async function GET(request: Request) {
       let healedCount = 0;
       for (const req of unbilledLabRequests) {
         try {
+          // If the request already has a bill_id, skip it (it will be caught by the filter below)
+          if (req.bill_id) continue;
+
+          console.log(`[Auto-Heal] Healing unbilled lab request: ${req.test_name} for ${req.patient?.full_name}`);
+          
           const newBill = await BillingService.generateAutoInvoice({
             hospitalId: userProfile?.hospital_id as string,
             patientId: req.patient_id,
@@ -137,16 +142,21 @@ export async function GET(request: Request) {
              }
           }
           if (newBill) {
-             // Fake append it to allBills so it renders in this cycle
-             fetchedAllBills.unshift({
-               ...newBill,
-               clinical_request_id: req.id, // Crucial for filtering unbilled entries below
-               appointment: null // No appointment for pure lab
-             });
+             // UPDATE LOCAL OBJECT: This is crucial for the transformation step below
+             req.bill_id = newBill.id;
              healedCount++;
+
+             // Check if this bill is already in fetchedAllBills (to avoid duplicates from consolidation)
+             if (!fetchedAllBills.find(b => b.id === newBill.id)) {
+                fetchedAllBills.unshift({
+                  ...newBill,
+                  clinical_request_id: req.id,
+                  appointment: null 
+                });
+             }
           }
         } catch (e) {
-          console.error("Auto-heal lab bill failed", e);
+          console.error(`[Auto-Heal Failed] Lab Request ${req.id}:`, e);
         }
       }
       
@@ -212,7 +222,16 @@ export async function GET(request: Request) {
     }));
 
     // 7. Transform Unbilled Lab Requests (These should mostly be 0 now due to auto-heal)
-    const unbilledLabEntries = (unbilledLabRequests || []).filter(r => !r.bill_id && !fetchedAllBills.find(b => b.clinical_request_id === r.id || b.id === r.bill_id)).map(req => ({
+    const unbilledLabEntries = (unbilledLabRequests || []).filter(r => {
+      // Robust exclusion: if it has a bill_id, or if we found a bill pointing to it
+      if (r.bill_id) return false;
+      const foundInBills = fetchedAllBills.find(b => 
+        b.id === r.bill_id || 
+        b.clinical_request_id === r.id ||
+        (b.services && Array.isArray(b.services) && b.services.some((s: any) => s.source_id === r.id))
+      );
+      return !foundInBills;
+    }).map(req => ({
       _id: req.id,
       fullName: req.patient?.full_name || 'Individual Patient',
       patientId: req.patient?.patient_id || req.patient_id,
