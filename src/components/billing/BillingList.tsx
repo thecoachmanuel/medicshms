@@ -283,10 +283,21 @@ export default function BillingList() {
                         </div>
                       ) : (
                         <div className="space-y-1.5">
-                          <span className="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em] bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-100/30">
-                            Awaiting Billing
-                          </span>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">{item.department}</p>
+                          {item.testName ? (
+                            <>
+                              <span className="px-3 py-1.5 bg-amber-50 text-amber-600 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] border border-amber-100 shadow-sm">
+                                {item.testName}
+                              </span>
+                              <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest ml-1">PENDING FINALIZATION</p>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em] bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-100/30">
+                                Awaiting Billing
+                              </span>
+                              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">{item.department}</p>
+                            </>
+                          )}
                         </div>
                       )}
                     </td>
@@ -295,6 +306,11 @@ export default function BillingList() {
                       <div className="space-y-1.5">
                         <p className="text-sm font-black text-gray-900 tracking-tight">₦{item.bill.totalAmount.toLocaleString('en-NG')}</p>
                         <p className="text-[10px] text-emerald-600 font-black uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-md inline-block border border-emerald-100/50">Rec: ₦{item.bill.paidAmount.toLocaleString('en-NG')}</p>
+                      </div>
+                    ) : item.testPrice ? (
+                      <div className="space-y-1.5">
+                        <p className="text-sm font-black text-gray-400 tracking-tight">₦{(item.testPrice || 0).toLocaleString('en-NG')}</p>
+                        <p className="text-[8px] text-orange-600 font-black uppercase tracking-widest bg-orange-50 px-2 py-0.5 rounded-md inline-block border border-orange-100/50">Catalog Fee</p>
                       </div>
                     ) : '-'}
                   </td>

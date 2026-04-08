@@ -242,7 +242,9 @@ export async function GET(request: Request) {
       gender: req.patient?.gender || '',
       age: 0,
       doctorName: req.requested_by_name || 'Direct Request',
-      appointmentStatus: 'Billed (Diagnostic)',
+      appointmentStatus: 'Pending Billing',
+      testName: req.test_name,
+      testPrice: req.test_price,
       bill: null
     }));
 
