@@ -63,6 +63,23 @@ export async function POST(request: Request) {
       patient_preparation, collection_instructions 
     } = await request.json();
 
+    let final_price = test_price ? Number(test_price) : 0;
+    let final_service_id = service_id || 'manual';
+
+    if (!final_price && test_name) {
+      const { data: catalogItem } = await supabaseClient
+        .from('lab_test_catalog')
+        .select('price, id')
+        .eq('hospital_id', profile?.hospital_id)
+        .eq('test_name', test_name)
+        .maybeSingle();
+      
+      if (catalogItem && catalogItem.price) {
+        final_price = catalogItem.price;
+        if (!service_id) final_service_id = catalogItem.id;
+      }
+    }
+
     const insertData: any = {
       hospital_id: profile?.hospital_id,
       patient_id,
@@ -87,8 +104,8 @@ export async function POST(request: Request) {
     }
 
     // Add financial metadata if provided
-    if (test_price) insertData.test_price = test_price;
-    if (service_id) insertData.service_id = service_id;
+    if (final_price > 0) insertData.test_price = final_price;
+    if (final_service_id !== 'manual') insertData.service_id = final_service_id;
 
     const { data, error } = await supabaseClient
       .from('clinical_requests')
@@ -99,7 +116,7 @@ export async function POST(request: Request) {
     if (error) throw error;
 
     // AUTOMATED BILLING Integration
-    if (test_price && test_price > 0 && data) {
+    if (data) {
       try {
         await BillingService.generateAutoInvoice({
           hospitalId: profile?.hospital_id,
@@ -109,11 +126,11 @@ export async function POST(request: Request) {
           appointmentId: appointment_id,
           userProfile: profile,
           services: [{
-            id: service_id || 'manual',
+            id: final_service_id,
             name: test_name,
-            price: Number(test_price),
+            price: final_price,
             quantity: 1,
-            total: Number(test_price)
+            total: final_price
           }]
         });
       } catch (billingError) {
