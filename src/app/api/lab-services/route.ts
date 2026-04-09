@@ -33,6 +33,9 @@ export async function GET(request: Request) {
           role,
           staff_record:lab_scientists!user_id(
             dept:departments!department_id(name)
+          ),
+          assignments:lab_unit_assignments!scientist_id(
+            unit:lab_units!unit_id(name)
           )
         ),
         unit:lab_units!unit_id(name)

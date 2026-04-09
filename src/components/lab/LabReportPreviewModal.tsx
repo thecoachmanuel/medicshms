@@ -261,9 +261,10 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
                 <div className="demo-item">
                   <span className="demo-label">Department</span>
                   <span className="demo-value font-black text-hospital uppercase">
-                    {requests[0]?.handled_by_profile?.staff_record?.[0]?.dept?.name || 
+                    {requests[0]?.handled_by_profile?.assignments?.[0]?.unit?.name ||
+                     requests[0]?.handled_by_profile?.staff_record?.[0]?.dept?.name || 
                      requests[0]?.unit?.name || 
-                     (requests[0]?.handled_by_profile?.role === 'Doctor' ? 'Clinical Department' : 'Main Laboratory')}
+                     'Laboratory Department'}
                   </span>
                 </div>
                 <div className="demo-item">
