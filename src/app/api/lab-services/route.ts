@@ -83,31 +83,50 @@ export async function POST(request: Request) {
     }
 
     const createdRequests = [];
-    const billingServices = [];
+    const billingServices: any[] = [];
 
     for (const test of testBatch) {
       let final_price = test.test_price ? Number(test.test_price) : 0;
-      let final_service_id = test.service_id || 'manual';
+      let final_service_id: string | null = (test.service_id && test.service_id !== 'manual') ? test.service_id : null;
 
-      // 1. Auto-lookup price if missing
-      if (!final_price && test.test_name) {
-        const { data: catalogItem } = await supabaseClient
-          .from('lab_test_catalog')
-          .select('price, id')
+      // 1. SYNC WITH MASTER SERVICES (Billing Catalog)
+      // This ensures we have a valid entry for clinical_requests.service_id FK check
+      if (test.test_name) {
+        const { data: existingService } = await supabaseClient
+          .from('services')
+          .select('id, price')
           .eq('hospital_id', profile?.hospital_id)
-          .eq('test_name', test.test_name)
+          .eq('name', test.test_name)
           .maybeSingle();
-        
-        if (catalogItem && catalogItem.price) {
-          final_price = catalogItem.price;
-          if (final_service_id === 'manual') final_service_id = catalogItem.id;
+
+        if (existingService) {
+          final_service_id = existingService.id;
+          if (!final_price) final_price = Number(existingService.price || 0);
+        } else if (final_price > 0) {
+          // Auto-index into master services if it doesn't exist
+          try {
+            const { data: newService } = await supabaseClient
+              .from('services')
+              .insert([{
+                hospital_id: profile?.hospital_id,
+                name: test.test_name,
+                price: final_price,
+                category: 'Laboratory',
+                is_active: true
+              }])
+              .select()
+              .single();
+            if (newService) final_service_id = newService.id;
+          } catch (svcError) {
+            console.error('[Services Auto-Index Failed]:', svcError);
+          }
         }
       }
 
-      // 2. Auto-indexing for manual/new entries
-      if (final_price > 0 && final_service_id === 'manual') {
+      // 2. PARALLEL SYNC: Lab Specialized Catalog (Technical/Scientific Specs)
+      if (test.test_name && final_price > 0) {
         try {
-          const { data: newCatItem } = await supabaseClient
+          await supabaseClient
             .from('lab_test_catalog')
             .upsert([{
               hospital_id: profile?.hospital_id,
@@ -115,12 +134,9 @@ export async function POST(request: Request) {
               price: final_price,
               unit_id: test.unit_id || null,
               is_auto_created: true
-            }], { onConflict: 'hospital_id,test_name' })
-            .select()
-            .single();
-          if (newCatItem) final_service_id = newCatItem.id;
+            }], { onConflict: 'hospital_id,test_name' });
         } catch (catError) {
-          console.error('[Auto-Indexing Failed]:', catError);
+          console.error('[Lab Catalog Sync Skip]:', catError);
         }
       }
 
@@ -141,7 +157,7 @@ export async function POST(request: Request) {
         collection_instructions: test.collection_instructions || collection_instructions || null,
         lab_number: test.lab_number || `${(test.test_name || 'LAB').substring(0, 3).toUpperCase()}${Math.floor(100000 + Math.random() * 900000)}`,
         test_price: final_price,
-        service_id: final_service_id
+        service_id: final_service_id || null // MUST BE VALID UUID OR NULL
       };
 
       if (profile.role === 'Lab Scientist') {
@@ -158,7 +174,7 @@ export async function POST(request: Request) {
       createdRequests.push(data);
       
       billingServices.push({
-        id: final_service_id,
+        id: final_service_id || 'manual',
         name: test.test_name,
         price: final_price,
         quantity: 1,
