@@ -259,7 +259,7 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
                   <span className="demo-value">#{patient.patient_id || 'N/A'}</span>
                 </div>
                 <div className="demo-item">
-                  <span className="demo-label">Performing Unit</span>
+                  <span className="demo-label">Department</span>
                   <span className="demo-value font-black text-hospital uppercase">{requests[0]?.unit?.name || 'Main Laboratory'}</span>
                 </div>
                 <div className="demo-item">
@@ -313,7 +313,10 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
               })}
 
               <div className="footer">
-                <div className="text-[9px] text-gray-400 max-w-[350px]"></div>
+                <div className="signature-box">
+                  <div className="signature-line"></div>
+                  <div className="signature-text">Departmental Head</div>
+                </div>
                 <div className="signature-box">
                   <div className="signature-line"></div>
                   <div className="signature-text">Authorized Scientist</div>
