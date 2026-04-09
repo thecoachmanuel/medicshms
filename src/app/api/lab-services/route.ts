@@ -246,28 +246,22 @@ export async function PUT(request: Request) {
     // 1. Capture Scientist's Department (Unit) for reporting accuracy
     const isScientist = profile?.role === 'Lab Scientist' || profile?.role === 'Clinical Scientist';
     if (isScientist) {
-      // Priority 1: Check unit assignments (Personnel Mapping)
-      const { data: assignment } = await supabaseClient
+      // Priority 1: Check unit assignments (Personnel Mapping - References lab_units)
+      const { data: assignment, error: assignError } = await supabaseClient
         .from('lab_unit_assignments')
         .select('unit_id')
         .eq('scientist_id', profile.id)
         .limit(1)
         .maybeSingle();
       
+      if (assignError) console.error('Assignment lookup error:', assignError);
+      
       if (assignment?.unit_id) {
         updateData.unit_id = assignment.unit_id;
-      } else {
-        // Priority 2: Check primary department in staff record
-        const { data: staffRecord } = await supabaseClient
-          .from('lab_scientists')
-          .select('department_id')
-          .eq('user_id', profile.id)
-          .maybeSingle();
-        
-        if (staffRecord?.department_id) {
-          updateData.unit_id = staffRecord.department_id;
-        }
       }
+      // Note: We skip Priority 2 (staffRecord.department_id) because it references the 'departments' table,
+      // which is incompatible with clinical_requests.unit_id foreign key (references 'lab_units').
+      // The frontend will resolve the department name via the handled_by profile join instead.
     }
 
     if (status) updateData.status = status;

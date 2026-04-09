@@ -31,7 +31,7 @@ interface TemplateField {
 interface DiagnosticTemplate {
   id: string;
   name: string;
-  unit: 'Haematology' | 'Biochemistry' | 'Microbiology' | 'Serology' | 'Endocrinology';
+  unit: 'Haematology' | 'Chemical Pathology' | 'Microbiology' | 'Serology' | 'Endocrinology';
   fields: TemplateField[];
 }
 
@@ -74,7 +74,7 @@ const TEMPLATES: DiagnosticTemplate[] = [
   {
     id: 'lft',
     name: 'Liver Function Test (LFT)',
-    unit: 'Biochemistry',
+    unit: 'Chemical Pathology',
     fields: [
       { label: 'Total Bilirubin', unit: 'mg/dL', referenceRange: '0.3 - 1.2', type: 'number' },
       { label: 'Conjugated Bilirubin', unit: 'mg/dL', referenceRange: '0.0 - 0.3', type: 'number' },
@@ -88,7 +88,7 @@ const TEMPLATES: DiagnosticTemplate[] = [
   {
     id: 'kft',
     name: 'Renal / Kidney Function (KFT)',
-    unit: 'Biochemistry',
+    unit: 'Chemical Pathology',
     fields: [
       { label: 'Urea', unit: 'mmol/L', referenceRange: '2.5 - 7.1', type: 'number' },
       { label: 'Creatinine', unit: 'μmol/L', referenceRange: '62 - 106 (M), 44 - 80 (F)', type: 'number' },
@@ -124,7 +124,7 @@ const TEMPLATES: DiagnosticTemplate[] = [
   {
     id: 'lipid',
     name: 'Lipid Profile',
-    unit: 'Biochemistry',
+    unit: 'Chemical Pathology',
     fields: [
       { label: 'Total Cholesterol', unit: 'mg/dL', referenceRange: '< 200' },
       { label: 'Triglycerides', unit: 'mg/dL', referenceRange: '< 150' },
@@ -135,7 +135,7 @@ const TEMPLATES: DiagnosticTemplate[] = [
   {
     id: 'electrolytes',
     name: 'Electrolytes (U&E)',
-    unit: 'Biochemistry',
+    unit: 'Chemical Pathology',
     fields: [
       { label: 'Sodium (Na+)', unit: 'mmol/L', referenceRange: '135 - 145', type: 'number' },
       { label: 'Potassium (K+)', unit: 'mmol/L', referenceRange: '3.5 - 5.1', type: 'number' },
@@ -471,31 +471,58 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                   />
                 </div>
               </div>
-                           <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4">
-                {/* Unified Search Results */}
-                <div>
-                  {[...TEMPLATES, ...catalog]
-                    .filter(t => (t.name || t.test_name)?.toLowerCase().includes(searchTerm.toLowerCase()))
-                    .map(t => (
-                    <button 
-                      key={t.id}
-                      onClick={() => handleApplyTemplate(t)}
-                      className={cn(
-                        "w-full text-left px-4 py-3 rounded-xl text-[10px] font-bold transition-all border truncate cursor-pointer mb-1.5",
-                        selectedTemplate?.id === t.id ? "bg-indigo-600 text-white border-indigo-700 shadow-md" : "bg-white text-gray-600 hover:bg-white hover:border-indigo-200 border-transparent"
-                      )}
-                      title={t.name || t.test_name}
-                    >
-                      <div className="flex flex-col">
-                        <span className="truncate">{t.name || t.test_name}</span>
-                        <span className={cn(
-                          "text-[8px] font-black uppercase tracking-tighter mt-0.5",
-                          selectedTemplate?.id === t.id ? "text-indigo-200" : "text-gray-300"
-                        )}>
-                          {t.unit || t.unit?.name || 'General'}
-                        </span>
+                           <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                {/* Unified Search Results Grouped by Unit */}
+                <div className="space-y-6">
+                  {Object.entries(
+                    [...TEMPLATES, ...catalog]
+                      .filter(t => (t.name || t.test_name)?.toLowerCase().includes(searchTerm.toLowerCase()))
+                      .reduce((acc: any, t) => {
+                        const unitName = (typeof t.unit === 'string' ? t.unit : t.unit?.name) || 'General';
+                        const normalizedUnit = unitName === 'Biochemistry' ? 'Chemical Pathology' : unitName;
+                        if (!acc[normalizedUnit]) acc[normalizedUnit] = [];
+                        
+                        // Prevent duplicates based on name/test_name
+                        const name = (t.name || t.test_name);
+                        if (!acc[normalizedUnit].find((existing: any) => (existing.name || existing.test_name) === name)) {
+                          acc[normalizedUnit].push(t);
+                        }
+                        return acc;
+                      }, {})
+                  ).map(([unit, tests]: [string, any]) => (
+                    <div key={unit}>
+                      <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <Database className="w-3 h-3" />
+                        {unit}
+                        <span className="text-[8px] font-bold text-gray-300 ml-1">({tests.length})</span>
+                        <span className="h-px flex-1 bg-gray-100 ml-2" />
+                      </p>
+                      <div className="space-y-1.5">
+                        {tests.map((t: any) => (
+                          <button 
+                            key={t.id}
+                            onClick={() => handleApplyTemplate(t)}
+                            className={cn(
+                              "w-full text-left px-4 py-3 rounded-xl text-[10px] font-bold transition-all border truncate cursor-pointer",
+                              selectedTemplate?.id === t.id ? "bg-indigo-600 text-white border-indigo-700 shadow-md" : "bg-white text-gray-600 hover:bg-white hover:border-indigo-200 border-transparent shadow-sm hover:shadow-md"
+                            )}
+                            title={t.name || t.test_name}
+                          >
+                            <div className="flex flex-col">
+                              <span className="truncate">{t.name || t.test_name}</span>
+                              {t.price && (
+                                <span className={cn(
+                                  "text-[8px] font-black uppercase tracking-tighter mt-0.5",
+                                  selectedTemplate?.id === t.id ? "text-indigo-200" : "text-emerald-500"
+                                )}>
+                                  ₦{(t.price || 0).toLocaleString()}
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        ))}
                       </div>
-                    </button>
+                    </div>
                   ))}
                 </div>
               </div>
