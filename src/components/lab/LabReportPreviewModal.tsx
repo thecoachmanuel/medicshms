@@ -84,311 +84,54 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
           <title>Laboratory Report - ${requests[0]?.patient?.full_name || 'Patient'}</title>
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
-            @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
-            
             body { 
               font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; 
               padding: 0; 
               margin: 0; 
               color: #0f172a; 
-              background: #f1f5f9;
+              background: white;
             }
             .page {
               width: 210mm;
               min-height: 297mm;
-              padding: 18mm;
-              margin: 20px auto;
+              padding: 15mm;
+              margin: 0 auto;
               background: white;
               box-sizing: border-box;
               position: relative;
-              box-shadow: 0 0 40px rgba(0,0,0,0.05);
+              border: 1px solid #eee;
             }
             @page { size: A4; margin: 0; }
             @media print {
-              body { background: white; }
-              .page { margin: 0; box-shadow: none; width: 100%; min-height: 100%; padding: 12mm; }
+              body { background: none; }
+              .page { margin: 0; border: none; border-radius: 0; width: 100%; min-height: 100%; padding: 10mm; }
             }
-
-            /* Security Pattern Background */
-            .page::before {
-              content: "";
-              position: absolute;
-              top: 0; left: 0; right: 0; bottom: 0;
-              background-image: radial-gradient(#e2e8f0 0.5px, transparent 0.5px);
-              background-size: 20px 20px;
-              opacity: 0.15;
-              pointer-events: none;
-            }
-
-            /* Header Section */
-            .header {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              margin-bottom: 40px;
-              position: relative;
-              z-index: 1;
-            }
-            .hospital-branding {
-              display: flex;
-              align-items: center;
-              gap: 20px;
-            }
-            .hospital-logo {
-              height: 56px;
-              width: auto;
-              object-fit: contain;
-            }
-            .branding-divider {
-              width: 2px;
-              height: 50px;
-              background: ${settings.primary_color || '#4f46e5'}20;
-            }
-            .hospital-info h1 {
-              font-size: 18px;
-              font-weight: 900;
-              margin: 0;
-              text-transform: uppercase;
-              letter-spacing: -0.02em;
-              color: #1e293b;
-            }
-            .hospital-info p {
-              font-size: 10px;
-              color: #64748b;
-              margin: 2px 0;
-              font-weight: 600;
-            }
-
-            .report-meta {
-              text-align: right;
-            }
-            .accession-box {
-              background: #f8fafc;
-              border: 1px solid #e2e8f0;
-              padding: 10px 15px;
-              border-radius: 12px;
-              display: inline-block;
-            }
-            .accession-label {
-              font-size: 8px;
-              font-weight: 800;
-              color: #94a3b8;
-              text-transform: uppercase;
-              letter-spacing: 0.15em;
-              margin-bottom: 4px;
-            }
-            .accession-number {
-              font-family: 'JetBrains Mono', monospace;
-              font-size: 14px;
-              font-weight: 700;
-              color: ${settings.primary_color || '#1e293b'};
-            }
-
-            /* Patient Identity Card */
-            .patient-card {
-              display: grid;
-              grid-template-columns: repeat(4, 1fr);
-              gap: 24px;
-              background: #f8fafc;
-              padding: 24px;
-              border-radius: 16px;
-              margin-bottom: 40px;
-              border: 1px solid #e2e8f0;
-              position: relative;
-            }
-            .patient-card::after {
-              content: "CONFIDENTIAL";
-              position: absolute;
-              bottom: 8px; right: 12px;
-              font-size: 8px;
-              font-weight: 900;
-              color: #e2e8f0;
-              letter-spacing: 0.2em;
-            }
-            .demo-item {
-              display: flex;
-              flex-direction: column;
-              gap: 4px;
-            }
-            .demo-label {
-              font-size: 8px;
-              font-weight: 900;
-              color: #94a3b8;
-              text-transform: uppercase;
-              letter-spacing: 0.1em;
-            }
-            .demo-value {
-              font-size: 11px;
-              font-weight: 700;
-              color: #1e293b;
-            }
-            .demo-value.highlight {
-              color: ${settings.primary_color || '#4f46e5'};
-              font-weight: 800;
-            }
-
-            /* Test Results Section */
-            .test-entry {
-              margin-bottom: 40px;
-              position: relative;
-            }
-            .test-title {
-              display: flex;
-              align-items: center;
-              gap: 12px;
-              margin-bottom: 16px;
-            }
-            .test-title .index {
-              background: #1e293b;
-              color: white;
-              width: 24px;
-              height: 24px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              border-radius: 6px;
-              font-size: 10px;
-              font-weight: 900;
-            }
-            .test-title h3 {
-              font-size: 14px;
-              font-weight: 950;
-              text-transform: uppercase;
-              margin: 0;
-              color: #1e293b;
-              letter-spacing: 0.02em;
-            }
-
-            table {
-              width: 100%;
-              border-collapse: separate;
-              border-spacing: 0 8px;
-              margin-bottom: 20px;
-            }
-            th {
-              text-align: left;
-              font-size: 9px;
-              font-weight: 800;
-              color: #94a3b8;
-              text-transform: uppercase;
-              padding: 0 12px 8px;
-              border-bottom: 2px solid #f1f5f9;
-            }
-            td {
-              padding: 12px;
-              font-size: 11px;
-              background: #fff;
-              border-top: 1px solid #f1f5f9;
-              border-bottom: 1px solid #f1f5f9;
-            }
-            td:first-child { border-left: 1px solid #f1f5f9; border-radius: 8px 0 0 8px; }
-            td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 8px 8px 0; }
-            
-            .metric-name { font-weight: 700; color: #334155; }
-            .metric-value { 
-              font-family: 'JetBrains Mono', monospace;
-              font-weight: 800; 
-              font-size: 12px;
-              color: #0f172a; 
-            }
-            .metric-unit { font-weight: 600; color: #64748b; font-size: 10px; }
-            .metric-range { font-size: 9px; color: #94a3b8; font-style: italic; }
-            
-            .critical-row td { background: #fff1f2; border-color: #fecdd3; }
-            .critical-row .metric-value { color: #e11d48; }
-
-            .impressions {
-              background: white;
-              border: 1px solid #e2e8f0;
-              border-radius: 12px;
-              padding: 16px;
-              margin-top: 12px;
-            }
-            .impressions-label {
-              font-size: 9px;
-              font-weight: 900;
-              color: #94a3b8;
-              text-transform: uppercase;
-              margin-bottom: 8px;
-              display: flex;
-              align-items: center;
-              gap: 8px;
-            }
-            .impressions-label::after {
-              content: "";
-              flex: 1;
-              height: 1px;
-              background: #f1f5f9;
-            }
-            .impressions-content {
-              font-size: 10px;
-              line-height: 1.6;
-              color: #475569;
-              white-space: pre-wrap;
-            }
-
-            /* Footer & Signatures */
-            .footer {
-              position: absolute;
-              bottom: 18mm;
-              left: 18mm;
-              right: 18mm;
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-end;
-              padding-top: 32px;
-              border-top: 1px solid #f1f5f9;
-            }
-            .qr-placeholder {
-              width: 80px;
-              height: 80px;
-              background: #f8fafc;
-              border: 1px solid #e2e8f0;
-              padding: 8px;
-              border-radius: 8px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-            }
-            .signature-area {
-              display: flex;
-              gap: 48px;
-            }
-            .signature-block {
-              text-align: center;
-              width: 160px;
-            }
-            .signature-line {
-              height: 1px;
-              background: #cbd5e1;
-              margin-bottom: 8px;
-            }
-            .signature-label {
-              font-size: 8px;
-              font-weight: 800;
-              color: #94a3b8;
-              text-transform: uppercase;
-              letter-spacing: 0.1em;
-            }
-            .scientist-name {
-              font-size: 10px;
-              font-weight: 900;
-              color: #1e293b;
-              margin-top: 4px;
-              text-transform: uppercase;
-            }
-            .watermark {
-              position: fixed;
-              top: 50%; left: 50%;
-              transform: translate(-50%, -50%) rotate(-45deg);
-              font-size: 120px;
-              font-weight: 950;
-              color: rgba(241, 245, 249, 0.4);
-              letter-spacing: -0.05em;
-              pointer-events: none;
-              text-transform: uppercase;
-              z-index: -1;
-            }
+            .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid ${settings.primary_color || '#000'}; padding-bottom: 15px; margin-bottom: 25px; }
+            .hospital-logo { height: 60px; object-fit: contain; margin-bottom: 10px; }
+            .hospital-info h1 { font-size: 22px; font-weight: 900; margin: 0; text-transform: uppercase; color: #1e293b; }
+            .hospital-info p { font-size: 11px; color: #64748b; margin: 2px 0; font-weight: 500; }
+            .report-type { text-align: center; margin-bottom: 25px; }
+            .report-type h2 { font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; background: ${settings.primary_color || '#f8fafc'}08; color: ${settings.primary_color || '#1e293b'}; display: inline-block; padding: 6px 20px; border: 1px solid ${settings.primary_color || '#e2e8f0'}30; border-radius: 6px; }
+            .demographics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #e2e8f0; }
+            .demo-item { display: flex; flex-direction: column; }
+            .demo-label { font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px; }
+            .demo-value { font-size: 12px; font-weight: 700; color: #1e293b; }
+            .test-group { margin-bottom: 30px; }
+            .test-header { background: ${settings.primary_color || '#1e293b'}; color: white; padding: 6px 15px; border-radius: 4px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+            th { text-align: left; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; padding: 8px 10px; border-bottom: 1px solid #e2e8f0; }
+            td { padding: 10px; font-size: 12px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+            .font-bold { font-weight: 700; }
+            .font-black { font-weight: 900; }
+            .text-critical { color: #e11d48; font-weight: 800; }
+            .notes-section { font-size: 11px; line-height: 1.6; color: #475569; padding: 15px; background: #fff; border: 1px dashed #cbd5e1; border-radius: 8px; margin-top: 20px; }
+            .footer { position: absolute; bottom: 15mm; left: 15mm; right: 15mm; border-top: 1px solid #e2e8f0; padding-top: 15px; display: flex; justify-content: space-between; align-items: flex-end; }
+            @media print { .footer { bottom: 10mm; left: 10mm; right: 10mm; } }
+            .signature-box { text-align: center; width: 180px; }
+            .signature-line { border-top: 1px solid ${settings.primary_color || '#94a3b8'}50; margin-bottom: 5px; }
+            .signature-text { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+            .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 100px; font-weight: 950; color: rgba(241, 245, 249, 0.5); pointer-events: none; z-index: -1; }
+            .text-hospital { color: ${settings.primary_color || '#1e293b'}; }
           </style>
         </head>
         <body>
@@ -396,7 +139,7 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
           <script>
             window.onload = () => {
               window.print();
-              setTimeout(() => window.close(), 500);
+              window.close();
             }
           </script>
         </body>
@@ -425,22 +168,17 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-gray-950/40 backdrop-blur-md cursor-pointer" onClick={onClose}></div>
-      <div className="relative bg-[#f8fafc] rounded-[3rem] w-full max-w-5xl shadow-[0_32px_128px_rgba(30,41,59,0.2)] overflow-hidden border border-white/50 animate-in zoom-in-95 duration-300 max-h-[96vh] flex flex-col">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-[2.5rem] w-full max-w-[210mm] max-h-[95vh] flex flex-col shadow-2xl overflow-hidden border border-gray-100">
         
-        {/* Modern Modal Header */}
-        <div className="px-10 py-8 flex justify-between items-center bg-white border-b border-gray-100 shrink-0">
-          <div className="flex items-center gap-5">
-            <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100 shadow-sm">
-              <Microscope className="w-7 h-7 text-indigo-600" />
+        <div className="flex justify-between items-center px-10 py-6 border-b border-gray-100 shrink-0 bg-white">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100">
+              <FileText className="w-5 h-5 text-indigo-600" />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-gray-900 tracking-tight">Report Intelligence</h2>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-100">Authenticated</span>
-                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Diagnostic Reference • {requests.length} Test(s)</span>
-              </div>
+              <h2 className="text-xl font-black text-gray-900 tracking-tight">Report Intelligence</h2>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">A4 Clinical Preview • {requests.length} Test(s)</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -448,77 +186,81 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
               onClick={handlePrint}
               disabled={loading}
               className={cn(
-                "flex items-center gap-3 px-8 py-4 bg-gray-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all hover:bg-indigo-600 active:scale-95 shadow-xl shadow-gray-200 cursor-pointer",
-                loading && "opacity-50 cursor-not-allowed"
+                "flex items-center gap-2 px-6 py-3 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-gray-200 cursor-pointer",
+                loading ? "bg-gray-400 cursor-not-allowed opacity-50" : "bg-gray-900 hover:bg-gray-800"
               )}
+              style={!loading && settings.primary_color ? { backgroundColor: settings.primary_color } : {}}
             >
-              <Printer className="w-5 h-5" />
-              {loading ? 'Processing...' : 'Export Certificate'}
+              <Printer className="w-4 h-4" />
+              {loading ? 'Syncing...' : 'Print Certificate'}
             </button>
             <button 
               onClick={onClose} 
-              className="p-4 hover:bg-rose-50 rounded-2xl text-gray-400 hover:text-rose-600 transition-all cursor-pointer"
+              className="p-3 hover:bg-rose-50 rounded-xl text-gray-400 hover:text-rose-600 transition-all cursor-pointer"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-12 bg-gray-50/50">
+        <div className="flex-1 overflow-y-auto p-12 bg-gray-50/50 relative">
+          {loading && (
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-md">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-12 h-12 border-4 border-gray-200 border-t-indigo-600 rounded-full animate-spin" />
+                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest animate-pulse">Syncing Clinical Branding...</p>
+              </div>
+            </div>
+          )}
           <div id="report-container" className="mx-auto">
-            <div className="page" id="report-inner">
-              <div className="watermark">Diagnostic Verified</div>
+            <div className="page bg-white shadow-sm mx-auto">
+              <div className="watermark">LAB CERTIFIED</div>
               
               <div className="header">
-                <div className="hospital-branding">
-                  {(settings.logo_url || settings.hospital_logo) ? (
-                    <img src={settings.logo_url || settings.hospital_logo} alt="Logo" className="hospital-logo" />
-                  ) : (
-                    <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center border border-gray-200">
-                      <Microscope className="w-6 h-6 text-gray-300" />
-                    </div>
+                <div className="hospital-info">
+                  {(settings.logo_url || settings.hospital_logo) && (
+                    <img src={settings.logo_url || settings.hospital_logo} alt="Hospital Logo" className="hospital-logo" />
                   )}
-                  <div className="branding-divider"></div>
-                  <div className="hospital-info">
-                    <h1>{settings.hospital_name || 'Unity Medical Center'}</h1>
-                    <p>{settings.address || 'Clinical Headquarters'}</p>
-                    <p>{settings.contact_email || 'diagnostics@hospital.com'} • {settings.contact_phone || '+234 000 000 0000'}</p>
-                  </div>
+                  <h1>{settings.hospital_name || 'Medical Diagnostic Center'}</h1>
+                  <p>{settings.address || 'Clinical Headquarters'}</p>
+                  <p>{settings.contact_email || 'diagnostics@hospital.com'} • {settings.contact_phone || '+234 000 000 0000'}</p>
+                  {settings.cin_number && <p>REG: {settings.cin_number}</p>}
                 </div>
-                
-                <div className="report-meta">
-                  <div className="accession-box">
-                    <div className="accession-label">Accession Number</div>
-                    <div className="accession-number">
-                      {(() => {
-                        const testInitial = (requests[0]?.test_name || 'LAB').substring(0, 3).toUpperCase();
-                        const uniqueId = requests[0]?.lab_number || requests[0]?.id.slice(-8).toUpperCase();
-                        return uniqueId.startsWith(testInitial) ? uniqueId : `${testInitial}${uniqueId}`;
-                      })()}
-                    </div>
+                <div className="text-right">
+                  <div className="demo-label">ACCESSION NUMBER</div>
+                  <div className="text-xl font-black" style={{ color: settings.primary_color || '#4f46e5' }}>
+                    {(() => {
+                      const testInitial = (requests[0]?.test_name || 'LAB').substring(0, 3).toUpperCase();
+                      const uniqueId = requests[0]?.lab_number || requests[0]?.id.slice(-8).toUpperCase();
+                      // If it already starts with the prefix, just use it, otherwise prepend (fallback only)
+                      return uniqueId.startsWith(testInitial) ? uniqueId : `${testInitial}${uniqueId}`;
+                    })()}
                   </div>
-                  <div className="mt-2 text-[8px] font-black text-gray-400 uppercase tracking-widest">
-                    REF: {new Date().getTime().toString(36).toUpperCase()}
-                  </div>
+                  <div className="demo-label mt-2">REPORT REFERENCE</div>
+                  <div className="font-bold text-xs uppercase">{new Date().getTime().toString(36).toUpperCase()}</div>
                 </div>
               </div>
 
-              <div className="patient-card">
+              <div className="report-type">
+                <h2>Verified Diagnostic Certificate</h2>
+              </div>
+
+              <div className="demographics">
                 <div className="demo-item">
                   <span className="demo-label">Patient Name</span>
                   <span className="demo-value uppercase">{patient.full_name || 'N/A'}</span>
-                </div>
-                <div className="demo-item">
-                  <span className="demo-label">Identity ID</span>
-                  <span className="demo-value">#{patient.patient_id || 'N/A'}</span>
                 </div>
                 <div className="demo-item">
                   <span className="demo-label">Age / Gender</span>
                   <span className="demo-value">{calculateAge(patient.date_of_birth)}Y / {patient.gender || 'N/A'}</span>
                 </div>
                 <div className="demo-item">
-                  <span className="demo-label">Clinical Dept</span>
-                  <span className="demo-value highlight uppercase">
+                  <span className="demo-label">Patient ID</span>
+                  <span className="demo-value">#{patient.patient_id || 'N/A'}</span>
+                </div>
+                <div className="demo-item">
+                  <span className="demo-label">Department</span>
+                  <span className="demo-value font-black text-hospital uppercase">
                     {(Array.isArray(requests[0]?.handled_by_profile?.assignments) ? requests[0]?.handled_by_profile?.assignments[0] : requests[0]?.handled_by_profile?.assignments)?.unit?.name ||
                      (Array.isArray(requests[0]?.handled_by_profile?.staff_record) ? requests[0]?.handled_by_profile?.staff_record[0] : requests[0]?.handled_by_profile?.staff_record)?.dept?.name || 
                      requests[0]?.unit?.name || 
@@ -526,19 +268,15 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
                   </span>
                 </div>
                 <div className="demo-item">
-                  <span className="demo-label">Referring Doctor</span>
-                  <span className="demo-value uppercase">{requests[0]?.requested_by_name || requests[0]?.doctor?.profile?.name || 'SELF-REQUEST'}</span>
+                  <span className="demo-label">Requesting Physician</span>
+                  <span className="demo-value uppercase">{requests[0]?.requested_by_name || requests[0]?.doctor?.profile?.name || ''}</span>
                 </div>
                 <div className="demo-item">
-                  <span className="demo-label">Sample Status</span>
-                  <span className="demo-value">{requests[0]?.collected_at ? 'COLLECTED' : 'NOT RECORDED'}</span>
+                  <span className="demo-label">Sample Collected</span>
+                  <span className="demo-value">{requests[0]?.collected_at ? new Date(requests[0]?.collected_at).toLocaleDateString() : 'WAITING'}</span>
                 </div>
                 <div className="demo-item">
-                  <span className="demo-label">Collection Date</span>
-                  <span className="demo-value">{requests[0]?.collected_at ? new Date(requests[0]?.collected_at).toLocaleDateString() : 'N/A'}</span>
-                </div>
-                <div className="demo-item">
-                  <span className="demo-label">Validation Date</span>
+                  <span className="demo-label">Authorized Date</span>
                   <span className="demo-value">{new Date(requests[0]?.completed_at || new Date()).toLocaleDateString()}</span>
                 </div>
               </div>
@@ -546,41 +284,33 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
               {requests.map((req, idx) => {
                 const { metrics, notes } = parseResults(req.results);
                 return (
-                  <div key={req.id} className="test-entry">
-                    <div className="test-title">
-                      <div className="index">{idx + 1}</div>
-                      <h3>{req.test_name}</h3>
-                    </div>
+                  <div key={req.id} className="test-group">
+                    <div className="test-header">{idx + 1}. {req.test_name}</div>
                     {metrics.length > 0 ? (
                       <table>
                         <thead>
-                          <tr>
-                            <th style={{ width: '40%' }}>Parameter Name</th>
-                            <th style={{ width: '20%' }}>Result</th>
-                            <th style={{ width: '15%' }}>Unit</th>
-                            <th style={{ width: '25%' }}>Biological Ref Range</th>
-                          </tr>
+                          <tr><th className="w-1/3">Parameter</th><th className="w-1/6">Result</th><th className="w-1/6">Unit</th><th>Reference Range</th></tr>
                         </thead>
                         <tbody>
                           {metrics.map((m, mIdx) => (
-                            <tr key={mIdx} className={cn(req.is_critical && mIdx === 0 && "critical-row")}>
-                              <td className="metric-name">{m.label}</td>
-                              <td className="metric-value">{m.value}</td>
-                              <td className="metric-unit">{m.unit}</td>
-                              <td className="metric-range">{m.referenceRange || 'N/A'}</td>
+                            <tr key={mIdx}>
+                              <td className="font-bold">{m.label}</td>
+                              <td className={cn("font-bold", req.is_critical && mIdx === 0 && "text-critical")}>{m.value}</td>
+                              <td>{m.unit}</td>
+                              <td className="text-[10px] text-gray-500 italic">{m.referenceRange || 'N/A'}</td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     ) : (
-                      <div className="p-8 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-center text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-4">
-                        Descriptive clinical findings provided below
+                      <div className="py-4 px-10 text-xs text-gray-500 italic border border-dashed border-gray-200 rounded-lg mb-4">
+                        See clinical interpretations below for descriptive results.
                       </div>
                     )}
                     {notes && (
-                      <div className="impressions">
-                        <div className="impressions-label">Interpretations & Morphology</div>
-                        <div className="impressions-content whitespace-pre-wrap">{notes}</div>
+                      <div className="notes-section">
+                        <div className="demo-label mb-1">Clinical Impressions & Morphology</div>
+                        <div className="whitespace-pre-wrap">{notes}</div>
                       </div>
                     )}
                   </div>
@@ -588,28 +318,14 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
               })}
 
               <div className="footer">
-                <div className="qr-placeholder">
-                  {/* Clean SVG QR Placeholder */}
-                  <svg viewBox="0 0 100 100" className="w-full h-full text-slate-200" fill="currentColor">
-                    <path d="M10,10 h30 v30 h-30 z M60,10 h30 v30 h-30 z M10,60 h30 v30 h-30 z M60,60 h10 v10 h-10 z M80,60 h10 v10 h-10 z M70,70 h10 v10 h-10 z M60,80 h10 v10 h-10 z M80,80 h10 v10 h-10 z" />
-                    <rect x="15" y="15" width="20" height="20" fill="white" />
-                    <rect x="18" y="18" width="14" height="14" fill="currentColor" />
-                    <rect x="65" y="15" width="20" height="20" fill="white" />
-                    <rect x="68" y="18" width="14" height="14" fill="currentColor" />
-                    <rect x="15" y="65" width="20" height="20" fill="white" />
-                    <rect x="18" y="68" width="14" height="14" fill="currentColor" />
-                  </svg>
+                <div className="signature-box">
+                  <div className="signature-line"></div>
+                  <div className="signature-text">Departmental Head</div>
                 </div>
-                <div className="signature-area">
-                  <div className="signature-block">
-                    <div className="signature-line"></div>
-                    <div className="signature-label">Clinical Director</div>
-                  </div>
-                  <div className="signature-block">
-                    <div className="signature-line"></div>
-                    <div className="signature-label">Authorized Scientist</div>
-                    <div className="scientist-name">{requests[0]?.handled_by_profile?.name || 'Certified Pathologist'}</div>
-                  </div>
+                <div className="signature-box">
+                  <div className="signature-line"></div>
+                  <div className="signature-text">Authorized Scientist</div>
+                  <div className="font-bold text-xs mt-1 uppercase">{requests[0]?.handled_by_profile?.name || 'Medical Scientist'}</div>
                 </div>
               </div>
 
