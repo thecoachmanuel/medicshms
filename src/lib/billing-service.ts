@@ -150,11 +150,12 @@ export const BillingService = {
     };
 
     if (appointmentId || sourceType === 'Appointment') {
-      billData.public_appointment_id = appointmentId || sourceId;
+      billData.public_appointment_id = appointmentId || existingBill?.public_appointment_id || (sourceType === 'Appointment' ? sourceId : null);
     }
     
     if (sourceType === 'Laboratory' || sourceType === 'Radiology' || sourceType === 'Pharmacy') {
-      billData.clinical_request_id = sourceId;
+      // For consolidated bills, we keep the original clinical_request_id if it exists, otherwise use current
+      billData.clinical_request_id = existingBill?.clinical_request_id || sourceId;
     }
 
     let finalBill: any = null;
@@ -164,8 +165,8 @@ export const BillingService = {
         subtotal,
         total_amount: totalAmount,
         due_amount: totalAmount - (existingBill.paid_amount || 0),
-        clinical_request_id: billData.clinical_request_id || existingBill.clinical_request_id,
-        public_appointment_id: billData.public_appointment_id || existingBill.public_appointment_id
+        clinical_request_id: billData.clinical_request_id,
+        public_appointment_id: billData.public_appointment_id
       }).eq('id', existingBill.id).select().single();
       if (updateError) throw updateError;
       finalBill = updated;
@@ -175,9 +176,12 @@ export const BillingService = {
       finalBill = created;
     }
 
-    // 5. Update source record
+    // 5. Update source record (Crucial for UI linkage)
     if (sourceType === 'Laboratory' || sourceType === 'Radiology' || sourceType === 'Pharmacy') {
-      await client.from('clinical_requests').update({ bill_id: finalBill.id, payment_status: 'Billed' }).eq('id', sourceId);
+      await client.from('clinical_requests').update({ 
+        bill_id: finalBill.id, 
+        payment_status: 'Billed' 
+      }).eq('id', sourceId);
     }
 
     return finalBill;

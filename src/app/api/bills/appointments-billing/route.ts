@@ -74,8 +74,7 @@ export async function GET(request: Request) {
       .from('clinical_requests')
       .select('*, patient:patients!patient_id(full_name, patient_id, gender, date_of_birth)')
       .eq('hospital_id', userProfile?.hospital_id)
-      .eq('type', 'Laboratory')
-      .eq('payment_status', 'Pending')
+      .in('type', ['Laboratory', 'Radiology', 'Pharmacy'])
       .is('bill_id', null)
       .order('requested_at', { ascending: false });
 
@@ -93,13 +92,13 @@ export async function GET(request: Request) {
           const newBill = await BillingService.generateAutoInvoice({
             hospitalId: userProfile?.hospital_id as string,
             patientId: req.patient_id,
-            sourceType: 'Laboratory',
+            sourceType: req.type as any,
             sourceId: req.id,
             appointmentId: undefined,
             userProfile,
             services: [{
               id: req.service_id || 'manual',
-              name: req.test_name || 'Lab Test',
+              name: req.test_name || `${req.type} Test`,
               price: req.test_price || 0,
               quantity: 1,
               total: req.test_price || 0
@@ -147,7 +146,17 @@ export async function GET(request: Request) {
              healedCount++;
 
              // Check if this bill is already in fetchedAllBills (to avoid duplicates from consolidation)
-             if (!fetchedAllBills.find(b => b.id === newBill.id)) {
+             const existingIdx = fetchedAllBills.findIndex(b => b.id === newBill.id);
+             if (existingIdx !== -1) {
+                // UPDATE THE EXISTING RECORD IN OUR LOCAL ARRAY
+                // This ensures that when multiple requests are consolidated into one bill,
+                // the row for that bill contains the updated services/totals.
+                fetchedAllBills[existingIdx] = {
+                   ...fetchedAllBills[existingIdx],
+                   ...newBill,
+                   clinical_request_id: newBill.clinical_request_id || req.id // Keep primary linkage
+                };
+             } else {
                 fetchedAllBills.unshift({
                   ...newBill,
                   clinical_request_id: req.id,
@@ -226,9 +235,11 @@ export async function GET(request: Request) {
       // Robust exclusion: if it has a bill_id, or if we found a bill pointing to it
       if (r.bill_id) return false;
       const foundInBills = fetchedAllBills.find(b => 
-        b.id === r.bill_id || 
-        b.clinical_request_id === r.id ||
-        (b.services && Array.isArray(b.services) && b.services.some((s: any) => s.source_id === r.id))
+        (b.id && r.bill_id && b.id.toString().toLowerCase() === r.bill_id.toString().toLowerCase()) || 
+        (b.clinical_request_id && b.clinical_request_id.toString().toLowerCase() === r.id.toString().toLowerCase()) ||
+        (b.services && Array.isArray(b.services) && b.services.some((s: any) => 
+           s.source_id && s.source_id.toString().toLowerCase() === r.id.toString().toLowerCase()
+        ))
       );
       return !foundInBills;
     }).map(req => ({
@@ -238,7 +249,7 @@ export async function GET(request: Request) {
       appointmentId: 'STANDALONE',
       appointmentDate: req.requested_at,
       appointmentTime: '',
-      department: 'Laboratory',
+      department: req.type === 'Radiology' ? 'Radiology' : req.type === 'Pharmacy' ? 'Pharmacy' : 'Laboratory',
       gender: req.patient?.gender || '',
       age: 0,
       doctorName: req.requested_by_name || 'Direct Request',
