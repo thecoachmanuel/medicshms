@@ -234,6 +234,20 @@ export async function PUT(request: Request) {
       handled_by: profile?.id
     };
 
+    // 1. Capture Scientist's Department (Unit) for reporting accuracy
+    if (profile?.role === 'Lab Scientist') {
+      const { data: assignment } = await supabaseClient
+        .from('lab_unit_assignments')
+        .select('unit_id')
+        .eq('scientist_id', profile.id)
+        .limit(1)
+        .maybeSingle();
+      
+      if (assignment) {
+        updateData.unit_id = assignment.unit_id;
+      }
+    }
+
     if (status) updateData.status = status;
     if (results) updateData.results = results;
     if (file_url) updateData.file_url = file_url;
