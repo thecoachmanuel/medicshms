@@ -1,3 +1,70 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { 
+  X, Printer, FileText, Activity, Microscope
+} from 'lucide-react';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import { siteSettingsAPI } from '@/lib/api';
+import toast from 'react-hot-toast';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+function calculateAge(dob: string) {
+  if (!dob) return 'N/A';
+  const birthDate = new Date(dob);
+  const today = new Date();
+  if (isNaN(birthDate.getTime())) return 'N/A';
+  
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
+
+interface Metric {
+  label: string;
+  value: string;
+  unit: string;
+  referenceRange: string;
+}
+
+interface LabReportPreviewModalProps {
+  requests: any[];
+  slug: string;
+  onClose: () => void;
+}
+
+export default function LabReportPreviewModal({ requests, slug, onClose }: LabReportPreviewModalProps) {
+  const [settings, setSettings] = useState<any>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    console.log('🧬 Laboratory Preview Mounted for', slug, 'with', requests?.length, 'results');
+    async function fetchSettings() {
+      try {
+        const res = await siteSettingsAPI.get({ slug }) as any;
+        setSettings(res.data || {});
+        console.log('✅ Clinical branding synchronized for:', res.data?.hospital_name);
+      } catch (e) {
+        console.error('❌ Failed to fetch hospital settings');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchSettings();
+  }, [requests, slug]);
+
+  if (!requests || requests.length === 0) {
+    console.error('🚫 No requests provided to Laboratory Preview');
+    return null;
+  }
+
   const handlePrint = () => {
     const printContent = document.getElementById('report-container');
     if (!printContent) {
