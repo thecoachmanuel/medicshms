@@ -26,11 +26,29 @@ export async function GET(request: Request) {
     const { data: bills, error } = await query;
     if (error) throw error;
 
+    // Fetch related patients for standalone bills (those without appointments)
+    const patientIds = (bills || []).filter(b => !b.appointment).map(b => b.patient_id).filter(Boolean);
+    let patientMap: Record<string, any> = {};
+    if (patientIds.length > 0) {
+      const { data: patients } = await (supabaseAdmin || supabase)
+        .from('patients')
+        .select('id, patient_id, full_name')
+        .or(`id.in.("${patientIds.join('","')}"),patient_id.in.("${patientIds.join('","')}")`);
+      
+      if (patients) {
+        patients.forEach(p => {
+          patientMap[p.id] = p;
+          patientMap[p.patient_id] = p;
+        });
+      }
+    }
+
     const merged = (bills || []).map(bill => {
       const apt = bill.appointment;
+      const patient = patientMap[bill.patient_id];
       return {
-        fullName: apt?.full_name || 'Individual Patient',
-        patientId: apt?.patient_id || bill.patient_id || 'N/A',
+        fullName: apt?.full_name || patient?.full_name || 'Individual Patient',
+        patientId: apt?.patient_id || patient?.patient_id || bill.patient_id || 'N/A',
         appointmentId: apt?.appointment_id || 'STANDALONE',
         appointmentDate: apt?.appointment_date || bill.created_at,
         department: apt?.department || 'Laboratory',

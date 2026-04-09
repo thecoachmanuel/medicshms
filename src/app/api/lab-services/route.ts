@@ -241,6 +241,34 @@ export async function PUT(request: Request) {
       .single();
 
     if (error) throw error;
+
+    // 2. Proactive Auto-Billing on Completion
+    if (status === 'Completed' && !data.bill_id) {
+      try {
+        const finalBill = await BillingService.generateAutoInvoice({
+          hospitalId: profile?.hospital_id as string,
+          patientId: data.patient_id,
+          sourceType: 'Laboratory',
+          sourceId: data.id,
+          appointmentId: data.appointment_id || undefined,
+          userProfile: profile,
+          services: [{
+            id: data.service_id || 'manual',
+            name: data.test_name || 'Lab Test',
+            price: Number(data.test_price || 0),
+            quantity: 1,
+            total: Number(data.test_price || 0)
+          }]
+        });
+        
+        if (finalBill) {
+          data.bill_id = finalBill.id;
+        }
+      } catch (billingError) {
+        console.error('[Diagnostic Auto-Billing Failed]:', billingError);
+      }
+    }
+
     return NextResponse.json(data);
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });

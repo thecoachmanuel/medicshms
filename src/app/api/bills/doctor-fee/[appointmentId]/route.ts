@@ -20,7 +20,34 @@ export async function GET(
       .single();
 
     if (aptError || !appointment) {
-      return NextResponse.json({ success: false, message: 'Appointment not found' }, { status: 404 });
+      // FALLBACK: Check if this is a clinical request (standalone lab test)
+      const { data: labReq } = await (supabaseAdmin || supabase)
+        .from('clinical_requests')
+        .select('*, patient:patients!patient_id(id, full_name, patient_id)')
+        .eq('id', appointmentId)
+        .eq('hospital_id', profile?.hospital_id)
+        .single();
+      
+      if (labReq) {
+        return NextResponse.json({
+          success: true,
+          data: {
+            doctorFee: 0,
+            doctorName: labReq.requested_by_name || 'Laboratory Unit',
+            department: { name: 'Laboratory', defaultConsultationFee: 0, services: [] },
+            appointment: {
+              appointmentId: 'STANDALONE',
+              patientId: labReq.patient?.patient_id || labReq.patient_id,
+              fullName: labReq.patient?.full_name || 'Individual Patient',
+              department: 'Laboratory'
+            },
+            isLabStandalone: true,
+            testInfo: { name: labReq.test_name, price: labReq.test_price }
+          }
+        });
+      }
+
+      return NextResponse.json({ success: false, message: 'Reference not found' }, { status: 404 });
     }
 
     let departmentData: any = null;

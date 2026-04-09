@@ -36,6 +36,8 @@ export default function GenerateInvoiceModal({ appointment, onClose, onGenerated
   const [departmentServices, setDepartmentServices] = useState<any[]>([]);
   const [showServicePicker, setShowServicePicker] = useState(false);
 
+  const [isLab, setIsLab] = useState(false);
+
   useEffect(() => {
     fetchDoctorFee();
   }, []);
@@ -43,8 +45,10 @@ export default function GenerateInvoiceModal({ appointment, onClose, onGenerated
   const fetchDoctorFee = async () => {
     try {
       const res = await billingAPI.getDoctorFee(appointment._id) as any;
-      const { doctorFee, doctorName, department } = res.data;
+      const { doctorFee, doctorName, department, isLabStandalone, testInfo } = res.data;
       const initialServices: Service[] = [];
+      
+      if (isLabStandalone) setIsLab(true);
 
       if (department && department.defaultConsultationFee > 0) {
         initialServices.push({
@@ -63,12 +67,20 @@ export default function GenerateInvoiceModal({ appointment, onClose, onGenerated
         });
       }
 
+      if (isLabStandalone && testInfo) {
+        initialServices.push({
+          name: testInfo.name || 'Lab Test',
+          description: 'Diagnostics Service',
+          amount: testInfo.price || 0
+        });
+      }
+
       setServices(initialServices);
       if (department && department.services) {
         setDepartmentServices(department.services);
       }
     } catch {
-      toast.error('Failed to fetch doctor fee');
+      toast.error('Failed to fetch reference details');
     } finally {
       setLoading(false);
     }
@@ -103,17 +115,25 @@ export default function GenerateInvoiceModal({ appointment, onClose, onGenerated
 
   const handleSubmit = async () => {
     if (services.length === 0) return toast.error('Add at least one service');
-    if (services.some(s => !s.name.trim() || s.amount <= 0)) {
+    if (services.some(s => !s.name.trim() || s.amount < 0)) {
       return toast.error('Check all service names and amounts');
     }
 
     setSubmitting(true);
     try {
-      await billingAPI.generateInvoice(appointment._id, {
-        services,
-        discount: Number(discount),
-        roundOff: Number(roundOff)
-      });
+      if (isLab || appointment.department === 'Laboratory') {
+        await billingAPI.generateForLab(appointment._id, {
+          services,
+          discount: Number(discount),
+          roundOff: Number(roundOff)
+        });
+      } else {
+        await billingAPI.generateInvoice(appointment._id, {
+          services,
+          discount: Number(discount),
+          roundOff: Number(roundOff)
+        });
+      }
       toast.success('Invoice generated successfully');
       onGenerated();
     } catch (err: any) {
