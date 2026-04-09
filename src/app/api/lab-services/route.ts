@@ -28,7 +28,12 @@ export async function GET(request: Request) {
           id,
           profile:profiles!user_id(name)
         ),
-        handled_by_profile:profiles!handled_by(name),
+        handled_by_profile:profiles!handled_by(
+          name,
+          lab_scientists!user_id(
+            department:departments!department_id(name)
+          )
+        ),
         unit:lab_units!unit_id(name)
       `)
       .eq('hospital_id', profile?.hospital_id)
