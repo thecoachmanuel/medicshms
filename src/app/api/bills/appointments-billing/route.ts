@@ -209,7 +209,12 @@ export async function GET(request: Request) {
           paymentStatus: bill.payment_status,
           paymentMethod: bill.payment_method,
           transactionId: bill.transaction_id,
-          createdAt: bill.created_at
+          createdAt: bill.created_at,
+          // Propagate patient info for instant modal display
+          fullName: patient?.full_name || apt?.full_name || 'Individual Patient',
+          patientId: patient?.patient_id || bill.patient_id || apt?.patient_id || 'N/A',
+          gender: patient?.gender || apt?.gender || '',
+          age: apt?.age || 0
         }
       };
     });
