@@ -246,6 +246,7 @@ export async function PUT(request: Request) {
     // 1. Capture Scientist's Department (Unit) for reporting accuracy
     const isScientist = profile?.role === 'Lab Scientist' || profile?.role === 'Clinical Scientist';
     if (isScientist) {
+      // Priority 1: Check unit assignments (Personnel Mapping)
       const { data: assignment } = await supabaseClient
         .from('lab_unit_assignments')
         .select('unit_id')
@@ -253,8 +254,19 @@ export async function PUT(request: Request) {
         .limit(1)
         .maybeSingle();
       
-      if (assignment) {
+      if (assignment?.unit_id) {
         updateData.unit_id = assignment.unit_id;
+      } else {
+        // Priority 2: Check primary department in staff record
+        const { data: staffRecord } = await supabaseClient
+          .from('lab_scientists')
+          .select('department_id')
+          .eq('user_id', profile.id)
+          .maybeSingle();
+        
+        if (staffRecord?.department_id) {
+          updateData.unit_id = staffRecord.department_id;
+        }
       }
     }
 

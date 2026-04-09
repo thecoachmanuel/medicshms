@@ -428,7 +428,10 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                 <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Clinical Protocol Entry</p>
                 <div className="w-1 h-1 rounded-full bg-gray-300" />
                 <p className="text-[10px] text-indigo-600 font-black uppercase tracking-[0.2em]">
-                  {request.handled_by_profile?.staff_record?.[0]?.dept?.name || request.unit?.name || 'Main Laboratory'}
+                  {(Array.isArray(request.handled_by_profile?.assignments) ? request.handled_by_profile?.assignments[0] : request.handled_by_profile?.assignments)?.unit?.name ||
+                   (Array.isArray(request.handled_by_profile?.staff_record) ? request.handled_by_profile?.staff_record[0] : request.handled_by_profile?.staff_record)?.dept?.name || 
+                   request.unit?.name || 
+                   'Laboratory Department'}
                 </p>
               </div>
             </div>
