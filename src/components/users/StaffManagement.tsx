@@ -270,7 +270,7 @@ export default function StaffManagement() {
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in zoom-in-95 duration-300">
           <div className="absolute inset-0 bg-gray-950/40 backdrop-blur-md" onClick={handleCloseModal}></div>
-          <div className="relative bg-white/90 backdrop-blur-2xl rounded-[3rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] max-w-2xl w-full p-12 border border-white/60 overflow-hidden ring-1 ring-black/5">
+          <div className="relative bg-white/90 backdrop-blur-2xl rounded-[3rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] max-w-2xl w-full p-12 border border-white/60 overflow-hidden ring-1 ring-black/5 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500" />
             
             <div className="flex justify-between items-start mb-12">
@@ -291,16 +291,16 @@ export default function StaffManagement() {
             <form onSubmit={handleSubmit} className="space-y-8">
               <div className="grid grid-cols-2 gap-8">
                 <div className="col-span-2">
-                  <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Legal Designation</label>
+                  <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Full Name</label>
                   <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full mt-3 px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="Jane Doe" />
                 </div>
                 <div>
-                  <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Network Identity</label>
+                  <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">E-Mail</label>
                   <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full mt-3 px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="jane@hospital.com" />
                 </div>
                 <div>
-                  <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Direct Uplink</label>
-                  <input required type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full mt-3 px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="+00 000 000" />
+                  <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Phone Number</label>
+                  <input required type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full mt-3 px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="+234 810 123 4567" />
                 </div>
                 <div className="grid grid-cols-2 gap-8 col-span-2">
                   <div>

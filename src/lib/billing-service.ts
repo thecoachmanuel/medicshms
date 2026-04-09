@@ -160,11 +160,22 @@ export const BillingService = {
 
     let finalBill: any = null;
     if (existingBill) {
+      const currentPaid = existingBill.paid_amount || 0;
+      const newDue = Math.max(0, totalAmount - currentPaid);
+      let newStatus = existingBill.payment_status;
+
+      if (newDue > 0) {
+        newStatus = currentPaid > 0 ? 'Partial' : 'Pending';
+      } else if (totalAmount > 0 && currentPaid >= totalAmount) {
+        newStatus = 'Paid';
+      }
+
       const { data: updated, error: updateError } = await client.from('bills').update({
         services: finalizedServices,
         subtotal,
         total_amount: totalAmount,
-        due_amount: totalAmount - (existingBill.paid_amount || 0),
+        due_amount: newDue,
+        payment_status: newStatus,
         clinical_request_id: billData.clinical_request_id,
         public_appointment_id: billData.public_appointment_id
       }).eq('id', existingBill.id).select().single();

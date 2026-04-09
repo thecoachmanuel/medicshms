@@ -46,16 +46,31 @@ export async function GET(request: Request) {
     const merged = (bills || []).map(bill => {
       const apt = bill.appointment;
       const patient = patientMap[bill.patient_id];
+      
+      // Layered unit detection if appointment info is missing
+      let derivedDepartment = 'Laboratory';
+      if (apt?.unit?.name) {
+        derivedDepartment = apt.unit.name;
+      } else if (apt?.department) {
+        derivedDepartment = apt.department;
+      } else if (bill.services && Array.isArray(bill.services)) {
+        if (bill.services.some((s: any) => s.name?.toLowerCase().includes('x-ray') || s.name?.toLowerCase().includes('mri') || s.name?.toLowerCase().includes('scan') || s.name?.toLowerCase().includes('ultrasound'))) {
+          derivedDepartment = 'Radiology';
+        } else if (bill.services.some((s: any) => s.name?.toLowerCase().includes('drug') || s.name?.toLowerCase().includes('tablet') || s.name?.toLowerCase().includes('injection') || s.name?.toLowerCase().includes('syrup'))) {
+          derivedDepartment = 'Pharmacy';
+        }
+      }
+
       return {
         fullName: apt?.full_name || patient?.full_name || 'Individual Patient',
         patientId: apt?.patient_id || patient?.patient_id || bill.patient_id || 'N/A',
         appointmentId: apt?.appointment_id || 'STANDALONE',
         appointmentDate: apt?.appointment_date || bill.created_at,
-        department: apt?.department || 'Laboratory',
+        department: derivedDepartment,
         billNumber: bill.bill_number,
-        totalAmount: bill.total_amount,
-        paidAmount: bill.paid_amount || 0,
-        dueAmount: bill.due_amount || 0,
+        totalAmount: Number(bill.total_amount || 0),
+        paidAmount: Number(bill.paid_amount || 0),
+        dueAmount: Number(bill.due_amount || 0),
         paymentStatus: bill.payment_status,
         paymentMethod: bill.payment_method || '',
       };

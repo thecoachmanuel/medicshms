@@ -259,7 +259,7 @@ export default function AdminManagement() {
        {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={handleCloseModal}></div>
-          <div className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full p-8">
+          <div className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <h2 className="text-xl font-bold text-gray-900 mb-6">{editingAdmin ? 'Edit Admin' : 'Add New Admin'}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
@@ -272,7 +272,7 @@ export default function AdminManagement() {
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Phone</label>
-                <input required type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="input py-3" placeholder="+91 00000 00000" />
+                <input required type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="input py-3" placeholder="+234 810 123 4567" />
               </div>
               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
                 <div className="space-y-0.5">

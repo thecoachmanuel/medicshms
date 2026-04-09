@@ -143,20 +143,24 @@ export async function GET(request: Request) {
           if (newBill) {
              // UPDATE LOCAL OBJECT: This is crucial for the transformation step below
              req.bill_id = newBill.id;
+             req.payment_status = 'Billed'; // Clinical status sync
              healedCount++;
 
-             // Check if this bill is already in fetchedAllBills (to avoid duplicates from consolidation)
-             const existingIdx = fetchedAllBills.findIndex(b => b.id === newBill.id);
+             // Check if this bill already exists in our local working set
+             const existingIdx = fetchedAllBills.findIndex(b => 
+                (b.id && b.id.toString() === newBill.id.toString()) ||
+                (b.clinical_request_id && b.clinical_request_id.toString() === req.id.toString())
+             );
+
              if (existingIdx !== -1) {
-                // UPDATE THE EXISTING RECORD IN OUR LOCAL ARRAY
-                // This ensures that when multiple requests are consolidated into one bill,
-                // the row for that bill contains the updated services/totals.
+                // UPDATE THE EXISTING RECORD: Consolidation merged them
                 fetchedAllBills[existingIdx] = {
                    ...fetchedAllBills[existingIdx],
-                   ...newBill,
-                   clinical_request_id: newBill.clinical_request_id || req.id // Keep primary linkage
+                   ...newBill, // Overwrite with fresh DB state
+                   clinical_request_id: newBill.clinical_request_id || req.id
                 };
              } else {
+                // NEW STANDALONE BILL
                 fetchedAllBills.unshift({
                   ...newBill,
                   clinical_request_id: req.id,
@@ -237,15 +241,21 @@ export async function GET(request: Request) {
 
     // 7. Transform Unbilled Lab Requests (These should mostly be 0 now due to auto-heal)
     const unbilledLabEntries = (unbilledLabRequests || []).filter(r => {
-      // Robust exclusion: if it has a bill_id, or if we found a bill pointing to it
+      // 1. If the database already has a bill_id, it is definitely billed
       if (r.bill_id) return false;
-      const foundInBills = fetchedAllBills.find(b => 
-        (b.id && r.bill_id && b.id.toString().toLowerCase() === r.bill_id.toString().toLowerCase()) || 
-        (b.clinical_request_id && b.clinical_request_id.toString().toLowerCase() === r.id.toString().toLowerCase()) ||
-        (b.services && Array.isArray(b.services) && b.services.some((s: any) => 
-           s.source_id && s.source_id.toString().toLowerCase() === r.id.toString().toLowerCase()
-        ))
-      );
+
+      // 2. Search all bills to see if any are pointing to this request
+      const foundInBills = fetchedAllBills.find(b => {
+        const bId = b.id?.toString();
+        const crId = b.clinical_request_id?.toString();
+        
+        return (bId && r.bill_id && bId === r.bill_id.toString()) || 
+               (crId && crId === r.id.toString()) ||
+               (b.services && Array.isArray(b.services) && b.services.some((s: any) => 
+                  s.source_id && s.source_id.toString() === r.id.toString()
+               ));
+      });
+
       return !foundInBills;
     }).map(req => ({
       _id: req.id,
@@ -254,7 +264,7 @@ export async function GET(request: Request) {
       appointmentId: 'STANDALONE',
       appointmentDate: req.requested_at,
       appointmentTime: '',
-      department: req.type === 'Radiology' ? 'Radiology' : req.type === 'Pharmacy' ? 'Pharmacy' : 'Laboratory',
+      department: req.type || 'Laboratory',
       gender: req.patient?.gender || '',
       age: 0,
       doctorName: req.requested_by_name || 'Direct Request',
