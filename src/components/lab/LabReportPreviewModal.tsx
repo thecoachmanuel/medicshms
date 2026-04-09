@@ -186,7 +186,7 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
               onClick={handlePrint}
               disabled={loading}
               className={cn(
-                "flex items-center gap-2 px-6 py-3 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-gray-200",
+                "flex items-center gap-2 px-6 py-3 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-gray-200 cursor-pointer",
                 loading ? "bg-gray-400 cursor-not-allowed opacity-50" : "bg-gray-900 hover:bg-gray-800"
               )}
               style={!loading && settings.primary_color ? { backgroundColor: settings.primary_color } : {}}
@@ -195,8 +195,8 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
               {loading ? 'Syncing...' : 'Print Certificate'}
             </button>
             <button 
-              onClick={onClose}
-              className="p-3 bg-gray-100 rounded-2xl text-gray-400 hover:text-rose-500 hover:bg-rose-50 transition-all"
+              onClick={onClose} 
+              className="p-3 hover:bg-rose-50 rounded-xl text-gray-400 hover:text-rose-600 transition-all cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -261,7 +261,9 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
                 <div className="demo-item">
                   <span className="demo-label">Department</span>
                   <span className="demo-value font-black text-hospital uppercase">
-                    {requests[0]?.handled_by_profile?.lab_scientists?.[0]?.department?.name || requests[0]?.unit?.name || 'Main Laboratory'}
+                    {requests[0]?.handled_by_profile?.staff_record?.[0]?.dept?.name || 
+                     requests[0]?.unit?.name || 
+                     (requests[0]?.handled_by_profile?.role === 'Doctor' ? 'Clinical Department' : 'Main Laboratory')}
                   </span>
                 </div>
                 <div className="demo-item">

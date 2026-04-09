@@ -151,7 +151,7 @@ export default function LabManagementSection() {
               key={t}
               onClick={() => setSubTab(t)}
               className={cn(
-                "px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                "px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer",
                 subTab === t ? "bg-white text-primary-600 shadow-sm" : "text-gray-400 hover:text-gray-600"
               )}
             >
@@ -186,7 +186,7 @@ export default function LabManagementSection() {
              </div>
              <button 
                onClick={() => { setEditingItem(null); setIsUnitModalOpen(true); }}
-               className="btn-primary py-2.5 px-6 text-[10px]"
+               className="btn-primary py-2.5 px-6 text-[10px] cursor-pointer"
              >
                <Plus className="w-4 h-4" /> Establish Unit
              </button>
@@ -203,8 +203,8 @@ export default function LabManagementSection() {
                   <p className="text-xs text-gray-500 font-medium leading-relaxed">{unit.description || 'No specialized description provided for this diagnostic unit.'}</p>
                 </div>
                 <div className="flex gap-2 mt-6 pt-6 border-t border-gray-50 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-                  <button onClick={() => { setEditingItem(unit); setIsUnitModalOpen(true); }} className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-gray-50 text-[10px] font-black text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-all"><Edit3 className="w-3.5 h-3.5" /> Edit</button>
-                  <button onClick={async () => { if(confirm('Delete diagnostics unit?')) { await labAPI.deleteUnit(unit.id); fetchLabData(); } }} className="p-2 rounded-lg bg-gray-50 text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-all"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={() => { setEditingItem(unit); setIsUnitModalOpen(true); }} className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-gray-50 text-[10px] font-black text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-all cursor-pointer"><Edit3 className="w-3.5 h-3.5" /> Edit</button>
+                  <button onClick={async () => { if(confirm('Delete diagnostics unit?')) { await labAPI.deleteUnit(unit.id); fetchLabData(); } }} className="p-2 rounded-lg bg-gray-50 text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
             ))}
@@ -224,7 +224,7 @@ export default function LabManagementSection() {
                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Assign clinical scientists to diagnostic units</p>
                 </div>
              </div>
-             <button onClick={() => setIsAssignModalOpen(true)} className="btn-primary py-2.5 px-6 text-[10px] bg-amber-600 hover:bg-amber-700 border-amber-700 shadow-amber-100">
+             <button onClick={() => setIsAssignModalOpen(true)} className="btn-primary py-2.5 px-6 text-[10px] bg-amber-600 hover:bg-amber-700 border-amber-700 shadow-amber-100 cursor-pointer">
                <Users className="w-4 h-4" /> Map Personnel
              </button>
           </div>
@@ -253,7 +253,7 @@ export default function LabManagementSection() {
                       </span>
                     </td>
                     <td className="p-5 text-right">
-                      <button onClick={async () => { if(confirm('Remove assignment?')) { await labAPI.removeAssignment(a.id); fetchLabData(); } }} className="text-rose-500 hover:text-rose-700 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-rose-50 transition-all opacity-0 group-hover:opacity-100">Disconnect</button>
+                      <button onClick={async () => { if(confirm('Remove assignment?')) { await labAPI.removeAssignment(a.id); fetchLabData(); } }} className="text-rose-500 hover:text-rose-700 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-rose-50 transition-all opacity-0 group-hover:opacity-100 cursor-pointer">Disconnect</button>
                     </td>
                   </tr>
                 ))}
@@ -280,7 +280,7 @@ export default function LabManagementSection() {
                setProtocolFields([]);
                setShowProtocolEditor(false);
                setIsCatalogModalOpen(true); 
-             }} className="btn-primary py-2.5 px-6 text-[10px] bg-emerald-600 hover:bg-emerald-700 border-emerald-700 shadow-emerald-100">
+             }} className="btn-primary py-2.5 px-6 text-[10px] bg-emerald-600 hover:bg-emerald-700 border-emerald-700 shadow-emerald-100 cursor-pointer">
                <BookOpen className="w-4 h-4" /> Add Test
              </button>
           </div>
@@ -318,8 +318,8 @@ export default function LabManagementSection() {
                       setProtocolFields(item.template_schema?.fields || []);
                       setShowProtocolEditor(!!item.template_schema?.fields?.length);
                       setIsCatalogModalOpen(true); 
-                    }} className="p-2.5 bg-gray-50 rounded-xl hover:text-emerald-600 hover:bg-emerald-50 transition-all"><Edit3 className="w-4 h-4" /></button>
-                    <button onClick={async () => { if(confirm('Remove from catalog?')) { await labAPI.deleteCatalogItem(item.id); fetchLabData(); } }} className="p-2.5 bg-gray-50 rounded-xl hover:text-rose-600 hover:bg-rose-50 transition-all"><Trash2 className="w-4 h-4" /></button>
+                    }} className="p-2.5 bg-gray-50 rounded-xl hover:text-emerald-600 hover:bg-emerald-50 transition-all cursor-pointer"><Edit3 className="w-4 h-4" /></button>
+                    <button onClick={async () => { if(confirm('Remove from catalog?')) { await labAPI.deleteCatalogItem(item.id); fetchLabData(); } }} className="p-2.5 bg-gray-50 rounded-xl hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
             ))}
@@ -349,7 +349,7 @@ export default function LabManagementSection() {
                     <textarea name="description" defaultValue={editingItem?.description} className="input py-4 min-h-[120px] text-sm font-medium resize-none" placeholder="Describe the primary diagnostic focus of this specialized lab unit..." />
                  </div>
                  <div className="flex gap-4 pt-4">
-                    <button type="submit" className="w-full btn-primary py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary-600/20">
+                    <button type="submit" className="w-full btn-primary py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary-600/20 cursor-pointer">
                       {editingItem ? 'Commit Changes' : 'Establish Diagnostic Unit'}
                     </button>
                  </div>
@@ -375,7 +375,7 @@ export default function LabManagementSection() {
                     type="button"
                     onClick={() => setShowProtocolEditor(!showProtocolEditor)}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
+                      "flex items-center gap-2 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer",
                       showProtocolEditor ? "bg-emerald-600 text-white" : "bg-gray-100 text-gray-500 hover:bg-emerald-50 hover:text-emerald-600"
                     )}
                   >
@@ -416,7 +416,7 @@ export default function LabManagementSection() {
                       </div>
                    </div>
                    
-                   <button type="submit" className="w-full btn-primary py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] bg-emerald-600 border-emerald-700 shadow-xl shadow-emerald-600/20 shrink-0">
+                   <button type="submit" className="w-full btn-primary py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] bg-emerald-600 border-emerald-700 shadow-xl shadow-emerald-600/20 shrink-0 cursor-pointer">
                      Sync to Diagnostic Catalog
                    </button>
                 </form>
@@ -431,7 +431,7 @@ export default function LabManagementSection() {
                         <button 
                           type="button"
                           onClick={handleAddField}
-                          className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-emerald-700 transition-all"
+                          className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-emerald-700 transition-all cursor-pointer"
                         >
                           <Plus className="w-3 h-3" /> Add Parameter
                         </button>
@@ -465,7 +465,7 @@ export default function LabManagementSection() {
                              <button 
                                type="button"
                                onClick={() => handleRemoveField(idx)}
-                               className="p-2 text-gray-300 hover:text-rose-500 transition-colors"
+                               className="p-2 text-gray-300 hover:text-rose-500 transition-colors cursor-pointer"
                              >
                                <Trash className="w-4 h-4" />
                              </button>
@@ -477,7 +477,7 @@ export default function LabManagementSection() {
                                 <MousePointer2 className="w-8 h-8 text-gray-400" />
                              </div>
                              <p className="text-[10px] font-black uppercase tracking-widest text-gray-600">No Parameters Defined</p>
-                             <button type="button" onClick={handleAddField} className="text-[9px] font-black text-emerald-600 uppercase underline decoration-2 underline-offset-4">Inject Initial Field</button>
+                             <button type="button" onClick={handleAddField} className="text-[9px] font-black text-emerald-600 uppercase underline decoration-2 underline-offset-4 cursor-pointer">Inject Initial Field</button>
                           </div>
                         )}
                      </div>
@@ -518,7 +518,7 @@ export default function LabManagementSection() {
                    <Info className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
                    <p className="text-[9px] text-amber-800 font-medium leading-relaxed">Assigning a scientist to a unit grants them full visibility and signing authority for investigation requests arriving at that unit.</p>
                  </div>
-                 <button type="submit" className="w-full btn-primary py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] bg-amber-600 border-amber-700 shadow-xl shadow-amber-600/20">
+                 <button type="submit" className="w-full btn-primary py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] bg-amber-600 border-amber-700 shadow-xl shadow-amber-600/20 cursor-pointer">
                    Execute Personnel Assignment
                  </button>
               </form>

@@ -30,8 +30,9 @@ export async function GET(request: Request) {
         ),
         handled_by_profile:profiles!handled_by(
           name,
-          lab_scientists!user_id(
-            department:departments!department_id(name)
+          role,
+          staff_record:lab_scientists!user_id(
+            dept:departments!department_id(name)
           )
         ),
         unit:lab_units!unit_id(name)
@@ -240,7 +241,8 @@ export async function PUT(request: Request) {
     };
 
     // 1. Capture Scientist's Department (Unit) for reporting accuracy
-    if (profile?.role === 'Lab Scientist') {
+    const isScientist = profile?.role === 'Lab Scientist' || profile?.role === 'Clinical Scientist';
+    if (isScientist) {
       const { data: assignment } = await supabaseClient
         .from('lab_unit_assignments')
         .select('unit_id')

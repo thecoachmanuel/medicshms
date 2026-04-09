@@ -409,10 +409,10 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 left-0 lg:left-64 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-xl" onClick={onClose}></div>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-md cursor-pointer" onClick={onClose}></div>
       <div className={cn(
-        "relative bg-white/95 backdrop-blur-md rounded-[3rem] w-full p-10 shadow-[0_32px_128px_rgba(30,41,59,0.15)] overflow-hidden border border-white/40 max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-300 transition-all",
+        "relative bg-white/95 backdrop-blur-md rounded-[3rem] w-full p-10 shadow-[0_32px_128px_rgba(30,41,59,0.15)] border border-white/40 max-h-[95vh] flex flex-col animate-in fade-in zoom-in-95 duration-300 transition-all",
         showLibrary ? "max-w-6xl" : "max-w-4xl"
       )}>
         
@@ -427,13 +427,15 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
               <div className="flex items-center gap-2 mt-0.5">
                 <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Clinical Protocol Entry</p>
                 <div className="w-1 h-1 rounded-full bg-gray-300" />
-                <p className="text-[10px] text-indigo-600 font-black uppercase tracking-[0.2em]">{request.unit?.name || 'Main Laboratory'}</p>
+                <p className="text-[10px] text-indigo-600 font-black uppercase tracking-[0.2em]">
+                  {request.handled_by_profile?.staff_record?.[0]?.dept?.name || request.unit?.name || 'Main Laboratory'}
+                </p>
               </div>
             </div>
             <button 
               onClick={() => setShowLibrary(!showLibrary)}
               className={cn(
-                "ml-4 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-2 transition-all",
+                "ml-4 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-2 transition-all cursor-pointer",
                 showLibrary ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600"
               )}
             >
@@ -443,7 +445,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
           </div>
           <button 
             onClick={onClose} 
-            className="p-3 bg-gray-50 rounded-xl text-gray-400 hover:text-rose-500 hover:rotate-90 transition-all duration-300"
+            className="p-3 bg-gray-50 rounded-xl text-gray-400 hover:text-rose-500 hover:rotate-90 transition-all duration-300 cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -466,39 +468,30 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                   />
                 </div>
               </div>
-              
-              <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-1.5">
-                {/* Seeded Templates (Legacy/Hardcoded) */}
-                <div className="mb-4">
-                  <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mb-2 ml-2">Quick Access</p>
-                  {TEMPLATES.filter(t => t.name.toLowerCase().includes(searchTerm.toLowerCase())).map(t => (
-                    <button 
-                      key={t.id}
-                      onClick={() => handleApplyTemplate(t)}
-                      className={cn(
-                        "w-full text-left px-4 py-3 rounded-xl text-[10px] font-bold transition-all border",
-                        selectedTemplate?.id === t.id ? "bg-indigo-600 text-white border-indigo-700 shadow-md" : "bg-white text-gray-600 hover:bg-white hover:border-indigo-200 border-transparent"
-                      )}
-                    >
-                      {t.name}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Database Catalog Templates */}
+                           <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4">
+                {/* Unified Search Results */}
                 <div>
-                  <p className="text-[8px] font-black text-emerald-400 uppercase tracking-widest mb-2 ml-2">Global Catalog</p>
-                  {catalog.filter(t => t.test_name.toLowerCase().includes(searchTerm.toLowerCase())).map(t => (
+                  {[...TEMPLATES, ...catalog]
+                    .filter(t => (t.name || t.test_name)?.toLowerCase().includes(searchTerm.toLowerCase()))
+                    .map(t => (
                     <button 
                       key={t.id}
                       onClick={() => handleApplyTemplate(t)}
                       className={cn(
-                        "w-full text-left px-4 py-3 rounded-xl text-[10px] font-bold transition-all border truncate",
+                        "w-full text-left px-4 py-3 rounded-xl text-[10px] font-bold transition-all border truncate cursor-pointer mb-1.5",
                         selectedTemplate?.id === t.id ? "bg-indigo-600 text-white border-indigo-700 shadow-md" : "bg-white text-gray-600 hover:bg-white hover:border-indigo-200 border-transparent"
                       )}
-                      title={t.test_name}
+                      title={t.name || t.test_name}
                     >
-                      {t.test_name}
+                      <div className="flex flex-col">
+                        <span className="truncate">{t.name || t.test_name}</span>
+                        <span className={cn(
+                          "text-[8px] font-black uppercase tracking-tighter mt-0.5",
+                          selectedTemplate?.id === t.id ? "text-indigo-200" : "text-gray-300"
+                        )}>
+                          {t.unit || t.unit?.name || 'General'}
+                        </span>
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -541,13 +534,13 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                   <div className="flex gap-2">
                     <button 
                       onClick={handleSaveAsMaster}
-                      className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-bold flex items-center gap-2 hover:bg-emerald-600 hover:text-white transition-all"
+                      className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-bold flex items-center gap-2 hover:bg-emerald-600 hover:text-white transition-all cursor-pointer"
                     >
                       <Save className="w-3.5 h-3.5" /> Save as Protocol
                     </button>
                     <button 
                       onClick={handleAddField}
-                      className="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 text-[10px] font-bold flex items-center gap-2 hover:bg-indigo-600 hover:text-white transition-all"
+                      className="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 text-[10px] font-bold flex items-center gap-2 hover:bg-indigo-600 hover:text-white transition-all cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" /> Add Field
                     </button>
@@ -629,7 +622,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                           <button 
                             onClick={() => handleUpdateFieldMeta(field.id, { hideUnit: !field.hideUnit })}
                             className={cn(
-                              "p-2 rounded-xl transition-all",
+                              "p-2 rounded-xl transition-all cursor-pointer",
                               field.hideUnit ? "text-gray-300 hover:text-indigo-600 hover:bg-indigo-50" : "text-indigo-600 bg-indigo-50"
                             )}
                             title={field.hideUnit ? "Show Unit Field" : "Hide Unit Field"}
@@ -639,7 +632,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                           <button 
                             onClick={() => handleUpdateFieldMeta(field.id, { hideRef: !field.hideRef })}
                             className={cn(
-                              "p-2 rounded-xl transition-all",
+                              "p-2 rounded-xl transition-all cursor-pointer",
                               field.hideRef ? "text-gray-300 hover:text-rose-600 hover:bg-rose-50" : "text-rose-600 bg-rose-50"
                             )}
                             title={field.hideRef ? "Show Ref Range" : "Hide Ref Range"}
@@ -649,14 +642,14 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                           <div className="w-full h-px bg-gray-100 my-1 hidden md:block" />
                           <button 
                             onClick={() => handleDuplicateField(field)}
-                            className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
+                            className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all cursor-pointer"
                             title="Duplicate Entry"
                           >
                             <Copy className="w-4 h-4" />
                           </button>
                           <button 
                             onClick={() => handleRemoveField(field.id)}
-                            className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                            className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all cursor-pointer"
                             title="Delete Entry"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -727,7 +720,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                     <button 
                       onClick={() => setIsCritical(!isCritical)}
                       className={cn(
-                        "w-full h-[56px] rounded-[1.25rem] text-[10px] font-black uppercase tracking-widest transition-all border flex items-center justify-center gap-3",
+                        "w-full h-[56px] rounded-[1.25rem] text-[10px] font-black uppercase tracking-widest transition-all border flex items-center justify-center gap-3 cursor-pointer",
                         isCritical ? "bg-rose-500 text-white border-rose-600 shadow-lg shadow-rose-200" : "bg-gray-50 text-gray-400 border-gray-100 grayscale hover:grayscale-0 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200"
                       )}
                     >
@@ -744,7 +737,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
               <button 
                 onClick={() => handleSave('Collected')}
                 disabled={loading}
-                className="flex-1 py-4 rounded-[1.25rem] font-black text-gray-600 bg-gray-50 hover:bg-gray-100 transition-all border border-gray-200 flex items-center justify-center gap-3 disabled:opacity-50"
+                className="flex-1 py-4 rounded-[1.25rem] font-black text-gray-600 bg-gray-50 hover:bg-gray-100 transition-all border border-gray-200 flex items-center justify-center gap-3 disabled:opacity-50 cursor-pointer"
               >
                 <Clock className="w-5 h-5" />
                 <span className="uppercase tracking-[0.2em] text-[10px]">Save as Draft</span>
@@ -753,7 +746,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
               <button 
                 onClick={() => handleSave('Completed')}
                 disabled={loading}
-                className="flex-1 py-4 rounded-[1.25rem] font-black text-white bg-gray-900 hover:bg-emerald-600 hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gray-200 hover:shadow-emerald-100 flex items-center justify-center gap-3 disabled:opacity-50 group"
+                className="flex-1 py-4 rounded-[1.25rem] font-black text-white bg-gray-900 hover:bg-emerald-600 hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gray-200 hover:shadow-emerald-100 flex items-center justify-center gap-3 disabled:opacity-50 group cursor-pointer"
               >
                 {loading ? <Activity className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5 group-hover:animate-bounce" />}
                 <span className="uppercase tracking-[0.2em] text-[10px]">{loading ? 'Processing protocol...' : 'Authorize & Release Result'}</span>

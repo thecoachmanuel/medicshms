@@ -291,9 +291,9 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 left-0 lg:left-64 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-xl" onClick={onClose}></div>
-      <div className="relative bg-white/95 backdrop-blur-md rounded-[3rem] max-w-2xl w-full shadow-[0_32px_128px_rgba(30,41,59,0.15)] border border-white/40 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md cursor-pointer" onClick={onClose}></div>
+      <div className="relative bg-white/95 backdrop-blur-md rounded-[3rem] max-w-2xl w-full shadow-[0_32px_128px_rgba(30,41,59,0.15)] border border-white/40 flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-300">
         
         <div className="px-10 py-8 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-5">
@@ -316,7 +316,7 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-4 hover:bg-white rounded-2xl text-gray-400 hover:text-rose-500 hover:rotate-90 transition-all duration-300" type="button">
+          <button onClick={onClose} className="p-4 hover:bg-white rounded-2xl text-gray-400 hover:text-rose-500 hover:rotate-90 transition-all duration-300 cursor-pointer" type="button">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -343,7 +343,7 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
                      <button 
                        key={p.id || p._id}
                        onClick={() => { setSelectedPatient(p); setStage('Configure'); }}
-                       className="w-full flex items-center justify-between p-5 bg-white border border-gray-100 rounded-[2rem] hover:border-blue-200 hover:bg-blue-50/30 transition-all group"
+                       className="w-full flex items-center justify-between p-5 bg-white border border-gray-100 rounded-[2rem] hover:border-blue-200 hover:bg-blue-50/30 transition-all group cursor-pointer"
                        type="button"
                      >
                         <div className="flex items-center gap-4">
@@ -368,12 +368,12 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
                   <div className="flex gap-4 w-full max-w-sm">
                     <button 
                       onClick={() => { setSelectedPatient({ fullName: patientSearchTerm, isVirtual: true }); setStage('Configure'); }}
-                      className="flex-1 px-8 py-5 bg-gray-900 text-white rounded-[1.75rem] text-[11px] font-black uppercase tracking-[0.2em] shadow-2xl"
+                      className="flex-1 px-8 py-5 bg-gray-900 text-white rounded-[1.75rem] text-[11px] font-black uppercase tracking-[0.2em] shadow-2xl cursor-pointer"
                       type="button"
                     >Quick Proceed</button>
                     <button 
                       onClick={() => { setEnrollData(prev => ({ ...prev, fullName: patientSearchTerm })); setStage('Enroll'); }}
-                      className="flex-1 px-8 py-5 bg-white border-2 border-gray-100 text-gray-900 rounded-[1.75rem] text-[11px] font-black uppercase tracking-[0.2em]"
+                      className="flex-1 px-8 py-5 bg-white border-2 border-gray-100 text-gray-900 rounded-[1.75rem] text-[11px] font-black uppercase tracking-[0.2em] cursor-pointer"
                       type="button"
                     >Full Enroll</button>
                   </div>
@@ -435,7 +435,7 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
                     </p>
                   </div>
                 </div>
-                <button onClick={() => setStage('Discovery')} className="text-[10px] font-black uppercase text-blue-600 hover:underline" type="button">Change Subject</button>
+                <button onClick={() => setStage('Discovery')} className="text-[10px] font-black uppercase text-blue-600 hover:underline cursor-pointer" type="button">Change Subject</button>
               </div>
 
               <div className="space-y-4">
@@ -461,14 +461,14 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
                     const manualPrice = (document.getElementById('manual-test-price') as HTMLInputElement)?.value;
                     if (!match && (!manualPrice || parseFloat(manualPrice) <= 0)) return toast.error('Fee required');
                     handleAddTest({ test_name: match?.test_name || testSearchTerm, test_price: match?.price || parseFloat(manualPrice), unit_id: match?.unit_id || null, is_new: !match });
-                  }} className="absolute right-3 top-1/2 -translate-y-1/2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-100 active:scale-95" type="button">Add</button>
+                  }} className="absolute right-3 top-1/2 -translate-y-1/2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-100 active:scale-95 cursor-pointer" type="button">Add</button>
                 </div>
                 {showCatalogSuggestions && (
                   <div className="absolute left-0 right-0 mt-2 bg-white rounded-[1.5rem] shadow-2xl border border-gray-100 overflow-hidden z-[80] animate-in fade-in">
                     <div className="max-h-60 overflow-y-auto no-scrollbar">
                       {labCatalog.filter(c => c.test_name.toLowerCase().includes(testSearchTerm.toLowerCase())).map(c => (
                         <button key={c.id} onClick={() => handleAddTest({ test_name: c.test_name, test_price: c.price, unit_id: c.unit_id, is_new: false })}
-                          className="w-full flex items-center justify-between p-5 hover:bg-blue-50 transition-colors text-left border-b border-gray-50 last:border-0" type="button">
+                          className="w-full flex items-center justify-between p-5 hover:bg-blue-50 transition-colors text-left border-b border-gray-50 last:border-0 cursor-pointer" type="button">
                           <div><p className="font-black text-gray-900 text-sm">{c.test_name}</p><p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">{c.unit?.name || 'General'}</p></div>
                           <span className="text-[10px] font-black text-blue-600">₦{c.price.toLocaleString()}</span>
                         </button>
@@ -573,7 +573,7 @@ export default function CreateLabRequestModal({ isOpen, onClose, onSuccess, init
                   <p className="text-[10px] text-indigo-600 font-black uppercase tracking-[0.2em]">Job Valuation</p>
                   <p className="text-xl font-black text-gray-900">₦ {selectedTests.reduce((acc, t) => acc + (t.test_price || 0), 0).toLocaleString()}</p>
                 </div>
-                <button onClick={handleSubmitRequest} disabled={loading} type="button" className="bg-gray-900 text-white px-10 py-5 rounded-[1.75rem] text-xs font-black uppercase tracking-[0.2em] hover:bg-blue-600 transition-all active:scale-95 flex items-center gap-3">
+                <button onClick={handleSubmitRequest} disabled={loading} type="button" className="bg-gray-900 text-white px-10 py-5 rounded-[1.75rem] text-xs font-black uppercase tracking-[0.2em] hover:bg-blue-600 transition-all active:scale-95 flex items-center gap-3 cursor-pointer">
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />} Authorize Job
                 </button>
               </div>
