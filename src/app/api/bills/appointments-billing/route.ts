@@ -220,6 +220,7 @@ export async function GET(request: Request) {
           paymentMethod: bill.payment_method,
           transactionId: bill.transaction_id,
           createdAt: bill.created_at,
+          clinical_request_id: bill.clinical_request_id,
           // Propagate patient info for instant modal display
           fullName: patient?.full_name || apt?.full_name || 'Individual Patient',
           patientId: patient?.patient_id || bill.patient_id || apt?.patient_id || 'N/A',
@@ -245,25 +246,10 @@ export async function GET(request: Request) {
       bill: null
     }));
 
-    // 7. Transform Unbilled Lab Requests (These should mostly be 0 now due to auto-heal)
-    const unbilledLabEntries = (unbilledLabRequests || []).filter(r => {
-      // 1. If the database already has a bill_id, it is definitely billed
-      if (r.bill_id) return false;
+    // 7. Transform Unbilled Lab Requests (Exclude those already in billEntries)
+    const billedCrIds = new Set(billEntries.map(b => b.bill.clinical_request_id).filter(Boolean));
 
-      // 2. Search all bills to see if any are pointing to this request
-      const foundInBills = fetchedAllBills.find(b => {
-        const bId = b.id?.toString();
-        const crId = b.clinical_request_id?.toString();
-        
-        return (bId && r.bill_id && bId === r.bill_id.toString()) || 
-               (crId && crId === r.id.toString()) ||
-               (b.services && Array.isArray(b.services) && b.services.some((s: any) => 
-                  s.source_id && s.source_id.toString() === r.id.toString()
-               ));
-      });
-
-      return !foundInBills;
-    }).map(req => ({
+    const unbilledLabEntries = (unbilledLabRequests || []).filter(r => !billedCrIds.has(r.id)).map(req => ({
       _id: req.id,
       fullName: req.patient?.full_name || 'Individual Patient',
       patientId: req.patient?.patient_id || req.patient_id,

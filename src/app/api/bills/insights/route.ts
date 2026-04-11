@@ -19,9 +19,10 @@ export async function GET(request: Request) {
       .eq('hospital_id', profile?.hospital_id)
       .order('created_at', { ascending: false });
 
+    // Ensure we don't accidentally skip standalone bills by checking filters
     if (dateFrom) query = query.gte('created_at', dateFrom);
     if (dateTo) query = query.lte('created_at', dateTo);
-    if (status) query = query.eq('payment_status', status);
+    if (status && status !== 'all') query = query.eq('payment_status', status);
 
     const { data: bills, error } = await query;
     if (error) throw error;

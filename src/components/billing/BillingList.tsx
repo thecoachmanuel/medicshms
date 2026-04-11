@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  Plus, Eye, Edit2, ChevronLeft, ChevronRight, Loader2, 
-  AlertCircle, CheckCircle2, XCircle, ArrowUpRight, RefreshCw, Search,
-  Download, Trash2
+import {  FileText, Plus, Search, Filter, Calendar, 
+  ChevronLeft, ChevronRight, Loader2, MoreVertical,
+  CheckCircle2, Clock, AlertCircle, RefreshCw, Edit2, Eye, Trash2, Download,
+  ArrowUpRight, XCircle
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -336,8 +336,6 @@ export default function BillingList() {
                   <td className="px-6 py-5">
                     <div className="flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300 scale-90 group-hover:scale-100">
                       {!item.bill && (user?.role === 'Admin' || user?.role === 'Receptionist') ? (
-                        // ONLY show Finalize Bill for regular appointments. 
-                        // Diagnostics should be auto-billed during initiation.
                         !item.testName ? (
                           <button 
                             onClick={() => setGenerateModal(item)}
@@ -348,9 +346,19 @@ export default function BillingList() {
                             Finalize Bill
                           </button>
                         ) : (
-                          <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-xl border border-amber-100 animate-pulse">
-                            <RefreshCw className="w-3 h-3 text-amber-600 animate-spin" />
-                            <span className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Auto-Billing...</span>
+                          <div className="flex flex-col items-center gap-2">
+                             <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-xl border border-amber-100 animate-pulse">
+                               <RefreshCw className="w-3 h-3 text-amber-600 animate-spin" />
+                               <span className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Auto-Billing...</span>
+                             </div>
+                             {(user?.role === 'Admin' || user?.role === 'Receptionist') && (
+                               <button 
+                                 onClick={() => setGenerateModal(item)}
+                                 className="text-[9px] font-black text-amber-400 uppercase tracking-widest hover:text-amber-600 underline transition-all active:scale-95"
+                               >
+                                 Manual Generate
+                               </button>
+                             )}
                           </div>
                         )
                       ) : !item.bill ? (
