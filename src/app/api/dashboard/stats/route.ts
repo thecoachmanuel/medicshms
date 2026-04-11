@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     const startOfSixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString();
 
     const results = await Promise.all([
-      client.from('public_appointments').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id),
+      client.from('patients').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id),
       client.from('doctors').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id).eq('is_active', true),
       client.from('departments').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id).eq('is_active', true),
       client.from('public_appointments').select('appointment_status, created_at, appointment_id').eq('hospital_id', userProfile?.hospital_id).gte('created_at', startOfToday).lte('created_at', endOfToday),

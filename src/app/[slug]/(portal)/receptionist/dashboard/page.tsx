@@ -136,19 +136,55 @@ export default function ReceptionistDashboard({ params }: { params: Promise<{ sl
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {recentAppointments.slice(0, 6).map((apt, i) => (
-                  <tr key={i} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-3">
-                      <p className="text-sm font-bold text-gray-900">{apt.patientName}</p>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase">{apt.patientId}</p>
+                  <tr key={i} className="group hover:bg-gray-50/80 transition-all duration-300">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center font-bold text-gray-500 text-xs">
+                          {apt.patientName?.[0]}
+                        </div>
+                        <div>
+                          <p className="text-sm font-black text-gray-900 leading-none mb-1 group-hover:text-primary-600 transition-colors">{apt.patientName}</p>
+                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">#{apt.patientId}</p>
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-6 py-3 text-sm text-gray-600">{apt.doctorName}</td>
-                    <td className="px-6 py-3">
-                      <span className={cn(
-                        "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase",
-                        apt.status === 'Confirmed' ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
-                      )}>
-                        {apt.status}
-                      </span>
+                    <td className="px-6 py-4">
+                       <div className="flex items-center gap-2">
+                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                         <span className="text-xs font-bold text-gray-600">Dr. {apt.doctorName?.split(' ').pop()}</span>
+                       </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-3">
+                        <span className={cn(
+                          "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
+                          apt.status === 'Confirmed' ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : 
+                          apt.status === 'Arrived' ? "bg-blue-50 text-blue-600 border border-blue-100" :
+                          "bg-amber-50 text-amber-600 border border-amber-100"
+                        )}>
+                          {apt.status}
+                        </span>
+                        {apt.status !== 'Arrived' && apt.status !== 'Completed' && (
+                          <button 
+                            onClick={async () => {
+                              try {
+                                const { appointmentsAPI } = await import('@/lib/api');
+                                await appointmentsAPI.update(apt.id, { status: 'Arrived' });
+                                const { toast } = await import('react-hot-toast');
+                                toast.success(`${apt.patientName} Checked In`);
+                                fetchAll();
+                              } catch(e) { 
+                                const { toast } = await import('react-hot-toast');
+                                toast.error('Check-in failed'); 
+                              }
+                            }}
+                            className="p-2 bg-gray-900 text-white rounded-lg hover:bg-primary-600 transition-all shadow-lg shadow-gray-200 active:scale-90"
+                            title="Check-in Patient"
+                          >
+                            <ListChecks className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

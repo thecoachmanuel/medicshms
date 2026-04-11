@@ -25,6 +25,23 @@ export default function PrescriptionsPage() {
   const [isDispensing, setIsDispensing] = useState(false);
   const [fulfillmentMapping, setFulfillmentMapping] = useState<Record<number, string>>({});
 
+  // Intelligent Auto-Mapping
+  useEffect(() => {
+    if (selectedPrescription && inventory.length > 0) {
+      const newMapping: Record<number, string> = {};
+      selectedPrescription.medications.forEach((med: any, idx: number) => {
+        const match = inventory.find(
+          inv => inv.item_name.toLowerCase() === med.item_name.toLowerCase() && 
+                 inv.quantity >= (med.quantity || 1)
+        );
+        if (match) {
+          newMapping[idx] = match.id;
+        }
+      });
+      setFulfillmentMapping(newMapping);
+    }
+  }, [selectedPrescription, inventory]);
+
   useEffect(() => {
     fetchInitialData();
   }, [activeTab]);

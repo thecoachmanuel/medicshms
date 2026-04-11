@@ -37,52 +37,139 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Doctor']);
-  if (authError) return authError;
+  const { error: authError, profile, supabase: supabaseClient } = await withAuth(request, ['Doctor', 'Radiologist', 'Admin', 'Receptionist']);
+  if (authError || !supabaseClient) return authError;
 
   try {
-    const { patient_id, appointment_id, test_name, clinical_notes } = await request.json();
+    const body = await request.json();
+    const { 
+      patient_id, appointment_id, doctor_id, test_name, clinical_notes, 
+      test_price, service_id, priority, requested_by_name,
+      tests // Array of { test_name, test_price, service_id }
+    } = body;
 
-    const insertData = {
-      hospital_id: profile?.hospital_id,
-      patient_id,
-      appointment_id: appointment_id || null,
-      doctor_id: profile?.id,
-      type: 'Radiology',
-      test_name, // E.g., "MRI Brain", "Chest X-Ray"
+    // Standardize tests into an array
+    const testBatch = tests && Array.isArray(tests) ? tests : [{
+      test_name,
+      test_price,
+      service_id,
       clinical_notes,
-      status: 'Pending'
-    };
+      priority,
+      requested_by_name
+    }].filter(t => t.test_name);
 
-    const { data, error } = await (supabaseAdmin || supabase)
-      .from('clinical_requests')
-      .insert([insertData])
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    // AUTOMATED BILLING Integration
-    try {
-      await BillingService.generateAutoInvoice({
-        hospitalId: profile?.hospital_id,
-        patientId: patient_id,
-        sourceType: 'Radiology',
-        sourceId: data.id,
-        userProfile: profile,
-        services: [{
-          id: 'radiology-investigation',
-          name: test_name || 'Radiology Investigation',
-          price: 15000, // Default radiology fee
-          quantity: 1,
-          total: 15000
-        }]
-      });
-    } catch (billingError) {
-      console.error('[Auto-Billing Failed] Radiology:', billingError);
+    if (testBatch.length === 0) {
+      return NextResponse.json({ message: 'No investigations provided' }, { status: 400 });
     }
 
-    return NextResponse.json(data, { status: 201 });
+    const createdRequests = [];
+    const billingServices: any[] = [];
+
+    for (const test of testBatch) {
+      let final_price = test.test_price ? Number(test.test_price) : 0;
+      let final_service_id: string | null = (test.service_id && test.service_id !== 'manual') ? test.service_id : null;
+
+      // 1. SYNC WITH MASTER SERVICES (Billing Catalog)
+      if (test.test_name) {
+        const { data: existingService } = await supabaseClient
+          .from('services')
+          .select('id, price')
+          .eq('hospital_id', profile?.hospital_id)
+          .eq('name', test.test_name)
+          .maybeSingle();
+
+        if (existingService) {
+          final_service_id = existingService.id;
+          if (!final_price) final_price = Number(existingService.price || 0);
+        } else if (final_price > 0) {
+          // Auto-index into master services if it doesn't exist
+          try {
+            const { data: newService } = await supabaseClient
+              .from('services')
+              .insert([{
+                hospital_id: profile?.hospital_id,
+                name: test.test_name,
+                price: final_price,
+                category: 'Radiology',
+                is_active: true
+              }])
+              .select()
+              .single();
+            if (newService) final_service_id = newService.id;
+          } catch (svcError) {
+            console.error('[Radiology Services Auto-Index Failed]:', svcError);
+          }
+        }
+      }
+
+      const insertData: any = {
+        hospital_id: profile?.hospital_id,
+        patient_id,
+        appointment_id: appointment_id || null,
+        doctor_id: doctor_id || profile?.id,
+        type: 'Radiology',
+        test_name: test.test_name,
+        clinical_notes: test.clinical_notes || clinical_notes,
+        status: 'Pending',
+        payment_status: 'Pending',
+        priority: test.priority || priority || 'Routine',
+        test_price: final_price,
+        service_id: final_service_id // Link even if manual, for bill tracking
+      };
+
+      const { data, error } = await supabaseClient
+        .from('clinical_requests')
+        .insert([insertData])
+        .select()
+        .single();
+
+      if (error) throw error;
+      createdRequests.push(data);
+      
+      billingServices.push({
+        id: final_service_id || 'manual',
+        name: test.test_name,
+        price: final_price,
+        quantity: 1,
+        total: final_price,
+        source_id: data.id
+      });
+    }
+
+    // 2. ATOMIC CONSOLIDATED BILLING
+    if (billingServices.length > 0) {
+      try {
+        const finalBill = await BillingService.generateAutoInvoice({
+          hospitalId: profile?.hospital_id as string,
+          patientId: patient_id,
+          sourceType: 'Radiology',
+          sourceId: createdRequests[0].id,
+          appointmentId: appointment_id,
+          userProfile: profile,
+          services: billingServices
+        });
+
+        if (finalBill) {
+          await supabaseClient
+            .from('clinical_requests')
+            .update({ bill_id: finalBill.id, payment_status: 'Billed' })
+            .in('id', createdRequests.map(r => r.id));
+          
+          createdRequests.forEach(r => {
+            r.bill_id = finalBill.id;
+            r.payment_status = 'Billed';
+          });
+        }
+      } catch (billingError) {
+        console.error('[Radiology Auto-Billing Failed]:', billingError);
+      }
+    }
+
+    return NextResponse.json({ 
+      success: true, 
+      requests: createdRequests,
+      message: `${createdRequests.length} investigations initialized and invoiced successfully`
+    }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

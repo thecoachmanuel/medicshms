@@ -10,6 +10,8 @@ import { toast } from 'react-hot-toast';
 import { appointmentAPI, pharmacyAPI } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import CreateLabRequestModal from '@/components/clinical/CreateLabRequestModal';
+import CreateRadiologyRequestModal from '@/components/clinical/CreateRadiologyRequestModal';
+import PatientTimeline from '@/components/clinical/PatientTimeline';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -145,6 +147,20 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
                       Please enter the final consultation notes and any medications prescribed for this patient.
                     </p>
                   </div>
+                </div>
+
+                {/* Patient Clinical History Context */}
+                <div className="bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden">
+                   <div className="px-4 py-3 bg-white border-b border-slate-100 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                         <FileText className="w-4 h-4 text-primary-500" />
+                         <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">Patient EMR Context</span>
+                      </div>
+                      <span className="text-[9px] font-bold text-slate-400">Holistic Insight</span>
+                   </div>
+                   <div className="max-h-[300px] overflow-y-auto p-4 bg-white/50">
+                      <PatientTimeline patientId={appointment.patient_id || appointment.patientId} />
+                   </div>
                 </div>
 
                 <div className="space-y-4">
@@ -439,6 +455,11 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
       <CreateLabRequestModal 
         isOpen={showLabModal}
         onClose={() => setShowLabModal(false)}
+        initialPatientId={appointment.patient_id || appointment.patientId}
+      />
+      <CreateRadiologyRequestModal 
+        isOpen={showRadiologyModal}
+        onClose={() => setShowRadiologyModal(false)}
         initialPatientId={appointment.patient_id || appointment.patientId}
       />
     </div>

@@ -14,6 +14,7 @@ export async function GET(request: Request) {
     const search = searchParams.get('search');
     const status = searchParams.get('status');
     const date = searchParams.get('date');
+    const patientId = searchParams.get('patientId');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const from = (page - 1) * limit;
@@ -24,6 +25,7 @@ export async function GET(request: Request) {
       .select('id, appointment_id, full_name, mobile_number, email_address, appointment_date, appointment_time, department, appointment_status, age, gender, date_of_birth, primary_concern, known_allergies, allergies_details, patient_id, doctors!doctor_assigned_id(id, profiles!user_id(name))', { count: 'exact' })
       .eq('hospital_id', userProfile?.hospital_id);
 
+    if (patientId) query = query.eq('patient_id', patientId);
     if (status && status !== 'All' && status !== 'all') query = query.eq('appointment_status', status);
     if (date) query = query.eq('appointment_date', date);
     if (search) {

@@ -10,9 +10,9 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, email, phone, subject, message, hospital_id } = body;
 
-    if (!name || !email || !message || !hospital_id) {
+    if (!name || !email || !message) {
       return NextResponse.json(
-        { error: 'Name, email, message, and hospital_id are required' },
+        { error: 'Name, email, and message are required' },
         { status: 400 }
       );
     }
