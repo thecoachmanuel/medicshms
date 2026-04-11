@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, use } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { radiologyAPI } from '@/lib/api';
+import { OnboardingGuide } from '@/components/common/OnboardingGuide';
 import { DashboardCard } from '@/components/admin/DashboardCard';
 import { 
   Scan, Bone, AlertCircle, FileText, 
@@ -20,16 +21,7 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Fallback mock data in case API is not fully set up for radiologist aggregations
-const mockChartData = [
-  { name: 'Mon', scans: 14 },
-  { name: 'Tue', scans: 22 },
-  { name: 'Wed', scans: 18 },
-  { name: 'Thu', scans: 31 },
-  { name: 'Fri', scans: 26 },
-  { name: 'Sat', scans: 15 },
-  { name: 'Sun', scans: 8 },
-];
+// Imaging Volume Chart Data will be computed from live data if possible
 
 export default function RadiologistDashboard({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -66,9 +58,9 @@ export default function RadiologistDashboard({ params }: { params: Promise<{ slu
   }
 
   const statCards = [
-    { label: "Pending Scans", value: requests.filter((r) => r.status === 'Pending').length || 18, icon: Camera, color: 'primary', description: 'Patients awaiting imaging' },
-    { label: 'Reports Gen.', value: requests.filter((r) => r.status === 'Completed').length || 32, icon: FileText, color: 'emerald', description: 'Diagnoses finalized today' },
-    { label: 'Critical Scans', value: 4, icon: AlertCircle, color: 'rose', description: 'Priority abnormal findings' },
+    { label: "Pending Scans", value: requests.filter((r) => r.status === 'Pending').length, icon: Camera, color: 'primary', description: 'Patients awaiting imaging' },
+    { label: 'Reports Gen.', value: requests.filter((r) => r.status === 'Completed').length, icon: FileText, color: 'emerald', description: 'Diagnoses finalized today' },
+    { label: 'Critical Scans', value: requests.filter((r) => r.is_critical).length, icon: AlertCircle, color: 'rose', description: 'Priority abnormal findings' },
     { label: 'Equipment Status', value: '100%', icon: MonitorSmartphone, color: 'purple', description: 'All machines operational' },
   ];
 
@@ -98,22 +90,9 @@ export default function RadiologistDashboard({ params }: { params: Promise<{ slu
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 card p-6">
           <h3 className="font-bold text-gray-900 mb-6">Imaging Volume (Last 7 Days)</h3>
-          <div className="h-80 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={mockChartData}>
-                <defs>
-                  <linearGradient id="colorScans" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15}/>
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
-                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
-                <Area type="monotone" dataKey="scans" stroke="#6366f1" fillOpacity={1} fill="url(#colorScans)" strokeWidth={3} />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div className="h-80 w-full flex flex-col items-center justify-center border-2 border-dashed border-gray-100 rounded-[2rem] opacity-40">
+            <Scan className="w-12 h-12 text-gray-200 mb-3" />
+            <p className="text-[10px] font-black uppercase tracking-widest">Imaging trends will appear here as diagnostic logs accumulate</p>
           </div>
         </div>
 
@@ -124,17 +103,25 @@ export default function RadiologistDashboard({ params }: { params: Promise<{ slu
           </div>
           
           <div className="space-y-4 flex-1 overflow-y-auto pr-2">
-            {['MRI Brain', 'CT Chest', 'X-Ray Knee', 'Ultrasound Pelvis'].map((scanType, i) => (
-              <div key={i} className="p-4 bg-white/60 backdrop-blur-md rounded-xl border border-white/80 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group cursor-pointer flex justify-between items-center gap-4">
+            {requests.length === 0 ? (
+               <div className="flex-1 flex flex-col items-center justify-center text-center py-12 opacity-30">
+                 <Camera className="w-12 h-12 mb-4" />
+                 <p className="text-[10px] font-black uppercase tracking-widest leading-relaxed">Matrix Synchronized<br/>No Active Scans</p>
+               </div>
+            ) : (requests || []).slice(0, 5).map((req, i) => (
+              <div key={req.id || i} className="p-4 bg-white/60 backdrop-blur-md rounded-xl border border-white/80 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group cursor-pointer flex justify-between items-center gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                     {scanType.includes('X-Ray') ? <Bone className="w-4 h-4 text-purple-500" /> : <Scan className="w-4 h-4 text-indigo-500" />}
-                     <h4 className="text-sm font-bold text-gray-900 truncate">{scanType}</h4>
+                     {req.test_name?.includes('X-Ray') ? <Bone className="w-4 h-4 text-purple-500" /> : <Scan className="w-4 h-4 text-indigo-500" />}
+                     <h4 className="text-sm font-bold text-gray-900 truncate">{req.test_name}</h4>
                   </div>
-                  <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Ordered by Dr. Smith</p>
+                  <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Ref: {req.id?.slice(-8).toUpperCase()}</p>
                 </div>
-                <div className="shrink-0 bg-gray-100 text-gray-600 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                  Prep
+                <div className={cn(
+                  "shrink-0 rounded-full px-2 py-0.5 text-[9px] font-black uppercase",
+                  req.status === 'Pending' ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600"
+                )}>
+                  {req.status}
                 </div>
               </div>
             ))}

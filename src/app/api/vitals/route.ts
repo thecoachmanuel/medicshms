@@ -4,7 +4,7 @@ import { withAuth } from '@/lib/auth';
 
 // GET patient vitals
 export async function GET(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Doctor', 'Nurse', 'Admin']);
+  const { error: authError, profile } = await withAuth(request, ['Doctor', 'Nurse', 'Admin', 'Lab Scientist', 'Radiologist']);
   if (authError) return authError;
 
   const { searchParams } = new URL(request.url);

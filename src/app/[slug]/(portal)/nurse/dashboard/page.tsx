@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, use } from 'react';
 import Link from 'next/link';
+import { OnboardingGuide } from '@/components/common/OnboardingGuide';
 import { useAuth } from '@/context/AuthContext';
 import { appointmentsAPI } from '@/lib/api';
 import { getLagosDate, formatDate } from '@/lib/utils';
@@ -20,16 +21,7 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Fallback mock data in case API is not fully set up for nurse aggregations
-const mockChartData = [
-  { name: 'Mon', vitals: 12 },
-  { name: 'Tue', vitals: 19 },
-  { name: 'Wed', vitals: 15 },
-  { name: 'Thu', vitals: 22 },
-  { name: 'Fri', vitals: 30 },
-  { name: 'Sat', vitals: 25 },
-  { name: 'Sun', vitals: 18 },
-];
+// Triage Volume Chart Data will be computed from live data if possible, or shown as empty
 
 export default function NurseDashboard({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -109,23 +101,10 @@ export default function NurseDashboard({ params }: { params: Promise<{ slug: str
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 card p-6">
-          <h3 className="font-bold text-gray-900 mb-6">Weekly Triage Volume</h3>
-          <div className="h-80 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={mockChartData}>
-                <defs>
-                  <linearGradient id="colorVitals" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
-                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
-                <Area type="monotone" dataKey="vitals" stroke="#10b981" fillOpacity={1} fill="url(#colorVitals)" strokeWidth={3} />
-              </AreaChart>
-            </ResponsiveContainer>
+          <h3 className="font-bold text-gray-900 mb-6">Clinical Activity Overview</h3>
+          <div className="h-80 w-full flex flex-col items-center justify-center border-2 border-dashed border-gray-100 rounded-[2rem] opacity-40">
+            <Activity className="w-12 h-12 text-gray-200 mb-3" />
+            <p className="text-[10px] font-black uppercase tracking-widest">Real-time throughput metrics will appear here</p>
           </div>
         </div>
 

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { dashboardAPI } from '@/lib/api';
+import { OnboardingGuide } from '@/components/common/OnboardingGuide';
 import { getLagosDate, formatDate, formatCurrency } from '@/lib/utils';
 import {
   RefreshCw, Calendar, Building2, AlertCircle,
@@ -98,7 +99,8 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
     return (
       <div className="space-y-6 animate-pulse">
         <div className="h-8 w-64 bg-gray-200 rounded"></div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <OnboardingGuide />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>
           ))}

@@ -5,13 +5,14 @@ import { withAuth } from '@/lib/auth';
 // Get shared slot config (Receptionist)
 // GET /api/slot-config/my-config
 export async function GET(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Receptionist', 'Admin']) as any;
+  const { error: authError, profile } = await withAuth(request, ['Receptionist', 'Admin', 'Doctor']) as any;
   if (authError) return authError;
 
   const hospital_id = profile?.hospital_id;
 
   try {
-    const tenantSharedKey = `shared_${hospital_id}`;
+    const isDoctor = profile?.role === 'Doctor';
+    const tenantSharedKey = isDoctor ? `doctor_${profile.id}` : `shared_${hospital_id}`;
     const tenantGlobalKey = `global_${hospital_id}`;
 
     let { data: config, error: configError } = await supabase
@@ -33,7 +34,7 @@ export async function GET(request: Request) {
       const defaultBreakStart = defaults?.default_break_start || '13:00';
       const defaultBreakEnd = defaults?.default_break_end || '14:00';
 
-      const newConfig = {
+      const newConfig: any = {
         key: tenantSharedKey,
         hospital_id,
         last_modified_by: profile?.id,
@@ -47,6 +48,10 @@ export async function GET(request: Request) {
           { day: 'sunday', enabled: false, startTime: '', endTime: '', breakStart: '', breakEnd: '' }
         ]
       };
+
+      if (isDoctor) {
+        newConfig.doctor_id = profile.id;
+      }
 
       const { data: created, error: createError } = await (supabaseAdmin || supabase)
         .from('slot_configs')
@@ -84,14 +89,17 @@ export async function GET(request: Request) {
 // Update shared slot config
 // PUT /api/slot-config/my-config
 export async function PUT(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Receptionist', 'Admin']) as any;
+  const { error: authError, profile } = await withAuth(request, ['Receptionist', 'Admin', 'Doctor']) as any;
   if (authError) return authError;
 
   const hospital_id = profile?.hospital_id;
 
   try {
-    const { workingDays, dateOverrides, minAdvanceBookingMinutes, sameDayCutoffTime } = await request.json();
-    const tenantSharedKey = `shared_${hospital_id}`;
+    const { workingDays, dateOverrides, minAdvanceBookingMinutes, sameDayCutoffTime, doctorId: targetDoctorId } = await request.json();
+    
+    const isDoctor = profile?.role === 'Doctor';
+    const doctorId = isDoctor ? profile.id : targetDoctorId;
+    const tenantSharedKey = doctorId ? `doctor_${doctorId}` : `shared_${hospital_id}`;
 
     const updateData: any = {
       last_modified_by: profile?.id,
@@ -101,6 +109,7 @@ export async function PUT(request: Request) {
     if (dateOverrides !== undefined) updateData.date_overrides = dateOverrides;
     if (minAdvanceBookingMinutes !== undefined) updateData.min_advance_booking_minutes = minAdvanceBookingMinutes;
     if (sameDayCutoffTime !== undefined) updateData.same_day_cutoff_time = sameDayCutoffTime;
+    if (doctorId) updateData.doctor_id = doctorId;
 
     const { data: config, error } = await supabase
       .from('slot_configs')

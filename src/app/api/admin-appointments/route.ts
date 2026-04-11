@@ -8,7 +8,7 @@ import { BillingService } from '@/lib/billing-service';
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const { profile: userProfile, error: authError } = await withAuth(request, ['Admin', 'Receptionist']);
+    const { profile: userProfile, error: authError } = await withAuth(request, ['Admin', 'Receptionist', 'Doctor', 'Lab Scientist', 'Radiologist']);
     if (authError) return authError;
 
     const search = searchParams.get('search');

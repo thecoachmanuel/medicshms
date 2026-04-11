@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { Bell, Check, Trash2, ExternalLink, X, Info, AlertTriangle, CheckCircle, AlertCircle, Loader2, Inbox, Activity, CreditCard } from 'lucide-react';
 import { notificationsAPI } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
@@ -17,6 +18,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export const NotificationBell = () => {
+  const { slug } = useParams();
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -230,7 +232,10 @@ export const NotificationBell = () => {
                       onClick={() => {
                         if (!n.is_read) handleMarkAsRead(n.id);
                         if (n.action_url) {
-                          window.location.href = n.action_url;
+                          const finalUrl = n.action_url.startsWith('/') 
+                            ? `/${slug}${n.action_url}` 
+                            : n.action_url;
+                          window.location.href = finalUrl;
                         }
                       }}
                     >

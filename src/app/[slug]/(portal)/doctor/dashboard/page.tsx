@@ -1,14 +1,16 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, use } from 'react';
+import { OnboardingGuide } from '@/components/common/OnboardingGuide';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { doctorDashboardAPI } from '@/lib/api';
+import { doctorDashboardAPI, labAPI, radiologyAPI } from '@/lib/api';
 import { getLagosDate } from '@/lib/utils';
 import {
   Calendar, Users, Stethoscope, TrendingUp,
   CheckCircle, Clock, RefreshCw, Activity, Heart,
-  ClipboardList, Users as UsersIcon, LayoutDashboard
+  ClipboardList, Users as UsersIcon, LayoutDashboard,
+  ArrowRight, Beaker, Camera
 } from 'lucide-react';
 import { DashboardCard } from '@/components/admin/DashboardCard';
 import {
@@ -34,30 +36,40 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
   const [todayAppointments, setTodayAppointments] = useState<any[]>([]);
-  const [activity, setActivity] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
+  const [investigations, setInvestigations] = useState<any[]>([]);
   const [monthlyTrend, setMonthlyTrend] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchAll = useCallback(async () => {
     try {
-      const [statsData, todayData, activityData, monthlyData] = await Promise.all([
+      const [statsRes, apptsRes, activityRes, labRes, radRes, monthlyData] = await Promise.all([
         doctorDashboardAPI.getStats(),
         doctorDashboardAPI.getTodayAppointments(),
         doctorDashboardAPI.getActivity(),
+        labAPI.getRequests({ doctorId: user?.id, limit: 10 }),
+        radiologyAPI.getRequests({ doctorId: user?.id, limit: 10 }),
         doctorDashboardAPI.getChartData('monthly-trend'),
-      ]) as [any, any, any, any];
+      ]);
 
-      setStats(statsData);
-      setTodayAppointments(todayData);
-      setActivity(activityData);
+      setStats(statsRes.data || {});
+      setTodayAppointments(apptsRes.data || []);
+      setActivities(activityRes.data || []);
       setMonthlyTrend(monthlyData);
+      
+      const combined = [
+        ...(labRes.data || []).map((l: any) => ({ ...l, origin: 'Laboratory' })),
+        ...(radRes.data || []).map((r: any) => ({ ...r, origin: 'Radiology' }))
+      ].sort((a: any, b: any) => new Date(b.requested_at).getTime() - new Date(a.requested_at).getTime());
+      
+      setInvestigations(combined.slice(0, 10));
     } catch (err) {
       console.error('Doctor dashboard fetch error:', err);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [user?.id]);
 
   const router = useRouter();
 
@@ -65,7 +77,7 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
     if (!authLoading && user && user.role !== 'Doctor') {
       router.push(`/${slug}/${user.role.toLowerCase()}/dashboard`);
     }
-    fetchAll();
+    if (user) fetchAll();
   }, [fetchAll, user, authLoading, router, slug]);
 
   if (loading) {
@@ -86,7 +98,6 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
 
   return (
     <div className="relative min-h-screen space-y-6 pb-12">
-      {/* Dynamic Background */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-50/40 via-cyan-50/20 to-white -z-10" />
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02] mix-blend-overlay -z-10" />
 
@@ -101,7 +112,9 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <OnboardingGuide />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {statCards.map((card, i) => (
           <DashboardCard key={i} {...card} />
         ))}
@@ -129,29 +142,67 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
           </div>
         </div>
 
-        <div className="card p-6">
-          <h3 className="font-bold text-gray-900 mb-6">Today's Appointments</h3>
-          <div className="space-y-4">
-            {todayAppointments.length > 0 ? todayAppointments.map((apt, i) => (
-              <div key={i} className="p-4 bg-white/60 backdrop-blur-md rounded-xl border border-white flex items-center justify-between gap-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                <div className="min-w-0">
-                  <p className="text-sm font-bold text-gray-900 truncate">{apt.patientName}{apt.age ? ` (${apt.age}y)` : ''}</p>
-                  <p className="text-[10px] text-gray-500 font-bold uppercase">{apt.appointmentTime}</p>
+        <div className="lg:col-span-1 flex flex-col gap-6">
+           <div className="card p-6 flex flex-col h-full bg-white relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full blur-3xl -mr-16 -mt-16 opacity-50" />
+              <div className="flex items-center justify-between mb-8 relative z-10">
+                <div>
+                  <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                    <ClipboardList className="w-4 h-4 text-indigo-600" />
+                    Investigation Tracker
+                  </h3>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Real-time Clinical Sync</p>
                 </div>
-                <span className={cn(
-                  "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase",
-                  apt.status === 'Confirmed' ? "text-primary-600" : "text-emerald-600"
-                )}>
-                  {apt.status}
-                </span>
+                <button 
+                  onClick={() => router.push(`/${slug}/doctor/investigations`)}
+                  className="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-all group/btn"
+                >
+                  <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                </button>
               </div>
-            )) : (
-              <div className="text-center py-12">
-                <Calendar className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-                <p className="text-sm text-gray-500">No appointments for today</p>
+
+              <div className="space-y-4 flex-1 overflow-y-auto max-h-[500px] pr-2 custom-scrollbar">
+                {investigations.length === 0 ? (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center py-20 opacity-30">
+                    <Beaker className="w-12 h-12 mb-4 text-slate-300" />
+                    <p className="text-[10px] font-black uppercase tracking-widest leading-relaxed">No active orders<br/>found in clinical feed</p>
+                  </div>
+                ) : investigations.map((inv) => (
+                  <div key={inv.id} className="p-4 bg-slate-50/50 hover:bg-white border border-transparent hover:border-indigo-100 rounded-2xl transition-all duration-300 group/inv flex items-center justify-between gap-4">
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
+                        inv.origin === 'Laboratory' ? "bg-emerald-50 text-emerald-600" : "bg-indigo-50 text-indigo-600"
+                      )}>
+                        {inv.origin === 'Laboratory' ? <Beaker className="w-5 h-5" /> : <Camera className="w-5 h-5" />}
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="text-[11px] font-black text-slate-900 truncate uppercase tracking-tight">{inv.test_name}</h4>
+                        <div className="flex items-center gap-2 mt-0.5">
+                           <p className="text-[9px] text-slate-500 font-bold uppercase truncate max-w-[100px]">{inv.patient?.full_name}</p>
+                           <span className="w-1 h-1 rounded-full bg-slate-300" />
+                           <p className="text-[9px] text-slate-400 font-bold uppercase">{inv.origin}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="shrink-0 flex flex-col items-end gap-1">
+                       <span className={cn(
+                         "px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest",
+                         inv.status === 'Pending' ? "bg-amber-100 text-amber-700" :
+                         inv.status === 'Completed' ? "bg-emerald-100 text-emerald-700" :
+                         "bg-indigo-100 text-indigo-700"
+                       )}>
+                         {inv.status}
+                       </span>
+                       {inv.status === 'Completed' && (
+                         <CheckCircle className="w-3 h-3 text-emerald-500 animate-in fade-in zoom-in" />
+                       )}
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
+           </div>
         </div>
       </div>
     </div>

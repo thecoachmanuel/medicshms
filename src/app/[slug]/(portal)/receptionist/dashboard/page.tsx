@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, use } from 'react';
+import { OnboardingGuide } from '@/components/common/OnboardingGuide';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { dashboardAPI } from '@/lib/api';
+import { dashboardAPI, appointmentsAPI } from '@/lib/api';
 import { formatDate, getLagosDate, formatCurrency } from '@/lib/utils';
 import {
   Calendar, Users, Stethoscope, IndianRupee, UserPlus,
@@ -98,7 +99,10 @@ export default function ReceptionistDashboard({ params }: { params: Promise<{ sl
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Welcome & Onboarding Section */}
+      <OnboardingGuide />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {statCards.map((card, i) => (
           <DashboardCard key={i} {...card} />
         ))}
