@@ -129,9 +129,9 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
               </div>
             </div>
             <div style="text-align: right">
-              <div style="font-size: 24px; font-weight: 900;">${template?.hospital_name || 'Hospital HMS'}</div>
-              <div style="font-size: 12px; color: #6b7280;">${template?.hospital_address || '123 Health Street, Clinic Tower'}</div>
-              <div style="font-size: 12px; color: #6b7280;">${template?.contact_number || '+234 800 123 4567'} | ${template?.email_address || 'contact@hms.com'}</div>
+              <div style="font-size: 24px; font-weight: 900;">${template?.hospital_name || ''}</div>
+              <div style="font-size: 12px; color: #6b7280;">${template?.hospital_address || ''}</div>
+              <div style="font-size: 12px; color: #6b7280;">${template?.contact_number || ''} ${template?.email_address ? `| ${template.email_address}` : ''}</div>
             </div>
           </div>
 
@@ -262,9 +262,9 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-lg font-black text-gray-900">{template?.hospital_name || 'Hospital HMS'}</p>
-                <p className="text-xs text-gray-500 font-medium">{template?.hospital_address || '123 Health Street, Clinic Tower'}</p>
-                <p className="text-xs text-gray-500 font-medium">{template?.email_address || 'contact@hms.com'} | {template?.contact_number || '+234 800 123 4567'}</p>
+                <p className="text-lg font-black text-gray-900">{template?.hospital_name}</p>
+                <p className="text-xs text-gray-500 font-medium">{template?.hospital_address}</p>
+                <p className="text-xs text-gray-500 font-medium">{template?.email_address} {template?.contact_number && `| ${template.contact_number}`}</p>
               </div>
             </div>
 

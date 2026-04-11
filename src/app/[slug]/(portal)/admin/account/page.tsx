@@ -58,66 +58,74 @@ export default function AccountManagementPage({ params }: { params: Promise<{ sl
             </div>
             Account & Billing
           </h1>
-          <p className="text-gray-500 font-medium mt-1 ml-15">Manage your hospital's platform subscription and financial oversight.</p>
+          <p className="text-gray-500 font-medium mt-1">Manage your hospital's platform subscription and financial oversight.</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {/* Subscription Card */}
-        <div className="lg:col-span-1 space-y-8">
-           <div className="bg-gray-900 rounded-[2.5rem] p-10 text-white relative overflow-hidden shadow-2xl">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full -mr-32 -mt-32 blur-[100px]" />
-              <div className="relative z-10">
-                 <div className="flex justify-between items-start mb-12">
-                    <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10">
-                       <ShieldCheck className="w-8 h-8 text-indigo-400" />
-                    </div>
-                    <div className="px-3 py-1 bg-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest rounded-lg border border-emerald-500/20">
-                       {hospital?.subscription_status || 'Active'}
-                    </div>
-                 </div>
-                 
-                 <p className="text-[10px] text-indigo-300 font-black uppercase tracking-[0.2em] mb-2">Current Plan</p>
-                 <h2 className="text-3xl font-black tracking-tight mb-8">{hospital?.plan_name || 'Enterprise Scale'}</h2>
-                 
-                 <div className="space-y-6">
-                    <div className="flex items-center justify-between text-sm py-4 border-t border-white/10">
-                       <span className="text-indigo-300 font-medium">Next Renewal</span>
-                       <span className="font-bold">{hospital?.trial_end_date ? new Date(hospital.trial_end_date).toLocaleDateString() : 'N/A'}</span>
-                    </div>
-                 </div>
+         {/* Column 1: Financial Quick Stats & Subscription */}
+         <div className="lg:col-span-1 space-y-8">
+            <div className="bg-white/70 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white shadow-sm">
+               <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-xl font-black text-gray-900 tracking-tight">Revenue Summary</h3>
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                     <LineChart className="w-5 h-5 text-indigo-500" />
+                  </div>
+               </div>
+               <div className="space-y-4">
+                  <div className="p-4 bg-gray-50 rounded-2xl flex items-center justify-between">
+                     <div>
+                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Total Collected</p>
+                        <p className="text-xl font-black text-gray-900">₦ {revenueStats.totalRevenue?.toLocaleString()}</p>
+                     </div>
+                     <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                        <DollarSign className="w-5 h-5 text-emerald-500" />
+                     </div>
+                  </div>
+                  <div className="p-4 bg-gray-50 rounded-2xl flex items-center justify-between">
+                     <div>
+                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Awaiting Payment</p>
+                        <p className="text-xl font-black text-gray-900">₦ {revenueStats.pendingRevenue?.toLocaleString()}</p>
+                     </div>
+                     <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center">
+                        <Clock className="w-5 h-5 text-rose-500" />
+                     </div>
+                  </div>
+               </div>
+            </div>
 
-                 <button className="w-full mt-10 py-5 bg-white text-gray-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-100 transition-all flex items-center justify-center gap-3 active:scale-95">
-                    <Zap className="w-4 h-4" />
-                    Upgrade Infrastructure
-                 </button>
-              </div>
-           </div>
-
-           <div className="bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white space-y-6">
-              <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Revenue Summary</h3>
-              <div className="space-y-4">
-                 <div className="p-4 bg-gray-50 rounded-2xl flex items-center justify-between">
-                    <div>
-                       <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Total Collected</p>
-                       <p className="text-xl font-black text-gray-900">₦ {revenueStats.totalRevenue?.toLocaleString()}</p>
-                    </div>
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-                       <DollarSign className="w-5 h-5 text-emerald-500" />
-                    </div>
-                 </div>
-                 <div className="p-4 bg-gray-50 rounded-2xl flex items-center justify-between">
-                    <div>
-                       <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Awaiting Payment</p>
-                       <p className="text-xl font-black text-gray-900">₦ {revenueStats.pendingRevenue?.toLocaleString()}</p>
-                    </div>
-                    <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center">
-                       <Clock className="w-5 h-5 text-rose-500" />
-                    </div>
-                 </div>
-              </div>
-           </div>
-        </div>
+            {/* Subscription Control Card */}
+            <div className="bg-gray-900 p-8 rounded-[2.5rem] border border-gray-800 shadow-2xl shadow-indigo-900/20 text-white relative overflow-hidden group">
+               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-3xl -mr-16 -mt-16 group-hover:bg-indigo-500/20 transition-all duration-700" />
+               <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-8">
+                     <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center">
+                        <Zap className="w-6 h-6 text-indigo-400" />
+                     </div>
+                     <div className={cn(
+                        "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border",
+                        hospital?.subscription_status === 'active' ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                     )}>
+                        {hospital?.subscription_status?.toUpperCase() || 'TRIAL'} MODE
+                     </div>
+                  </div>
+                  <div className="space-y-1 mb-8">
+                     <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Current Enterprise Plan</p>
+                     <h3 className="text-2xl font-black tracking-tight">{hospital?.subscription_plan?.toUpperCase() || 'STARTER'} PLAN</h3>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/5 mb-8">
+                     <Calendar className="w-5 h-5 text-indigo-400" />
+                     <div>
+                        <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest">Renewal Date</p>
+                        <p className="text-xs font-bold">{hospital?.next_billing_date ? new Date(hospital.next_billing_date).toLocaleDateString('en-NG', { dateStyle: 'long' }) : 'Set up billing'}</p>
+                     </div>
+                  </div>
+                  <button className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 active:scale-[0.98] flex items-center justify-center gap-2">
+                     <CreditCard className="w-4 h-4" /> Upgrade Subscription
+                  </button>
+               </div>
+            </div>
+         </div>
 
         {/* Transaction History */}
         <div className="lg:col-span-2 space-y-8">
@@ -145,7 +153,7 @@ export default function AccountManagementPage({ params }: { params: Promise<{ sl
                        </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
-                       {recentTransactions.map((tx: any, i: number) => (
+                       {(recentTransactions || []).map((tx: any, i: number) => (
                           <tr key={i} className="group hover:bg-gray-50/50 transition-colors">
                              <td className="px-6 py-6">
                                 <p className="text-sm font-black text-gray-900 uppercase">TXN-{tx.id?.slice(0, 8)}</p>
@@ -168,7 +176,7 @@ export default function AccountManagementPage({ params }: { params: Promise<{ sl
                              </td>
                           </tr>
                        ))}
-                       {recentTransactions.length === 0 && (
+                       {recentTransactions?.length === 0 && (
                           <tr>
                              <td colSpan={4} className="px-6 py-20 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">No transaction records found</td>
                           </tr>

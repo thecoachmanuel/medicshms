@@ -37,13 +37,29 @@ export async function GET(request: Request) {
 
   try {
     const template = await getOrCreateTemplate(hospital_id);
-    const logoUrl = template.hospital_logo ? await getPresignedUrl(template.hospital_logo) : '';
+    
+    // FETCH DEFAULTS from hospitals and site_settings if missing in template
+    const client = supabaseAdmin || supabase;
+    const { data: hosp } = await client.from('hospitals').select('name, logo_url, email').eq('id', hospital_id).maybeSingle();
+    const { data: settings } = await client.from('site_settings').select('hospital_name, logo_url, address, contact_phone, contact_email').eq('hospital_id', hospital_id).maybeSingle();
+
+    const resolvedName = template.hospital_name || settings?.hospital_name || hosp?.name || 'Hospital HMS';
+    const resolvedAddress = template.hospital_address || settings?.address || 'N/A';
+    const resolvedContact = template.contact_number || settings?.contact_phone || 'N/A';
+    const resolvedEmail = template.email_address || settings?.contact_email || hosp?.email || 'N/A';
+    const rawLogo = template.hospital_logo || settings?.logo_url || hosp?.logo_url;
+    
+    const logoUrl = rawLogo ? await getPresignedUrl(rawLogo) : '';
 
     return NextResponse.json({
       success: true,
       data: {
         ...template,
         _id: template.id,
+        hospital_name: resolvedName,
+        hospital_address: resolvedAddress,
+        contact_number: resolvedContact,
+        email_address: resolvedEmail,
         hospitalLogoUrl: logoUrl
       }
     });
