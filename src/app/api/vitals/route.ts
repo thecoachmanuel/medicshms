@@ -4,7 +4,7 @@ import { withAuth } from '@/lib/auth';
 
 // GET patient vitals
 export async function GET(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Doctor', 'Nurse', 'Admin', 'Lab Scientist', 'Radiologist', 'Receptionist', 'Pharmacist']);
+  const { error: authError, profile } = await withAuth(request, ['Doctor', 'Nurse', 'Admin', 'Lab Scientist', 'Radiologist', 'Receptionist', 'Pharmacist', 'Patient']);
   if (authError) return authError;
 
   const { searchParams } = new URL(request.url);
@@ -19,7 +19,26 @@ export async function GET(request: Request) {
       .order('recorded_at', { ascending: false });
 
     if (patientId) {
+      // Security: If patient, they can only view their own vitals
+      if (profile.role === 'Patient') {
+         const { data: pRecord } = await (supabaseAdmin || supabase)
+           .from('patients')
+           .select('id')
+           .eq('user_id', profile.id)
+           .single();
+         if (!pRecord || pRecord.id !== patientId) {
+           return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+         }
+      }
       query = query.eq('patient_id', patientId);
+    } else if (profile.role === 'Patient') {
+      // If no patientId provided but user is patient, auto-filter by their record
+      const { data: pRecord } = await (supabaseAdmin || supabase)
+           .from('patients')
+           .select('id')
+           .eq('user_id', profile.id)
+           .single();
+      query = query.eq('patient_id', pRecord?.id);
     }
     if (appointmentId) {
       query = query.eq('appointment_id', appointmentId);

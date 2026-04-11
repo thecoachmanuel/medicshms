@@ -8,21 +8,16 @@ import {
   LineChart, CheckCircle2, AlertCircle, Clock
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { dashboardAPI } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import HospitalLogo from '@/components/common/HospitalLogo';
 
 export default function ProductivityHubPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
+  
+  function ProductivityContent() {
   const { user } = useAuth();
+  const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('All');
-
-  // Hardcoded for presentation. In production this data comes from the new productivity API.
-  const performanceData = [
-    { id: 1, name: 'Dr. Sarah Jenkins', role: 'Doctor', dept: 'Cardiology', score: 98, metric: '142 Consultations', trend: '+12%', status: 'optimal' },
-    { id: 2, name: 'John Okah', role: 'Lab Scientist', dept: 'Pathology', score: 94, metric: '890 Tests Processed', trend: '+5%', status: 'optimal' },
-    { id: 3, name: 'Dr. Michael Chen', role: 'Doctor', dept: 'Orthopedics', score: 85, metric: '98 Consultations', trend: '-2%', status: 'warning' },
     { id: 4, name: 'Mary Adesuwa', role: 'Nurse', dept: 'Triage', score: 99, metric: '1,204 Vitals Logged', trend: '+20%', status: 'optimal' },
     { id: 5, name: 'David Smith', role: 'Pharmacist', dept: 'Main Pharmacy', score: 91, metric: '540 Prescriptions', trend: '+1%', status: 'optimal' },
   ];

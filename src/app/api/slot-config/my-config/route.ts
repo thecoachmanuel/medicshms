@@ -12,7 +12,18 @@ export async function GET(request: Request) {
 
   try {
     const isDoctor = profile?.role === 'Doctor';
-    const tenantSharedKey = isDoctor ? `doctor_${profile.id}` : `shared_${hospital_id}`;
+    let doctorId = null;
+    
+    if (isDoctor) {
+      const { data: doctorRecord } = await (supabaseAdmin || supabase)
+        .from('doctors')
+        .select('id')
+        .eq('user_id', profile.id)
+        .single();
+      doctorId = doctorRecord?.id;
+    }
+
+    const tenantSharedKey = doctorId ? `doctor_${doctorId}` : `shared_${hospital_id}`;
     const tenantGlobalKey = `global_${hospital_id}`;
 
     let { data: config, error: configError } = await supabase
@@ -49,8 +60,8 @@ export async function GET(request: Request) {
         ]
       };
 
-      if (isDoctor) {
-        newConfig.doctor_id = profile.id;
+      if (doctorId) {
+        newConfig.doctor_id = doctorId;
       }
 
       const { data: created, error: createError } = await (supabaseAdmin || supabase)
@@ -98,7 +109,19 @@ export async function PUT(request: Request) {
     const { workingDays, dateOverrides, minAdvanceBookingMinutes, sameDayCutoffTime, doctorId: targetDoctorId } = await request.json();
     
     const isDoctor = profile?.role === 'Doctor';
-    const doctorId = isDoctor ? profile.id : targetDoctorId;
+    let doctorId = null;
+    
+    if (isDoctor) {
+      const { data: doctorRecord } = await (supabaseAdmin || supabase)
+        .from('doctors')
+        .select('id')
+        .eq('user_id', profile.id)
+        .single();
+      doctorId = doctorRecord?.id;
+    } else {
+      doctorId = targetDoctorId;
+    }
+
     const tenantSharedKey = doctorId ? `doctor_${doctorId}` : `shared_${hospital_id}`;
 
     const updateData: any = {

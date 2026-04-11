@@ -16,9 +16,11 @@ export interface User {
   updatedAt?: string;
   department?: string;
   departmentId?: string;
-  doctorInfo?: {
-    departmentId?: string;
-    primaryDepartment?: Department;
+  clinical_preferences?: {
+    default_appointment_duration: number;
+    auto_finalize_results: boolean;
+    notification_sounds: boolean;
+    sidebar_collapsed: boolean;
   };
   receptionistInfo?: {
     shift?: string;

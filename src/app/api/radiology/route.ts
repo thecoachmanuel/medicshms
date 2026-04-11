@@ -4,7 +4,7 @@ import { withAuth } from '@/lib/auth';
 import { BillingService } from '@/lib/billing-service';
 
 export async function GET(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Radiologist', 'Doctor', 'Admin', 'Nurse', 'Receptionist', 'Lab Scientist', 'Pharmacist']);
+  const { error: authError, profile } = await withAuth(request, ['Radiologist', 'Doctor', 'Admin', 'Nurse', 'Receptionist', 'Lab Scientist', 'Pharmacist', 'Patient']);
   if (authError) return authError;
 
   const { searchParams } = new URL(request.url);
@@ -24,7 +24,16 @@ export async function GET(request: Request) {
       .eq('type', 'Radiology')
       .order('requested_at', { ascending: false });
 
-    if (patientId) query = query.eq('patient_id', patientId);
+    if (patientId) {
+      if (profile.role === 'Patient') {
+        const { data: pRecord } = await (supabaseAdmin || supabase).from('patients').select('id').eq('user_id', profile.id).maybeSingle();
+        if (!pRecord || pRecord.id !== patientId) return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+      }
+      query = query.eq('patient_id', patientId);
+    } else if (profile.role === 'Patient') {
+      const { data: pRecord } = await (supabaseAdmin || supabase).from('patients').select('id').eq('user_id', profile.id).maybeSingle();
+      query = query.eq('patient_id', pRecord?.id);
+    }
     if (status) query = query.eq('status', status);
 
     const { data, error } = await query;

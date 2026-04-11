@@ -65,90 +65,105 @@ export default function PatientTimeline({ patientId }: { patientId: string }) {
   const fetchTimeline = useCallback(async () => {
     setLoading(true);
     try {
-      const [
-        vitalsRes, 
-        pharmacyRes, 
-        labRes, 
-        radiologyRes, 
-        appointmentsRes,
-        patientData
-      ] = await Promise.all([
+      const results = await Promise.allSettled([
         vitalsAPI.getPatientVitals(patientId),
         pharmacyAPI.getPrescriptions({ patientId }),
         labAPI.getRequests({ patientId }),
         radiologyAPI.getRequests({ patientId }),
         appointmentsAPI.getAll({ patientId }),
         patientAPI.getById(patientId)
-      ]) as any;
+      ]);
 
-      setPatient(patientData.data);
+      const [
+        vitalsRes, 
+        pharmacyRes, 
+        labRes, 
+        radiologyRes, 
+        appointmentsRes,
+        patientRes
+      ] = results;
+
+      // Set Patient Data if successful
+      if (patientRes.status === 'fulfilled') {
+        setPatient((patientRes.value as any).data);
+      }
 
       const allEvents: TimelineEvent[] = [];
 
       // 1. Process Vitals
-      (vitalsRes.data || []).forEach((v: any) => {
-        allEvents.push({
-          id: v._id || v.id,
-          type: 'Vitals',
-          title: 'Physiological Snapshot',
-          date: v.recorded_at,
-          status: 'Recorded',
-          clinician: v.recorded_by_profile?.name || 'Staff Nurse',
-          details: v
+      if (vitalsRes.status === 'fulfilled' && (vitalsRes.value as any).data) {
+        (vitalsRes.value as any).data.forEach((v: any) => {
+          allEvents.push({
+            id: v._id || v.id,
+            type: 'Vitals',
+            title: 'Physiological Snapshot',
+            date: v.recorded_at,
+            status: 'Recorded',
+            clinician: v.recorded_by_profile?.name || 'Staff Nurse',
+            details: v
+          });
         });
-      });
+      }
 
       // 2. Process Prescriptions
-      (pharmacyRes.data || []).forEach((p: any) => {
-        allEvents.push({
-          id: p.id,
-          type: 'Prescription',
-          title: `Drug Regimen: ${p.medications?.[0]?.item_name || 'Pharmacotherapy'}`,
-          date: p.prescribed_at,
-          status: p.status,
-          clinician: p.doctor_profile?.name || 'Authorized Physician',
-          details: p
+      if (pharmacyRes.status === 'fulfilled' && (pharmacyRes.value as any).data) {
+        (pharmacyRes.value as any).data.forEach((p: any) => {
+          allEvents.push({
+            id: p.id,
+            type: 'Prescription',
+            title: `Drug Regimen: ${p.medications?.[0]?.item_name || 'Pharmacotherapy'}`,
+            date: p.prescribed_at,
+            status: p.status,
+            clinician: p.doctor_profile?.name || 'Authorized Physician',
+            details: p
+          });
         });
-      });
+      }
 
       // 3. Process Labs
-      (labRes.data || []).forEach((l: any) => {
-        allEvents.push({
-          id: l.id,
-          type: 'Laboratory',
-          title: `Investigation: ${l.test_name}`,
-          date: l.requested_at,
-          status: l.status,
-          clinician: l.handled_by_profile?.name || 'Lab Scientist',
-          details: l
+      if (labRes.status === 'fulfilled' && (labRes.value as any).data) {
+        (labRes.value as any).data.forEach((l: any) => {
+          allEvents.push({
+            id: l.id,
+            type: 'Laboratory',
+            title: `Investigation: ${l.test_name}`,
+            date: l.requested_at,
+            status: l.status,
+            clinician: l.handled_by_profile?.name || 'Lab Scientist',
+            details: l
+          });
         });
-      });
+      }
 
       // 4. Process Radiology
-      (radiologyRes.data || []).forEach((r: any) => {
-        allEvents.push({
-          id: r.id,
-          type: 'Radiology',
-          title: `Imaging Protocol: ${r.test_name}`,
-          date: r.requested_at,
-          status: r.status,
-          clinician: r.handled_by_profile?.name || 'Radiologist',
-          details: r
+      if (radiologyRes.status === 'fulfilled' && (radiologyRes.value as any).data) {
+        (radiologyRes.value as any).data.forEach((r: any) => {
+          allEvents.push({
+            id: r.id,
+            type: 'Radiology',
+            title: `Imaging Protocol: ${r.test_name}`,
+            date: r.requested_at,
+            status: r.status,
+            clinician: r.handled_by_profile?.name || 'Radiologist',
+            details: r
+          });
         });
-      });
+      }
 
       // 5. Process Appointments
-      (appointmentsRes.data || []).forEach((a: any) => {
-        allEvents.push({
-          id: a._id || a.id,
-          type: 'Appointment',
-          title: `Clinical Encounter: ${a.department || 'General Medicine'}`,
-          date: a.appointmentDate + 'T' + (a.appointmentTime || '00:00:00'),
-          status: a.appointmentStatus,
-          clinician: a.doctorAssigned?.user?.name || 'Staff Physician',
-          details: a
+      if (appointmentsRes.status === 'fulfilled' && (appointmentsRes.value as any).data) {
+        (appointmentsRes.value as any).data.forEach((a: any) => {
+          allEvents.push({
+            id: a._id || a.id,
+            type: 'Appointment',
+            title: `Clinical Encounter: ${a.department || 'General Medicine'}`,
+            date: a.appointmentDate + 'T' + (a.appointmentTime || '00:00:00'),
+            status: a.appointmentStatus,
+            clinician: a.doctorAssigned?.user?.name || 'Staff Physician',
+            details: a
+          });
         });
-      });
+      }
 
       // Sort by date descending
       allEvents.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
