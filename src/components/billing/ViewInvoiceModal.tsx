@@ -32,6 +32,7 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
   const [paidAmount, setPaidAmount] = useState<number>(0);
   const [saving, setSaving] = useState(false);
   const [template, setTemplate] = useState<any>(null);
+  const [selectedServices, setSelectedServices] = useState<number[]>([]);
 
   useEffect(() => {
     fetchBill();
@@ -56,6 +57,10 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
       setPaymentReference(res.data.paymentReference || '');
       setPaidAmount(res.data.paidAmount || 0);
       setPaymentStatus(res.data.paymentStatus || '');
+      // Select all by default
+      if (res.data.services) {
+        setSelectedServices(res.data.services.map((_: any, i: number) => i));
+      }
     } catch {
       toast.error('Failed to load invoice details');
     } finally {
@@ -89,6 +94,10 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
     const win = window.open('', '_blank');
     if (!win) return;
     
+    const selectedTotal = bill.services
+      .filter((_: any, i: number) => selectedServices.includes(i))
+      .reduce((sum: number, s: any) => sum + Number(s.amount), 0);
+
     const balance = Number(bill.totalAmount) - Number(bill.paidAmount);
     const statusColor = bill.paymentStatus === 'Paid' ? '#059669' : bill.paymentStatus === 'Partial' ? '#d97706' : '#dc2626';
 
@@ -122,7 +131,7 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
           <div class="watermark">${bill.paymentStatus.toUpperCase()}</div>
           <div class="header">
             <div style="display: flex; align-items: center; gap: 20px;">
-              ${template?.hospitalLogoUrl ? `<img src="${template.hospitalLogoUrl}" style="height: 80px; object-contain: contain;" />` : ''}
+              ${template?.hospitalLogoUrl ? `<img src="${template.hospitalLogoUrl}" style="height: 80px; object-fit: contain;" />` : ''}
               <div>
                 <div class="title">INVOICE</div>
                 <div class="status-badge">${bill.paymentStatus}</div>
@@ -164,7 +173,7 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
               </tr>
             </thead>
             <tbody>
-              ${bill.services?.map((s: any) => `
+              ${bill.services?.filter((_: any, i: number) => selectedServices.includes(i)).map((s: any) => `
                 <tr>
                   <td>
                     <div style="font-weight: 700;">${s.name}</div>
@@ -179,9 +188,9 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
           <div class="totals-container">
             <div class="total-row">
               <span style="color: #6b7280; font-weight: 600;">Subtotal</span>
-              <span style="font-weight: 700;">₦${Number(bill.subtotal).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
+              <span style="font-weight: 700;">₦${selectedTotal.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
             </div>
-            ${bill.discount > 0 ? `
+            ${bill.discount > 0 && selectedServices.length === bill.services.length ? `
               <div class="total-row" style="color: #059669;">
                 <span style="font-weight: 600;">Discount</span>
                 <span style="font-weight: 700;">- ₦${Number(bill.discount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
@@ -189,24 +198,20 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
             ` : ''}
             <div class="total-row grand">
               <span>Total Amount</span>
-              <span>₦${Number(bill.totalAmount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
+              <span>₦${(selectedTotal - (selectedServices.length === bill.services.length ? bill.discount : 0)).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
             </div>
 
             <div class="payment-summary">
               <div class="payment-row">
-                <span style="color: #6b7280;">Amount Paid</span>
-                <span style="color: #059669;">₦${Number(bill.paidAmount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
-              </div>
-              <div class="payment-row balance-due">
-                <span>Balance Due</span>
-                <span>₦${balance.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
+                <span style="color: #6b7280;">Status</span>
+                <span style="color: ${statusColor}; font-weight: 900;">${bill.paymentStatus}</span>
               </div>
             </div>
           </div>
 
           <div class="footer">
-            <p>This is a computer-generated document. No signature required.</p>
-            <p style="margin-top: 10px; font-weight: 700;">${template?.footer_note || 'Thank you for choosing us'}</p>
+            <p>This is a computer generated document. Valid without original signature.</p>
+            <p>&copy; ${new Date().getFullYear()} ${template?.hospital_name || 'Hospital HMS'}. All Rights Reserved.</p>
           </div>
         </body>
       </html>
@@ -290,29 +295,59 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
               </div>
             </div>
 
-            <table className="w-full mb-12">
-              <thead>
-                <tr className="border-b-2 border-gray-900">
-                  <th className="py-4 text-left font-black text-gray-900 tracking-wider">SERVICE DESCRIPTION</th>
-                  <th className="py-4 text-right font-black text-gray-900 tracking-wider">UNIT PRICE (₦)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {bill.services?.map((service: any, i: number) => (
-                  <tr key={i}>
-                    <td className="py-5 text-sm font-medium text-gray-700">
-                      <p className="font-bold">{service.name}</p>
-                      <p className="text-[10px] text-gray-400 mt-0.5">{service.description || 'Standard Medical Service'}</p>
-                    </td>
-                    <td className="py-5 text-right text-sm font-black text-gray-900">
-                      ₦{service.amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
-                    </td>
+            <div className="flex-1 overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-gray-100 italic">
+                    <th className="px-4 py-3">
+                      <input 
+                        type="checkbox"
+                        checked={selectedServices.length === bill?.services?.length}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedServices(bill.services.map((_: any, i: number) => i));
+                          } else {
+                            setSelectedServices([]);
+                          }
+                        }}
+                        className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                    </th>
+                    <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest uppercase">Service</th>
+                    <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Price</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {bill?.services?.map((s: any, i: number) => (
+                    <tr key={i}>
+                      <td className="px-4 py-3">
+                        <input 
+                          type="checkbox"
+                          checked={selectedServices.includes(i)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedServices([...selectedServices, i]);
+                            } else {
+                              setSelectedServices(selectedServices.filter(id => id !== i));
+                            }
+                          }}
+                          className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="text-xs font-bold text-gray-900">{s.name}</p>
+                        <p className="text-[9px] text-gray-400 font-medium italic">{s.description || 'Standard Medical Service'}</p>
+                      </td>
+                      <td className="px-4 py-3 text-right font-black text-xs text-indigo-600">
+                        ₦ {Number(s.amount).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-            <div className="w-80 ml-auto space-y-4">
+            <div className="w-80 ml-auto space-y-4 mt-12">
               <div className="flex justify-between items-center text-gray-500">
                 <span className="text-[10px] font-black uppercase tracking-widest">Subtotal</span>
                 <span className="text-sm font-bold">₦{bill.subtotal.toLocaleString('en-NG')}</span>

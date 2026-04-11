@@ -5,11 +5,12 @@ import {
   User, Mail, Phone, Shield, Calendar, 
   Save, Upload, Loader2, Key,
   CheckCircle2, AlertCircle, Camera, X,
-  Settings2, Bell, Clock, Layout
+  Settings2, Bell, Clock, Layout, Lock
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { authAPI } from '@/lib/api';
 import { toast } from 'react-hot-toast';
+import ChangePasswordModal from '@/components/common/ChangePasswordModal';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -20,7 +21,7 @@ function cn(...inputs: ClassValue[]) {
 export default function DoctorProfilePage() {
   const { user, loading: authLoading, updateUser } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'personal' | 'clinical'>('personal');
+  const [activeTab, setActiveTab] = useState<'personal' | 'clinical' | 'security'>('personal');
   
   const [formData, setFormData] = useState({
     name: '',
@@ -33,6 +34,7 @@ export default function DoctorProfilePage() {
       sidebar_collapsed: false
     }
   });
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -105,6 +107,18 @@ export default function DoctorProfilePage() {
            >
              <Settings2 className="w-5 h-5" />
              <span className="text-sm">Clinical Settings</span>
+           </button>
+           <button 
+             onClick={() => setActiveTab('security')}
+             className={cn(
+               "w-full flex items-center gap-3 p-4 rounded-2xl border transition-all text-left",
+               activeTab === 'security' 
+                 ? "bg-white border-rose-100 shadow-sm text-rose-600 font-bold" 
+                 : "bg-transparent border-transparent text-gray-400 hover:text-gray-600"
+             )}
+           >
+             <Key className="w-5 h-5" />
+             <span className="text-sm">Security & Privacy</span>
            </button>
         </div>
 
@@ -317,6 +331,23 @@ export default function DoctorProfilePage() {
                 </div>
               </div>
             )}
+            
+            {activeTab === 'security' && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500 min-h-[300px] flex flex-col items-center justify-center text-center">
+                <div className="w-20 h-20 rounded-[2rem] bg-rose-50 flex items-center justify-center mb-6">
+                  <Lock className="w-10 h-10 text-rose-500" />
+                </div>
+                <h3 className="text-xl font-black text-gray-900">Uplink Security</h3>
+                <p className="text-gray-500 text-sm max-w-sm mx-auto mb-8 font-medium">Protect your clinical account by updating your security credentials regularly.</p>
+                <button 
+                  type="button"
+                  onClick={() => setIsChangePasswordOpen(true)}
+                  className="px-8 py-4 bg-rose-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-rose-700 transition-all shadow-xl shadow-rose-200/50"
+                >
+                  Change My Password
+                </button>
+              </div>
+            )}
 
             <div className="pt-6 border-t border-gray-100 flex justify-end">
               <button disabled={loading} className="px-8 py-4 bg-gray-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-gray-800 transition-all shadow-xl shadow-gray-200/50 disabled:opacity-50">
@@ -326,6 +357,11 @@ export default function DoctorProfilePage() {
           </form>
         </div>
       </div>
+
+      <ChangePasswordModal 
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+      />
     </div>
   );
 }

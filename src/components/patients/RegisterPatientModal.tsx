@@ -39,7 +39,7 @@ export default function RegisterPatientModal({ isOpen, onClose, onSuccess }: Pro
 
       await patientsAPI.create(formData);
       
-      toast.success('Patient registered successfully');
+      toast.success('Patient registered successfully. Default Credentials: hms@patient');
       onSuccess();
       onClose();
     } catch (err: any) {

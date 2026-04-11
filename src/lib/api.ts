@@ -89,6 +89,7 @@ export const authAPI = {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
   deletePhoto: () => api.delete<APIResponse<void>>('/profile/photo'),
+  changePassword: (data: { newPassword: string }) => api.patch<APIResponse<{ message: string }>>('/auth/change-password', data),
 };
 
 export const usersAPI = {
@@ -135,6 +136,7 @@ export const patientsAPI = {
   create: (data: any) => api.post<APIResponse<Patient>>('/patients', data),
   update: (id: string, data: Partial<Patient>) => api.patch<APIResponse<Patient>>(`/patients/${id}`, data),
   delete: (id: string) => api.delete<APIResponse<void>>(`/patients/${id}`),
+  resetPassword: (id: string) => api.patch<APIResponse<{ message: string }>>(`/user-management/${id}/reset-password`),
   download: (params?: any) => api.get<APIResponse<any>>('/patients/public-appointments/download', { params }),
   getPublicList: (params: any) => api.get<APIResponse<Appointment[]>>('/patients/public-appointments/list', { params }),
 };

@@ -3,12 +3,13 @@
 import React, { use, useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { patientAPI } from '@/lib/api';
+import { toast } from 'react-hot-toast';
+import ChangePasswordModal from '@/components/common/ChangePasswordModal';
 import { 
   User, Mail, Phone, MapPin, 
   Calendar, Droplets, Save, Loader2,
-  ShieldCheck, Heart
+  ShieldCheck, Heart, Key, Lock
 } from 'lucide-react';
-import { toast } from 'react-hot-toast';
 
 export default function PatientProfilePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -16,6 +17,7 @@ export default function PatientProfilePage({ params }: { params: Promise<{ slug:
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -127,21 +129,46 @@ export default function PatientProfilePage({ params }: { params: Promise<{ slug:
            </div>
         </div>
 
-        <div className="flex justify-between items-center bg-white p-6 rounded-[2rem] border border-gray-100">
-           <div className="flex items-center gap-3 text-emerald-600">
-              <ShieldCheck className="w-5 h-5" />
-              <p className="text-[10px] font-black uppercase tracking-widest">Global HIPAA Compliance Active</p>
-           </div>
-           <button 
-             type="submit"
-             disabled={saving}
-             className="flex items-center gap-3 px-8 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-600/20 active:scale-95 disabled:opacity-50"
-           >
-             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-             Commit Changes
-           </button>
-        </div>
-      </form>
+         <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-indigo-900/5 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center">
+                <Lock className="w-6 h-6 text-rose-500" />
+              </div>
+              <div>
+                <p className="text-sm font-black text-gray-900 leading-tight">Uplink Security</p>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Manage Privacy Protocols</p>
+              </div>
+            </div>
+            <button 
+              type="button"
+              onClick={() => setIsPasswordModalOpen(true)}
+              className="flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-all active:scale-95"
+            >
+              <Key className="w-4 h-4" />
+              Update Account Cipher
+            </button>
+         </div>
+
+         <div className="flex justify-between items-center bg-white p-6 rounded-[2rem] border border-gray-100">
+            <div className="flex items-center gap-3 text-emerald-600">
+               <ShieldCheck className="w-5 h-5" />
+               <p className="text-[10px] font-black uppercase tracking-widest">Global HIPAA Compliance Active</p>
+            </div>
+            <button 
+              type="submit"
+              disabled={saving}
+              className="flex items-center gap-3 px-8 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-600/20 active:scale-95 disabled:opacity-50"
+            >
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Commit Changes
+            </button>
+         </div>
+       </form>
+
+       <ChangePasswordModal 
+         isOpen={isPasswordModalOpen}
+         onClose={() => setIsPasswordModalOpen(false)}
+       />
     </div>
   );
 }

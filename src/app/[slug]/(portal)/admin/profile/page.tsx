@@ -9,6 +9,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { authAPI } from '@/lib/api';
 import { toast } from 'react-hot-toast';
+import ChangePasswordModal from '@/components/common/ChangePasswordModal';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -24,6 +25,7 @@ export default function ProfilePage() {
     email: '',
     phone: ''
   });
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -156,7 +158,10 @@ export default function ProfilePage() {
              </div>
           </div>
 
-          <button className="card p-4 hover:bg-gray-50 transition-colors flex items-center gap-4 w-full group border-none">
+          <button 
+            onClick={() => setShowPasswordModal(true)}
+            className="card p-4 hover:bg-gray-50 transition-colors flex items-center gap-4 w-full group border-none"
+          >
              <div className="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center transition-transform group-hover:scale-110">
                 <Key className="w-5 h-5 text-rose-500" />
              </div>
@@ -213,6 +218,11 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      <ChangePasswordModal 
+        isOpen={showPasswordModal} 
+        onClose={() => setShowPasswordModal(false)} 
+      />
     </div>
   );
 }

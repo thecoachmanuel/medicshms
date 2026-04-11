@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Users, Plus, Search, Edit2, RotateCcw, 
-  Power, Trash2, X, AlertCircle, Phone, Mail, CheckCircle2
+  Power, Trash2, X, AlertCircle, Phone, Mail, CheckCircle2, Loader2
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { usersAPI, departmentAPI } from '@/lib/api';
@@ -27,6 +27,7 @@ export default function StaffManagement() {
   const [formData, setFormData] = useState({ 
     name: '', email: '', phone: '', role: 'Nurse' as User['role'], departmentId: '', isActive: true 
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const roles: User['role'][] = ['Nurse', 'Lab Scientist', 'Pharmacist', 'Radiologist', 'Receptionist'];
 
@@ -64,18 +65,25 @@ export default function StaffManagement() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       if (editingStaff) {
         await usersAPI.updateUser(editingStaff._id, formData);
         toast.success('Staff updated successfully');
       } else {
         await usersAPI.createUser(formData);
-        toast.success(`${formData.role} created successfully. Password: hms@${formData.role.toLowerCase().replace(' ', '')}`);
+        const pw = formData.role === 'Lab Scientist' ? 'lab' : 
+                   formData.role === 'Pharmacist' ? 'pharmacy' : 
+                   formData.role === 'Radiologist' ? 'radiology' : 
+                   formData.role.toLowerCase().replace(' ', '');
+        toast.success(`${formData.role} provisioned successfully. Default Credentials: hms@${pw}`);
       }
       fetchAllStaff();
       handleCloseModal();
     } catch (err: any) {
       toast.error(err.response?.data?.message || err.message || 'Operation failed');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -385,9 +393,17 @@ export default function StaffManagement() {
               <div className="pt-8">
                 <button 
                   type="submit" 
-                  className="w-full py-5 rounded-[1.75rem] text-[11px] font-black uppercase tracking-[0.4em] bg-emerald-600 hover:bg-emerald-700 text-white shadow-[0_20px_40px_-10px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all duration-300"
+                  disabled={isSubmitting}
+                  className="w-full py-5 rounded-[1.75rem] text-[11px] font-black uppercase tracking-[0.4em] bg-emerald-600 hover:bg-emerald-700 text-white shadow-[0_20px_40px_-10px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50"
                 >
-                  {editingStaff ? 'Synchronize Record' : `Initialize ${formData.role} Profile`}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Synchronizing Node...
+                    </>
+                  ) : (
+                    editingStaff ? 'Synchronize Record' : `Initialize ${formData.role} Profile`
+                  )}
                 </button>
               </div>
             </form>

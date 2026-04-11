@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Search, User, Mail, Phone, FileText, Download, Filter, 
-  RefreshCw, ChevronLeft, ChevronRight, X, Loader2, 
+  RefreshCw, ChevronLeft, ChevronRight, X, Loader2, RotateCcw,
   Calendar, Clock, CheckCircle, XCircle, AlertCircle, Stethoscope, 
   History, Activity 
 } from 'lucide-react';
@@ -129,6 +129,19 @@ export default function PatientsList({ role }: Props) {
     }
   };
   
+  const handleResetPassword = async (patient: any) => {
+    if (!window.confirm(`Reset password for ${patient.fullName || 'this patient'} to hms@patient?`)) return;
+    try {
+      toast.loading('Resetting credentials...');
+      await patientsAPI.resetPassword(patient.patientId || patient._id);
+      toast.dismiss();
+      toast.success('Password reset to: hms@patient');
+    } catch (err: any) {
+      toast.dismiss();
+      toast.error(err.response?.data?.message || err.message || 'Failed to reset password');
+    }
+  };
+
   const handleDeletePatient = async (patient: any) => {
     if (!window.confirm(`Are you sure you want to delete patient ${patient.fullName || patient.fullName}? This action cannot be undone.`)) {
       return;
@@ -298,13 +311,22 @@ export default function PatientsList({ role }: Props) {
                           <Edit2 className="w-4 h-4" />
                         </button>
                         {role === 'Admin' && (
-                          <button 
-                            onClick={() => handleDeletePatient(patient)}
-                            className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
-                            title="Delete Patient"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <>
+                            <button 
+                              onClick={() => handleResetPassword(patient)}
+                              className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
+                              title="Reset Password"
+                            >
+                              <RotateCcw className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => handleDeletePatient(patient)}
+                              className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                              title="Delete Patient"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </>
                         )}
                       </div>
                     </td>

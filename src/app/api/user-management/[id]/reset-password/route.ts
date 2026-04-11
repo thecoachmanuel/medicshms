@@ -21,11 +21,26 @@ export async function PATCH(
     if (!profile) return NextResponse.json({ message: 'User not found' }, { status: 404 });
 
     let newPassword = '';
-    switch (profile.role) {
-      case 'Doctor': newPassword = 'hms@doctor'; break;
-      case 'Receptionist': newPassword = 'hms@receptionist'; break;
-      case 'Admin': newPassword = 'hms@admin'; break;
-      default: newPassword = 'hms@default';
+    const normalizedRole = profile.role || '';
+    
+    if (normalizedRole === 'Patient') {
+      newPassword = 'hms@patient';
+    } else if (normalizedRole === 'Lab Scientist') {
+      newPassword = 'hms@lab';
+    } else if (normalizedRole === 'Pharmacist') {
+      newPassword = 'hms@pharmacy';
+    } else if (normalizedRole === 'Radiologist') {
+      newPassword = 'hms@radiology';
+    } else if (normalizedRole === 'Nurse') {
+      newPassword = 'hms@nurse';
+    } else if (normalizedRole === 'Doctor') {
+      newPassword = 'hms@doctor';
+    } else if (normalizedRole === 'Receptionist') {
+      newPassword = 'hms@receptionist';
+    } else if (normalizedRole === 'Admin') {
+      newPassword = 'hms@admin';
+    } else {
+      newPassword = 'hms@staff';
     }
 
     if (!supabaseAdmin) {
