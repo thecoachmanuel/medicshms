@@ -2,19 +2,25 @@
 
 import React, { use, useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 import { 
   CreditCard, ShieldCheck, Zap, Download, FileText, 
   ChevronRight, Calendar, AlertTriangle, CheckCircle2,
-  Lock, DollarSign, Clock, LineChart
+  Lock, DollarSign, Clock, LineChart, Eye
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'react-hot-toast';
+import ViewInvoiceModal from '@/components/billing/ViewInvoiceModal';
 
 export default function AccountManagementPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
+  const router = useRouter();
   const { user } = useAuth();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Ledger Detail States
+  const [selectedBillId, setSelectedBillId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAccountData();
@@ -43,6 +49,9 @@ export default function AccountManagementPage({ params }: { params: Promise<{ sl
   }
 
   const { revenueStats, hospital, recentTransactions } = data || { revenueStats: {}, hospital: {}, recentTransactions: [] };
+
+  // Determine appropriate renewal date
+  const renewalDate = hospital?.next_billing_date || hospital?.trial_end_date;
 
   return (
     <div className="relative min-h-[calc(100vh-10rem)] space-y-10 pb-12">
@@ -116,11 +125,14 @@ export default function AccountManagementPage({ params }: { params: Promise<{ sl
                   <div className="flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/5 mb-8">
                      <Calendar className="w-5 h-5 text-indigo-400" />
                      <div>
-                        <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest">Renewal Date</p>
-                        <p className="text-xs font-bold">{hospital?.next_billing_date ? new Date(hospital.next_billing_date).toLocaleDateString('en-NG', { dateStyle: 'long' }) : 'Set up billing'}</p>
+                        <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest">{hospital?.next_billing_date ? 'Renewal Date' : 'Trial Expiry'}</p>
+                        <p className="text-xs font-bold">{renewalDate ? new Date(renewalDate).toLocaleDateString('en-NG', { dateStyle: 'long' }) : 'Set up billing'}</p>
                      </div>
                   </div>
-                  <button className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 active:scale-[0.98] flex items-center justify-center gap-2">
+                  <button 
+                    onClick={() => router.push(`/${slug}/admin/subscription`)}
+                    className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 active:scale-[0.98] flex items-center justify-center gap-2"
+                  >
                      <CreditCard className="w-4 h-4" /> Upgrade Subscription
                   </button>
                </div>
@@ -150,6 +162,7 @@ export default function AccountManagementPage({ params }: { params: Promise<{ sl
                           <th className="px-6 py-4">Timestamp</th>
                           <th className="px-6 py-4">Amount</th>
                           <th className="px-6 py-4 text-right">Status</th>
+                          <th className="px-6 py-4 text-right">Action</th>
                        </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
@@ -174,11 +187,20 @@ export default function AccountManagementPage({ params }: { params: Promise<{ sl
                                    {tx.status}
                                 </div>
                              </td>
+                             <td className="px-6 py-6 text-right">
+                                <button 
+                                  onClick={() => setSelectedBillId(tx.id)}
+                                  className="p-2 hover:bg-indigo-50 rounded-xl text-gray-400 hover:text-indigo-600 transition-all active:scale-95"
+                                  title="View Full Invoice"
+                                >
+                                   <Eye className="w-5 h-5" />
+                                </button>
+                             </td>
                           </tr>
                        ))}
                        {recentTransactions?.length === 0 && (
                           <tr>
-                             <td colSpan={4} className="px-6 py-20 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">No transaction records found</td>
+                             <td colSpan={5} className="px-6 py-20 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">No transaction records found</td>
                           </tr>
                        )}
                     </tbody>
@@ -187,6 +209,19 @@ export default function AccountManagementPage({ params }: { params: Promise<{ sl
            </div>
         </div>
       </div>
+
+      {/* Invoice Preview Modal */}
+      {selectedBillId && (
+        <ViewInvoiceModal 
+          billId={selectedBillId}
+          appointment={null} // Modal fetches context via billId
+          onClose={() => setSelectedBillId(null)}
+          onUpdated={() => {
+            fetchAccountData();
+            setSelectedBillId(null);
+          }}
+        />
+      )}
     </div>
   );
 }

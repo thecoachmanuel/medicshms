@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     // 2. Fetch Hospital Subscription Info
     const { data: hospital, error: hospError } = await (supabaseAdmin || supabase)
       .from('hospitals')
-      .select('subscription_status, next_billing_date, subscription_plan')
+      .select('subscription_status, next_billing_date, subscription_plan, trial_end_date')
       .eq('id', hospital_id)
       .single();
 
