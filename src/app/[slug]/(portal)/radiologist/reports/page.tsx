@@ -104,7 +104,7 @@ function RadiologyReportsContent() {
               </div>
               <div style="text-align: right;">
                  <div class="value" style="font-size: 12px; color: #94a3b8;">STUDY ID</div>
-                 <div class="value" style="font-size: 18px;">#${req.id.slice(-8).toUpperCase()}</div>
+                 <div class="value" style="font-size: 18px;">#${req.id?.slice(-8).toUpperCase()}</div>
               </div>
             </div>
 

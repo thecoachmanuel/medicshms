@@ -212,7 +212,7 @@ export default function RadiologyRequestsPage() {
               </div>
               <div style="text-align: right;">
                  <div class="value" style="font-size: 12px; color: #64748b;">ACCESSION #</div>
-                 <div class="value" style="font-size: 18px;">${req.id.slice(-8).toUpperCase()}</div>
+                 <div class="value" style="font-size: 18px;">#${req.id?.slice(-8).toUpperCase()}</div>
               </div>
             </div>
 

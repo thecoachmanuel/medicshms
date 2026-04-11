@@ -140,7 +140,7 @@ export default function ProductivityHubPage({ params }: { params: Promise<{ slug
                           </div>
                           <div>
                             <p className="text-sm font-black text-gray-900 leading-tight">{p.name || 'Staff Member'}</p>
-                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-0.5">ID: {p.id.slice(0, 8)}</p>
+                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-0.5">ID: {p.id?.slice(0, 8)}</p>
                           </div>
                         </div>
                       </td>

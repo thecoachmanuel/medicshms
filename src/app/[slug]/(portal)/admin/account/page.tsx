@@ -148,7 +148,7 @@ export default function AccountManagementPage({ params }: { params: Promise<{ sl
                        {recentTransactions.map((tx: any, i: number) => (
                           <tr key={i} className="group hover:bg-gray-50/50 transition-colors">
                              <td className="px-6 py-6">
-                                <p className="text-sm font-black text-gray-900 uppercase">TXN-{tx.id.slice(0, 8)}</p>
+                                <p className="text-sm font-black text-gray-900 uppercase">TXN-{tx.id?.slice(0, 8)}</p>
                                 <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">Reference UID</p>
                              </td>
                              <td className="px-6 py-6">

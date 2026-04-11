@@ -147,7 +147,7 @@ export default function DoctorProfilePage() {
                            {user?.role}
                          </div>
                          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                           ID: {user?.id.slice(0, 8)}
+                           ID: {user?.id?.slice(0, 8)}
                          </div>
                       </div>
                    </div>
