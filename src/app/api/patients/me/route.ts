@@ -1,53 +1,53 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
 
-// GET patient profile (me)
 export async function GET(request: Request) {
-  const { error: authError, profile: userProfile } = await withAuth(request);
-  if (authError) return authError;
-
   try {
-    const { data: patient, error } = await supabase
-      .from('patients')
-      .select('*, profiles(name, email, phone)')
-      .eq('user_id', userProfile?.id)
-      .single();
+    const { profile: userProfile, error: authError, supabase: supabaseClient } = await withAuth(request, ['Patient']);
+    if (authError || !supabaseClient) return authError;
 
-    if (error || !patient) return NextResponse.json({ message: 'Patient profile not found' }, { status: 404 });
+    // 1. Find the patient record linked to this user
+    const { data: patient, error: patientError } = await (supabaseAdmin || supabaseClient)
+      .from('patients')
+      .select('*')
+      .eq('user_id', userProfile?.id)
+      .maybeSingle();
+
+    if (patientError) return NextResponse.json({ message: patientError.message }, { status: 500 });
+    if (!patient) return NextResponse.json({ message: 'Patient profile not found' }, { status: 404 });
+
+    // 2. Fetch all related data in parallel for the dashboard
+    const [vitalsRes, requestsRes, appointmentsRes, prescriptionsRes, billsRes] = await Promise.all([
+      // Vitals
+      supabaseClient.from('patient_vitals').select('*').eq('patient_id', patient.id).order('recorded_at', { ascending: false }),
+      // Clinical Requests (Lab/Radiology) with Bill payment status
+      supabaseClient.from('clinical_requests').select('*, bills(payment_status, total_amount)').eq('patient_id', patient.id).order('requested_at', { ascending: false }),
+      // Appointments
+      supabaseClient.from('public_appointments').select('*').eq('patient_id', patient.id).order('appointment_date', { ascending: false }),
+      // Prescriptions
+      supabaseClient.from('prescriptions').select('*').eq('patient_id', patient.id).order('prescribed_at', { ascending: false }),
+      // Invoices
+      supabaseClient.from('bills').select('*').eq('patient_id', patient.id).order('created_at', { ascending: false })
+    ]);
 
     return NextResponse.json({
-      ...patient,
-      _id: patient.id,
-      user: {
-        _id: patient.user_id,
-        name: patient.profiles?.name,
-        email: patient.profiles?.email,
-        phone: patient.profiles?.phone
-      }
+      profile: {
+        ...patient,
+        fullName: patient.full_name,
+        patientId: patient.patient_id,
+        email: patient.email_address,
+        phone: patient.mobile_number
+      },
+      vitals: vitalsRes.data || [],
+      requests: requestsRes.data || [],
+      appointments: appointmentsRes.data || [],
+      prescriptions: prescriptionsRes.data || [],
+      bills: billsRes.data || []
     });
+
   } catch (error: any) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
-  }
-}
-
-// PUT update patient profile (me)
-export async function PUT(request: Request) {
-  const { error: authError, profile: userProfile } = await withAuth(request);
-  if (authError) return authError;
-
-  try {
-    const body = await request.json();
-    const { data: patient, error } = await supabase
-      .from('patients')
-      .update(body)
-      .eq('user_id', userProfile?.id)
-      .select()
-      .single();
-
-    if (error) return NextResponse.json({ message: error.message }, { status: 400 });
-    return NextResponse.json({ ...patient, _id: patient.id });
-  } catch (error: any) {
+    console.error('[Patient Me API Error]:', error);
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }

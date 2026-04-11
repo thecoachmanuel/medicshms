@@ -124,6 +124,14 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
         { icon: FileText, label: 'Patients', path: `${base}/doctor/patients` },
         { icon: User, label: 'My Profile', path: `${base}/doctor/profile` },
       ];
+    } else if (role === 'Patient') {
+      return [
+        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/patient/dashboard` },
+        { icon: ClipboardList, label: 'Medical Records', path: `${base}/patient/records` },
+        { icon: DollarSign, label: 'My Invoices', path: `${base}/patient/invoices` },
+        { icon: Calendar, label: 'Appointments', path: `${base}/patient/appointments` },
+        { icon: User, label: 'My Profile', path: `${base}/patient/profile` },
+      ];
     } else if (role === 'Nurse') {
       return [
         { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/nurse/dashboard` },
