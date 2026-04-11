@@ -4,7 +4,7 @@ import { withAuth } from '@/lib/auth';
 import { BillingService } from '@/lib/billing-service';
 
 export async function GET(request: Request) {
-  const { error: authError, profile, supabase: supabaseClient } = await withAuth(request, ['Lab Scientist', 'Doctor', 'Admin', 'Receptionist']);
+  const { error: authError, profile, supabase: supabaseClient } = await withAuth(request, ['Lab Scientist', 'Doctor', 'Admin', 'Receptionist', 'Nurse', 'Radiologist', 'Pharmacist']);
   if (authError || !supabaseClient) return authError;
 
   const { searchParams } = new URL(request.url);

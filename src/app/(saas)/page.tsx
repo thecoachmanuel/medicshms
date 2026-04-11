@@ -222,7 +222,7 @@ export default function SaaSLandingPage() {
             </div>
 
             <div className="mt-20 relative max-w-6xl mx-auto rounded-[3.5rem] border border-white/50 bg-white/30 backdrop-blur-2xl p-4 shadow-[0_40px_100px_rgba(0,0,0,0.1)] overflow-hidden animate-in fade-in slide-in-from-bottom-10 duration-1000">
-                <div className="bg-slate-100 rounded-[3rem] overflow-hidden shadow-inner border border-slate-100 flex items-center justify-center min-h-[500px] relative group">
+                <div className="bg-slate-100 rounded-[3rem] overflow-hidden shadow-inner border border-slate-100 flex items-center justify-center h-[300px] md:h-[500px] relative group">
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/20 to-transparent pointer-events-none z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <InlineImage 
                         url={heroContent.hero_image || "https://images.unsplash.com/photo-1540331547168-8b63109228b7?auto=format&fit=crop&q=80&w=2000"} 
@@ -235,9 +235,9 @@ export default function SaaSLandingPage() {
                             uploadAPI.upload(formData).then((res: any) => handleUpdateSection('hero', 'hero_image', res.url));
                         }}
                         isEditing={isEditing}
-                        className="w-full h-full min-h-[500px] object-cover transition-transform duration-700 group-hover:scale-105"
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
                         <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 scale-50 group-hover:scale-100">
                            <Activity className="w-8 h-8 text-white animate-pulse" />
                         </div>

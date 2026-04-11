@@ -23,9 +23,13 @@ import {
   ShieldCheck,
   CalendarClock,
   FileCheck,
+  LineChart,
+  CreditCard,
   Globe,
   LogOut,
   Activity,
+  Code,
+  ActivitySquare,
   ClipboardList,
   TestTubes,
   Microscope,
@@ -94,11 +98,13 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
         { icon: CalendarClock, label: 'Slot Settings', path: `${base}/admin/slot-settings` },
         { icon: FileCheck, label: 'Template', path: `${base}/admin/invoice-template` },
         { icon: Megaphone, label: 'Announcements', path: `${base}/admin/announcements` },
-        { icon: Globe, label: 'Site Editor', path: `${base}/admin/site-editor` },
-        { icon: Bell, label: 'Site Updates', path: `${base}/admin/site-updates` },
+        { icon: Settings, label: 'Portal Settings', path: `${base}/admin/settings` },
+        { icon: Code, label: 'Embed Integration', path: `${base}/admin/embed` },
+        { icon: LineChart, label: 'Productivity Hub', path: `${base}/admin/productivity` },
+        { icon: CreditCard, label: 'Account & Billing', path: `${base}/admin/account` },
+        { icon: ActivitySquare, label: 'Site Updates', path: `${base}/admin/site-updates` },
         { icon: Headphones, label: 'Support', path: `${base}/admin/support` },
         { icon: User, label: 'My Profile', path: `${base}/admin/profile` },
-        { icon: Settings, label: 'Settings', path: `${base}/admin/settings` },
       ];
     } else if (role === 'Receptionist') {
       return [
@@ -114,6 +120,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
       return [
         { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/doctor/dashboard` },
         { icon: Calendar, label: 'Appointments', path: `${base}/doctor/appointments` },
+        { icon: CalendarClock, label: 'Availability', path: `${base}/doctor/availability` },
         { icon: FileText, label: 'Patients', path: `${base}/doctor/patients` },
         { icon: User, label: 'My Profile', path: `${base}/doctor/profile` },
       ];
@@ -201,6 +208,9 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
                 key={item.path + item.label}
                 href={item.path}
                 title={isCollapsed ? item.label : undefined}
+                onClick={() => {
+                  if (isOpen) toggleSidebar();
+                }}
                 className={cn(
                   "flex items-center rounded-lg transition-all duration-300 cursor-pointer overflow-hidden",
                   isCollapsed ? "justify-center p-3" : "px-4 py-2.5 gap-3",

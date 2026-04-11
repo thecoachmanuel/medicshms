@@ -3,7 +3,7 @@ import { supabaseAdmin, supabase } from '@/lib/supabase';
 import { withAuth } from '@/lib/auth';
 
 export async function GET(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Pharmacist', 'Doctor', 'Admin']);
+  const { error: authError, profile } = await withAuth(request, ['Pharmacist', 'Doctor', 'Admin', 'Nurse', 'Receptionist', 'Lab Scientist', 'Radiologist']);
   if (authError) return authError;
 
   const { searchParams } = new URL(request.url);

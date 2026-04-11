@@ -217,35 +217,37 @@ export function InlineText({
 // Inline Image Editor
 export function InlineImage({
     url,
-    onChange,
-    isEditing,
+    alt = '',
     className,
-    alt = "Image"
+    onChange,
+    isEditing = false
 }: {
     url: string;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    isEditing: boolean;
-    className?: string;
     alt?: string;
+    className?: string;
+    onChange?: (e: any) => void;
+    isEditing?: boolean;
 }) {
-    const inputRef = React.useRef<HTMLInputElement>(null);
+    if (!isEditing) {
+        return <img src={url} alt={alt} className={cn("w-full h-full object-cover", className)} />;
+    }
 
     return (
-        <div className="relative group/img-edit inline-block">
-            <img src={url} alt={alt} className={className} />
+        <div className={cn("relative group/img-edit w-full h-full", className)}>
+            <img src={url} alt={alt} className={cn("w-full h-full object-cover", className)} />
             {isEditing && (
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img-edit:opacity-100 transition-all flex flex-col items-center justify-center gap-3 cursor-pointer rounded-[inherit]"
-                     onClick={() => inputRef.current?.click()}>
+                     onClick={() => document.getElementById(`img-upload-${url}`)?.click()}>
                     <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-slate-900 shadow-xl group-hover/img-edit:scale-110 transition-transform">
-                        <Upload className="w-6 h-6" />
+                        <ImageIcon className="w-5 h-5" />
                     </div>
-                    <p className="text-[10px] font-black text-white uppercase tracking-widest">Change Image</p>
+                    <span className="text-white text-xs font-bold tracking-widest uppercase bg-black/50 px-4 py-1.5 rounded-full backdrop-blur-md">Change Image</span>
                     <input 
-                        ref={inputRef}
+                        id={`img-upload-${url}`}
                         type="file" 
                         accept="image/*" 
-                        className="hidden" 
                         onChange={onChange}
+                        className="hidden" 
                     />
                 </div>
             )}
