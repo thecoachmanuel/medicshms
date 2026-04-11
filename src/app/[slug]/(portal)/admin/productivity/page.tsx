@@ -24,7 +24,7 @@ export default function ProductivityHubPage({ params }: { params: Promise<{ slug
   const fetchProductivity = async () => {
     setLoading(true);
     try {
-      const { api } = await import('@/lib/api');
+      const api = (await import('@/lib/api')).default;
       const res = await api.get('/productivity') as any;
       setStats(res.data);
     } catch (error) {

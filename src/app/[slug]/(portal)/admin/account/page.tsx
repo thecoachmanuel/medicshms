@@ -23,7 +23,7 @@ export default function AccountManagementPage({ params }: { params: Promise<{ sl
   const fetchAccountData = async () => {
     setLoading(true);
     try {
-      const { api } = await import('@/lib/api');
+      const api = (await import('@/lib/api')).default;
       const res = await api.get('/account') as any;
       setData(res.data);
     } catch (error) {
