@@ -73,7 +73,7 @@ export async function GET(request: Request) {
       id: p.id,
       name: p.name,
       role: p.role
-    })).sort((a, b) => b.totalActions - a.totalActions) || [];
+    })).sort((a: any, b: any) => (b.totalActions || 0) - (a.totalActions || 0)) || [];
 
     // Global Hospital Stats
     const summary = {
@@ -84,7 +84,12 @@ export async function GET(request: Request) {
       totalPrescriptions: prescriptions.data?.length || 0
     };
 
-    return NextResponse.json({ summary, leaderBoard });
+    return NextResponse.json({ 
+      data: { 
+        summary, 
+        leaderBoard 
+      } 
+    });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
