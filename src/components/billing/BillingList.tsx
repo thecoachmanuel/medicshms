@@ -288,7 +288,7 @@ export default function BillingList() {
                               <span className="px-3 py-1.5 bg-amber-50 text-amber-600 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] border border-amber-100 shadow-sm">
                                 {item.testName}
                               </span>
-                              <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest ml-1">PENDING FINALIZATION</p>
+                              <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest ml-1 italic opacity-70">Awaiting Auto-Bill</p>
                             </>
                           ) : (
                             <>
@@ -336,14 +336,23 @@ export default function BillingList() {
                   <td className="px-6 py-5">
                     <div className="flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300 scale-90 group-hover:scale-100">
                       {!item.bill && (user?.role === 'Admin' || user?.role === 'Receptionist') ? (
-                        <button 
-                          onClick={() => setGenerateModal(item)}
-                          disabled={item.appointmentStatus === 'Cancelled'}
-                          className="btn-primary py-2.5 px-6 shadow-lg shadow-amber-200/40 disabled:opacity-30 disabled:shadow-none whitespace-nowrap"
-                        >
-                          <Plus className="w-4 h-4" />
-                          Finalize Bill
-                        </button>
+                        // ONLY show Finalize Bill for regular appointments. 
+                        // Diagnostics should be auto-billed during initiation.
+                        !item.testName ? (
+                          <button 
+                            onClick={() => setGenerateModal(item)}
+                            disabled={item.appointmentStatus === 'Cancelled'}
+                            className="btn-primary py-2.5 px-6 shadow-lg shadow-amber-200/40 disabled:opacity-30 disabled:shadow-none whitespace-nowrap"
+                          >
+                            <Plus className="w-4 h-4" />
+                            Finalize Bill
+                          </button>
+                        ) : (
+                          <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-xl border border-amber-100 animate-pulse">
+                            <RefreshCw className="w-3 h-3 text-amber-600 animate-spin" />
+                            <span className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Auto-Billing...</span>
+                          </div>
+                        )
                       ) : !item.bill ? (
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-4">Processing...</span>
                       ) : (

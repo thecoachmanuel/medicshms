@@ -146,6 +146,12 @@ export async function GET(request: Request) {
              req.payment_status = 'Billed'; // Clinical status sync
              healedCount++;
 
+             // Proactively update DB to ensure synchronization
+             await (supabaseAdmin || supabase)
+               .from('clinical_requests')
+               .update({ bill_id: newBill.id, payment_status: 'Billed' })
+               .eq('id', req.id);
+
              // Check if this bill already exists in our local working set
              const existingIdx = fetchedAllBills.findIndex(b => 
                 (b.id && b.id.toString() === newBill.id.toString()) ||

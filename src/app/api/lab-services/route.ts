@@ -196,7 +196,7 @@ export async function POST(request: Request) {
     if (billingServices.length > 0) {
       try {
         const finalBill = await BillingService.generateAutoInvoice({
-          hospitalId: profile?.hospital_id,
+          hospitalId: profile?.hospital_id as string,
           patientId: patient_id,
           sourceType: 'Laboratory',
           sourceId: createdRequests[0].id, // Primary tag
@@ -211,6 +211,12 @@ export async function POST(request: Request) {
             .from('clinical_requests')
             .update({ bill_id: finalBill.id, payment_status: 'Billed' })
             .in('id', createdRequests.map(r => r.id));
+          
+          // Update local records for immediate frontend response
+          createdRequests.forEach(r => {
+            r.bill_id = finalBill.id;
+            r.payment_status = 'Billed';
+          });
         }
       } catch (billingError) {
         console.error('[Batch Auto-Billing Failed]:', billingError);
