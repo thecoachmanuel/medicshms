@@ -46,16 +46,20 @@ export default function RadiologyRequestsPage() {
 
   const filteredRequests = (requests || []).filter(req => {
     const searchLow = globalSearch.toLowerCase();
+    const p = req.patient || {};
     return (
       req.test_name?.toLowerCase().includes(searchLow) ||
-      req.patient?.full_name?.toLowerCase().includes(searchLow) ||
-      req.patient?.patient_id?.toLowerCase().includes(searchLow)
+      (p.full_name || p.fullName)?.toLowerCase().includes(searchLow) ||
+      (p.patient_id || p.patientId)?.toLowerCase().includes(searchLow)
     );
   });
 
   const filteredPatients = (patients || []).filter(p => {
     const s = patientSearchTerm.toLowerCase();
-    return p.full_name?.toLowerCase().includes(s) || p.patient_id?.toLowerCase().includes(s);
+    return (
+      (p.full_name || p.fullName)?.toLowerCase().includes(s) || 
+      (p.patient_id || p.patientId)?.toLowerCase().includes(s)
+    );
   });
 
   useEffect(() => {
@@ -357,8 +361,8 @@ export default function RadiologyRequestsPage() {
                             {req.patient?.full_name?.[0] || 'P'}
                           </div>
                           <div>
-                            <p className="text-sm font-black text-gray-900 leading-none mb-1.5">{req.patient?.full_name || 'N/A'}</p>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none bg-gray-50 px-2 py-1 rounded-md border border-gray-100">#{req.patient?.patient_id || 'ID-REDACTED'}</p>
+                            <p className="text-sm font-black text-gray-900 leading-none mb-1.5">{req.patient?.full_name || req.patient?.fullName || 'N/A'}</p>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none bg-gray-50 px-2 py-1 rounded-md border border-gray-100">#{req.patient?.patient_id || req.patient?.patientId || 'ID-REDACTED'}</p>
                           </div>
                         </div>
                       </td>
@@ -466,8 +470,8 @@ export default function RadiologyRequestsPage() {
             <div className="bg-gray-50 p-6 rounded-[2rem] mb-10 grid grid-cols-2 gap-8 border border-gray-100">
               <div>
                 <p className="text-[10px] text-gray-400 uppercase font-black tracking-[0.2em] mb-2">Subject</p>
-                <p className="font-black text-gray-900">{selectedRequest.patient?.full_name}</p>
-                <p className="text-xs text-gray-500 mt-1">Ref: #{selectedRequest.patient?.patient_id}</p>
+                <p className="font-black text-gray-900">{selectedRequest.patient?.full_name || selectedRequest.patient?.fullName}</p>
+                <p className="text-xs text-gray-500 mt-1">Ref: #{selectedRequest.patient?.patient_id || selectedRequest.patient?.patientId}</p>
               </div>
               <div>
                 <p className="text-[10px] text-gray-400 uppercase font-black tracking-[0.2em] mb-2">Study Protocol</p>
@@ -589,11 +593,11 @@ export default function RadiologyRequestsPage() {
                           className="w-full flex items-center gap-4 p-4 hover:bg-indigo-50/50 rounded-2xl transition-all text-left group"
                         >
                           <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover:border-indigo-100 group-hover:bg-white font-black text-xs text-indigo-600 transition-all">
-                            {p.full_name?.[0]}
+                            {(p.full_name || p.fullName)?.[0]}
                           </div>
                           <div>
-                            <p className="text-sm font-black text-gray-900 leading-tight">{p.full_name}</p>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">#{p.patient_id}</p>
+                            <p className="text-sm font-black text-gray-900 leading-tight">{p.full_name || p.fullName}</p>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">#{p.patient_id || p.patientId}</p>
                           </div>
                         </button>
                       ))}

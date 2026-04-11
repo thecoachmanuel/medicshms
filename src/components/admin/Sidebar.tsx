@@ -171,12 +171,12 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 bg-black/50 z-[190] lg:hidden" onClick={toggleSidebar} />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998] lg:hidden animate-in fade-in duration-300" onClick={toggleSidebar} />
       )}
 
       <aside className={cn(
         "fixed top-0 left-0 h-full bg-white border-r border-gray-200 transition-all duration-300 flex flex-col",
-        isOpen ? "translate-x-0 z-[200]" : "-translate-x-full lg:translate-x-0 z-30",
+        isOpen ? "translate-x-0 z-[9999]" : "-translate-x-full lg:translate-x-0 z-30",
         isCollapsed ? "w-20" : "w-64"
       )}>
         <div className="flex items-center justify-between p-4 border-b border-gray-200 min-h-[73px]">
@@ -184,7 +184,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
             <HospitalLogo slug={slug} iconClassName="w-8 h-8" textClassName={cn("text-lg", isCollapsed && "hidden")} />
           </Link>
           {!isCollapsed && (
-            <button onClick={toggleSidebar} className="lg:hidden text-gray-500 hover:text-gray-900 transition-colors shrink-0">
+            <button onClick={toggleSidebar} className="lg:hidden p-2 -mr-2 text-gray-400 hover:text-indigo-600 transition-colors shrink-0" aria-label="Close menu">
               <X className="w-6 h-6" />
             </button>
           )}

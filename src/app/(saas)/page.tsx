@@ -51,7 +51,7 @@ export default function SaaSLandingPage() {
         ]);
         setPlans(plansRes.data || []);
         // Ensure defaults if no content exists yet
-        const sections = Array.isArray(contentRes) ? contentRes : [];
+        const sections = Array.isArray(contentRes) ? contentRes : (contentRes?.data || []);
         if (sections.length === 0) {
             setSiteContent([
                 { section_key: 'hero', content: { 

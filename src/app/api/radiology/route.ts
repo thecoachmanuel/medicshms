@@ -16,9 +16,13 @@ export async function GET(request: Request) {
       .from('clinical_requests')
       .select(`
         *,
-        patient:patient_id(full_name, patient_id),
-        doctor_profile:doctor_id(name),
-        handled_by_profile:handled_by(name)
+        patient:patients!patient_id(
+          id,
+          full_name,
+          patient_id
+        ),
+        doctor_profile:profiles!doctor_id(name),
+        handled_by_profile:profiles!handled_by(name)
       `)
       .eq('hospital_id', profile?.hospital_id)
       .eq('type', 'Radiology')

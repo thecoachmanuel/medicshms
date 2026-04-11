@@ -34,9 +34,10 @@ export const AdminHeader = ({ toggleSidebar }: AdminHeaderProps) => {
         <div className="flex items-center gap-4">
           <button
             onClick={toggleSidebar}
-            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg mr-2"
+            className="lg:hidden p-3 -ml-3 hover:bg-indigo-50 rounded-xl text-gray-600 hover:text-indigo-600 transition-all flex items-center justify-center"
+            aria-label="Toggle menu"
           >
-            <Menu className="w-6 h-6 text-gray-600" />
+            <Menu className="w-6 h-6" />
           </button>
           <div className="hidden lg:block">
             {loading ? (

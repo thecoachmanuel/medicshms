@@ -1,159 +1,197 @@
 'use client';
 
-import React, { use } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { useSiteSettings } from '@/context/SettingsContext';
-import { Copy, Code, CheckCircle2, LayoutTemplate, Smartphone, Globe, ExternalLink } from 'lucide-react';
-import toast from 'react-hot-toast';
+import React, { use, useState } from 'react';
+import { 
+  Code, Copy, Check, Globe, Layout, 
+  Smartphone, Shield, Info, ExternalLink,
+  Monitor, Cpu, Settings
+} from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import { cn } from '@/lib/utils';
 
 export default function EmbedIntegrationPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
-  const { settings, loading } = useSiteSettings();
-  const [copied, setCopied] = React.useState(false);
-  const [mode, setMode] = React.useState('full');
+  const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<'iframe' | 'widget'>('iframe');
 
-  if (loading) {
-    return <div className="p-8 animate-pulse grid gap-6"><div className="h-40 bg-slate-100 rounded-3xl" /><div className="h-64 bg-slate-100 rounded-3xl" /></div>;
-  }
-
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://medicshms.com';
+  const portalUrl = typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.host}/${slug}` : `https://medics-hms.com/${slug}`;
   
-  // The user can embed the full app or a specific portal route
-  const getEmbedUrl = () => {
-    if (mode === 'booking') return `${baseUrl}/${slug}/login?flow=booking`;
-    if (mode === 'patient') return `${baseUrl}/${slug}/patient/dashboard`;
-    return `${baseUrl}/${slug}`; // Full HMS Experience
-  };
-
-  const embedCode = `<iframe 
-  src="${getEmbedUrl()}"
-  width="100%" 
-  height="800px" 
-  style="border: none; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);" 
-  allow="camera; microphone; geolocation"
-  title="${settings?.hospital_name || 'Hospital'} Management System"
+  const iframeCode = `<iframe 
+  src="${portalUrl}" 
+  style="width: 100%; height: 800px; border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" 
+  title="Patient Portal"
+  allow="camera; microphone; geolocation;"
 ></iframe>`;
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(embedCode);
+  const widgetCode = `<script 
+  src="${typeof window !== 'undefined' ? window.location.origin : ''}/scripts/embed-widget.js" 
+  data-hospital-slug="${slug}"
+  data-primary-color="#4f46e5"
+  async
+></script>`;
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
     setCopied(true);
-    toast.success('Embed code copied to clipboard!');
+    toast.success('Code copied to clipboard');
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-12">
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center border border-indigo-100 shadow-sm">
-          <Code className="w-6 h-6 text-indigo-600" />
-        </div>
+    <div className="relative min-h-[calc(100vh-10rem)] space-y-8 pb-12">
+      {/* Background Decor */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-50/20 via-transparent to-white -z-10" />
+      
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">Integration & Embed</h1>
-          <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-1">Embed the HMS seamlessly into your existing hospital website</p>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100/50 shadow-sm shadow-indigo-100/20">
+              <Code className="w-6 h-6 text-indigo-600" />
+            </div>
+            Embed Integration
+          </h1>
+          <p className="text-gray-500 font-medium mt-1 ml-15">Seamlessly integrate your Patient Portal into your existing hospital website.</p>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-indigo-900/5 relative overflow-hidden">
-             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/50 rounded-bl-[100px] -z-10" />
-             
-             <h2 className="text-sm font-black text-indigo-900 uppercase tracking-widest mb-6">Configuration Options</h2>
-             
-             <div className="grid sm:grid-cols-3 gap-4 mb-8">
-               {[
-                 { id: 'full', label: 'Full HMS', icon: LayoutTemplate, desc: 'Complete software' },
-                 { id: 'booking', label: 'Booking', icon: Globe, desc: 'Direct to booking' },
-                 { id: 'patient', label: 'Patient Portal', icon: Smartphone, desc: 'Patient Dashboard' }
-               ].map((m) => {
-                 const isSelected = mode === m.id;
-                 const Icon = m.icon;
-                 return (
-                   <button
-                     key={m.id}
-                     onClick={() => setMode(m.id)}
-                     className={cn(
-                       "p-4 rounded-3xl border-2 text-left transition-all",
-                       isSelected 
-                         ? "border-indigo-600 bg-indigo-50/30" 
-                         : "border-gray-100 hover:border-indigo-200"
-                     )}
-                   >
-                     <div className={cn(
-                       "w-8 h-8 rounded-xl flex items-center justify-center mb-3",
-                       isSelected ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-500"
-                     )}>
-                       <Icon className="w-4 h-4" />
-                     </div>
-                     <p className={cn("text-xs font-black uppercase tracking-widest mb-1", isSelected ? "text-indigo-900" : "text-gray-900")}>{m.label}</p>
-                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{m.desc}</p>
-                   </button>
-                 );
-               })}
-             </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          {/* Integration Options */}
+          <div className="bg-white/70 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-sm overflow-hidden min-h-[500px]">
+            <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-gray-50/30">
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setActiveTab('iframe')}
+                  className={cn(
+                    "px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                    activeTab === 'iframe' ? "bg-gray-900 text-white shadow-lg shadow-gray-900/20" : "bg-white text-gray-400 border border-gray-200 hover:bg-gray-50"
+                  )}
+                >
+                  Legacy Iframe
+                </button>
+                <button 
+                  onClick={() => setActiveTab('widget')}
+                  className={cn(
+                    "px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                    activeTab === 'widget' ? "bg-gray-900 text-white shadow-lg shadow-gray-900/20" : "bg-white text-gray-400 border border-gray-200 hover:bg-gray-50"
+                  )}
+                >
+                  Smart Widget (BETA)
+                </button>
+              </div>
+            </div>
 
-             <div className="space-y-4">
-               <div className="flex items-center justify-between">
-                 <h2 className="text-sm font-black text-gray-900 uppercase tracking-widest">Your Code Snippet</h2>
-                 <button 
-                   onClick={copyToClipboard}
-                   className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-colors"
-                 >
-                   {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                   {copied ? 'Copied!' : 'Copy Code'}
-                 </button>
-               </div>
-               
-               <div className="relative">
-                 <pre className="p-6 bg-gray-900 text-indigo-200 rounded-[2rem] text-sm font-mono overflow-x-auto border border-gray-800 shadow-inner">
-                   {embedCode}
-                 </pre>
-               </div>
-             </div>
+            <div className="p-8 space-y-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-black text-gray-900">How to implement</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">
+                  {activeTab === 'iframe' 
+                    ? "Copy the code below and paste it into any HTML page on your hospital website. This will render the full patient portal experience in a dedicated container."
+                    : "The Smart Widget allows you to add a floating 'Book Appointment' button to your site. It loads the portal in a modal context for a superior user experience."
+                  }
+                </p>
+              </div>
+
+              {/* Code Snippet Box */}
+              <div className="relative group">
+                <div className="absolute inset-0 bg-indigo-500/5 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative bg-gray-900 rounded-[2rem] p-8 text-indigo-300 font-mono text-xs leading-relaxed overflow-hidden">
+                  <div className="absolute top-4 right-4 flex gap-2">
+                    <button 
+                      onClick={() => copyToClipboard(activeTab === 'iframe' ? iframeCode : widgetCode)}
+                      className="p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all text-white border border-white/10 flex items-center gap-2 group/copy"
+                    >
+                      {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                      <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover/copy:opacity-100 transition-opacity whitespace-nowrap">Copy Code</span>
+                    </button>
+                  </div>
+                  <pre className="whitespace-pre-wrap break-all pr-12">
+                    {activeTab === 'iframe' ? iframeCode : widgetCode}
+                  </pre>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 p-6 bg-amber-50 rounded-3xl border border-amber-100">
+                <Shield className="w-6 h-6 text-amber-600 shrink-0" />
+                <p className="text-[10px] text-amber-700 font-bold uppercase tracking-tight leading-relaxed">
+                  <span className="font-black">Security Note:</span> Make sure your hospital website domain is whitelisted in Portal Settings to allow framed interactions and prevent CORS blocking.
+                </p>
+              </div>
+            </div>
           </div>
-          
-          <div className="bg-indigo-600 p-8 rounded-[2.5rem] border border-indigo-700 shadow-xl shadow-indigo-900/20 text-white relative overflow-hidden">
-             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-2xl" />
-             <h2 className="text-sm font-black uppercase tracking-widest text-indigo-200 mb-6 border-b border-indigo-500/50 pb-4">Implementation Notes</h2>
-             <ul className="space-y-4">
-               {[
-                 'SSL/HTTPS is required on your parent website for embedding to work.',
-                 'The iframe has permission to access camera/microphone for telemedicine.',
-                 'Responsive design: the iframe will automatically adjust to mobile screens.',
-                 'We recommend setting the parent container to at least 800px height for optimal usage.'
-               ].map((note, idx) => (
-                 <li key={idx} className="flex gap-4">
-                   <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
-                   <p className="text-sm font-medium leading-relaxed text-indigo-50">{note}</p>
-                 </li>
-               ))}
-             </ul>
+
+          {/* Preview Container */}
+          <div className="bg-white/70 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-sm p-8 space-y-6">
+             <div className="flex items-center justify-between">
+                <h3 className="text-lg font-black text-gray-900 flex items-center gap-2">
+                   <Monitor className="w-5 h-5 text-indigo-400" /> Interface Preview
+                </h3>
+                <span className="px-3 py-1 bg-gray-100 rounded-lg text-[9px] font-black text-gray-500 uppercase tracking-widest">Live Context</span>
+             </div>
+             
+             <div className="aspect-video rounded-[2rem] bg-gray-50 border border-gray-100 flex items-center justify-center relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-transparent" />
+                <div className="relative z-10 text-center space-y-4">
+                   <div className="w-16 h-16 rounded-2xl bg-white shadow-xl flex items-center justify-center mx-auto animate-bounce-short">
+                      <Layout className="w-8 h-8 text-indigo-600" />
+                   </div>
+                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Patient Portal Mockup</p>
+                   <a href={`/${slug}`} target="_blank" className="flex items-center gap-2 text-xs font-black text-indigo-600 hover:text-indigo-700 mx-auto px-4 py-2 bg-indigo-50 rounded-lg transition-all group">
+                      Open Direct Portal <ExternalLink className="w-3 h-3 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                   </a>
+                </div>
+             </div>
           </div>
         </div>
 
-        <div className="lg:col-span-1">
-           <div className="sticky top-24 border-4 border-gray-900 rounded-[3rem] p-2 bg-white shadow-2xl h-[700px] flex flex-col overflow-hidden">
-             <div className="flex items-center justify-between px-6 py-4 bg-gray-50 rounded-t-[2.5rem] border-b border-gray-100">
-               <div className="flex gap-2">
-                 <div className="w-3 h-3 rounded-full bg-rose-400" />
-                 <div className="w-3 h-3 rounded-full bg-amber-400" />
-                 <div className="w-3 h-3 rounded-full bg-emerald-400" />
-               </div>
-               <div className="px-4 py-1.5 bg-white rounded-full border border-gray-200 text-[9px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-2">
-                 Preview <ExternalLink className="w-3 h-3" />
-               </div>
-             </div>
-             <div className="flex-1 bg-gray-50 relative pointer-events-none p-1">
-               {/* Non-interactive preview to prove concept without recursive iframe nesting issues */}
-               <iframe 
-                 src={getEmbedUrl()}
-                 className="w-full h-full border-none rounded-b-[2.5rem] bg-white opacity-80"
-                 title="Preview"
-                 tabIndex={-1}
-               />
-               <div className="absolute inset-0 bg-transparent z-10" />
-             </div>
+        <div className="space-y-8">
+           <div className="bg-gray-900 rounded-[2.5rem] p-10 text-white relative overflow-hidden shadow-2xl">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500 opacity-20 blur-[60px] -mr-16 -mt-16" />
+              <h3 className="text-xl font-black mb-6 flex items-center gap-3">
+                 <Settings className="w-6 h-6 text-indigo-400" /> Configuration
+              </h3>
+              <div className="space-y-6">
+                 <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                    <p className="text-[10px] text-indigo-300 font-black uppercase tracking-widest mb-1">Target Slug</p>
+                    <p className="text-sm font-black text-white">{slug}</p>
+                 </div>
+                 <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                    <p className="text-[10px] text-indigo-300 font-black uppercase tracking-widest mb-1">SSO Bridging</p>
+                    <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Active & Secure</p>
+                 </div>
+              </div>
+
+              <div className="mt-10 pt-10 border-t border-white/10">
+                 <div className="flex items-center gap-4 mb-6">
+                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                       <Smartphone className="w-5 h-5 text-indigo-300" />
+                    </div>
+                    <div>
+                       <p className="text-xs font-black">Mobile Responsive</p>
+                       <p className="text-[9px] text-indigo-300/60 uppercase font-bold">Native feel on all devices</p>
+                    </div>
+                 </div>
+                 <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                       <Cpu className="w-5 h-5 text-indigo-300" />
+                    </div>
+                    <div>
+                       <p className="text-xs font-black">Fast Rendering</p>
+                       <p className="text-[9px] text-indigo-300/60 uppercase font-bold">Optimized edge delivery</p>
+                    </div>
+                 </div>
+              </div>
+           </div>
+
+           <div className="bg-white rounded-[2.5rem] border border-gray-100 p-10 space-y-6 shadow-sm">
+              <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center">
+                 <Info className="w-8 h-8 text-indigo-600" />
+              </div>
+              <h4 className="font-black text-gray-900 uppercase tracking-widest text-sm">Integration Support</h4>
+              <p className="text-xs text-gray-500 leading-relaxed font-medium">Need help with a custom UI bridge? Our engineering team is available for deep-level technical integrations.</p>
+              <button className="w-full py-4 border-2 border-indigo-600 text-indigo-600 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
+                 Request Engineering Patch
+              </button>
            </div>
         </div>
       </div>
