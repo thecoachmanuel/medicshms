@@ -204,8 +204,8 @@ export default function PatientsList({ role }: Props) {
       </div>
 
       <div className="card bg-white/70 backdrop-blur-xl border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.04)] overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
+        <div className="table-container">
+          <table className="w-full min-w-[1000px] text-left">
             <thead>
               <tr className="bg-gray-50/20 border-b border-gray-100">
                 <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Record UID</th>

@@ -115,8 +115,8 @@ export const appointmentsAPI = {
     api.patch<APIResponse<Appointment>>(`/admin-appointments/${id}/status`, { status, reason, ...data }),
   assignDoctor: (id: string, doctorId: string) => 
     api.patch<APIResponse<Appointment>>(`/admin-appointments/${id}/assign-doctor`, { doctorId }),
-  getTimeSlots: (date: string, department?: string) => 
-    api.get<APIResponse<string[]>>('/admin-appointments/slots', { params: { date, department } }),
+  getTimeSlots: (date: string, department?: string, doctorId?: string, departmentId?: string) => 
+    api.get<APIResponse<string[]>>('/admin-appointments/slots', { params: { date, department, doctorId, departmentId } }),
   lookupPatient: (mobile: string) => 
     api.get<APIResponse<User>>(`/admin-appointments/lookup/${mobile}`),
   doctorComplete: (id: string, data?: any) => api.patch<APIResponse<Appointment>>(`/admin-appointments/${id}/doctor-complete`, data),

@@ -76,59 +76,59 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
 
     if (isPlatformAdmin(role)) {
       return [
-        { icon: LayoutDashboard, label: 'Super Admin', path: '/platform-admin/dashboard' },
-        { icon: Building2, label: 'Hospitals', path: '/platform-admin/dashboard' },
-        { icon: Calendar, label: 'Demo Requests', path: '/platform-admin/demo-requests' },
-        { icon: DollarSign, label: 'Subscription Plans', path: '/platform-admin/plans' },
-        { icon: Globe, label: 'Site Editor', path: '/platform-admin/site-editor' },
-        { icon: Bell, label: 'Site Updates', path: '/platform-admin/site-updates' },
-        { icon: Headphones, label: 'Support', path: '/platform-admin/support' },
-        { icon: Settings, label: 'Platform Settings', path: '/platform-admin/settings' },
+        { icon: LayoutDashboard, label: 'Super Admin', path: '/platform-admin/dashboard', id: 'nav-dashboard' },
+        { icon: Building2, label: 'Hospitals', path: '/platform-admin/dashboard', id: 'nav-hospitals' },
+        { icon: Calendar, label: 'Demo Requests', path: '/platform-admin/demo-requests', id: 'nav-demos' },
+        { icon: DollarSign, label: 'Subscription Plans', path: '/platform-admin/plans', id: 'nav-plans' },
+        { icon: Globe, label: 'Site Editor', path: '/platform-admin/site-editor', id: 'nav-site-editor' },
+        { icon: Bell, label: 'Site Updates', path: '/platform-admin/site-updates', id: 'nav-updates' },
+        { icon: Headphones, label: 'Support', path: '/platform-admin/support', id: 'nav-support' },
+        { icon: Settings, label: 'Platform Settings', path: '/platform-admin/settings', id: 'nav-settings' },
       ];
     }
 
     if (role === 'Admin') {
       const items = [
-        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/admin/dashboard` },
-        { icon: Calendar, label: 'Appointments', path: `${base}/admin/appointments` },
-        { icon: FileText, label: 'Patients', path: `${base}/admin/patients` },
-        { icon: DollarSign, label: 'Billing', path: `${base}/admin/billing` },
-        { icon: ShieldCheck, label: 'Admin', path: `${base}/admin/users` },
-        { icon: Stethoscope, label: 'Doctors', path: `${base}/admin/doctors` },
-        { icon: Users, label: 'Hospital Staff', path: `${base}/admin/staff` },
-        { icon: FlaskConical, label: 'Laboratory Matrix', path: `${base}/admin/laboratory`, feature: 'Laboratory' },
-        { icon: Building2, label: 'Departments', path: `${base}/admin/departments` },
-        { icon: CalendarClock, label: 'Slot Settings', path: `${base}/admin/slot-settings` },
-        { icon: FileCheck, label: 'Template', path: `${base}/admin/invoice-template` },
-        { icon: Megaphone, label: 'Announcements', path: `${base}/admin/announcements` },
-        { icon: Settings, label: 'Portal Settings', path: `${base}/admin/settings` },
-        { icon: Code, label: 'Embed Integration', path: `${base}/admin/embed`, feature: 'Integration' },
-        { icon: LineChart, label: 'Productivity Hub', path: `${base}/admin/productivity`, feature: 'Analytics' },
-        { icon: CreditCard, label: 'Account & Billing', path: `${base}/admin/account` },
-        { icon: ActivitySquare, label: 'Site Updates', path: `${base}/admin/site-updates` },
-        { icon: Headphones, label: 'Support', path: `${base}/admin/support` },
-        { icon: User, label: 'My Profile', path: `${base}/admin/profile` },
+        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/admin/dashboard`, id: 'nav-dashboard' },
+        { icon: Calendar, label: 'Appointments', path: `${base}/admin/appointments`, id: 'nav-appointments' },
+        { icon: FileText, label: 'Patients', path: `${base}/admin/patients`, id: 'nav-patients' },
+        { icon: DollarSign, label: 'Billing', path: `${base}/admin/billing`, id: 'nav-billing' },
+        { icon: ShieldCheck, label: 'Admin', path: `${base}/admin/users`, id: 'nav-admin' },
+        { icon: Stethoscope, label: 'Doctors', path: `${base}/admin/doctors`, id: 'nav-doctors' },
+        { icon: Users, label: 'Hospital Staff', path: `${base}/admin/staff`, id: 'nav-staff' },
+        { icon: FlaskConical, label: 'Laboratory Matrix', path: `${base}/admin/laboratory`, feature: 'Laboratory', id: 'nav-lab' },
+        { icon: Building2, label: 'Departments', path: `${base}/admin/departments`, id: 'nav-depts' },
+        { icon: CalendarClock, label: 'Slot Settings', path: `${base}/admin/slot-settings`, id: 'nav-slots' },
+        { icon: FileCheck, label: 'Template', path: `${base}/admin/invoice-template`, id: 'nav-invoice' },
+        { icon: Megaphone, label: 'Announcements', path: `${base}/admin/announcements`, id: 'nav-announcements' },
+        { icon: Settings, label: 'Portal Settings', path: `${base}/admin/settings`, id: 'nav-settings' },
+        { icon: Code, label: 'Embed Integration', path: `${base}/admin/embed`, feature: 'Integration', id: 'nav-embed' },
+        { icon: LineChart, label: 'Productivity Hub', path: `${base}/admin/productivity`, feature: 'Analytics', id: 'nav-analytics' },
+        { icon: CreditCard, label: 'Account & Billing', path: `${base}/admin/account`, id: 'nav-account' },
+        { icon: ActivitySquare, label: 'Site Updates', path: `${base}/admin/site-updates`, id: 'nav-site-updates' },
+        { icon: Headphones, label: 'Support', path: `${base}/admin/support`, id: 'nav-support' },
+        { icon: User, label: 'My Profile', path: `${base}/admin/profile`, id: 'nav-profile' },
       ];
 
       return items.filter(item => !item.feature || hasFeature(item.feature));
     } else if (role === 'Receptionist') {
       return [
-        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/receptionist/dashboard` },
-        { icon: Calendar, label: 'Appointments', path: `${base}/receptionist/appointments` },
-        { icon: FileText, label: 'Patients', path: `${base}/receptionist/patients` },
-        { icon: TestTubes, label: 'Lab Services', path: `${base}/receptionist/lab-requests` },
-        { icon: Scan, label: 'Radiology Intake', path: `${base}/receptionist/radiology-requests` },
-        { icon: DollarSign, label: 'Billing', path: `${base}/receptionist/billing` },
-        { icon: CalendarClock, label: 'Slot Management', path: `${base}/receptionist/slot-management` },
-        { icon: User, label: 'My Profile', path: `${base}/receptionist/profile` },
+        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/receptionist/dashboard`, id: 'nav-dashboard' },
+        { icon: Calendar, label: 'Appointments', path: `${base}/receptionist/appointments`, id: 'nav-appointments' },
+        { icon: FileText, label: 'Patients', path: `${base}/receptionist/patients`, id: 'nav-patients' },
+        { icon: TestTubes, label: 'Lab Services', path: `${base}/receptionist/lab-requests`, id: 'nav-lab' },
+        { icon: Scan, label: 'Radiology Intake', path: `${base}/receptionist/radiology-requests`, id: 'nav-radiology' },
+        { icon: DollarSign, label: 'Billing', path: `${base}/receptionist/billing`, id: 'nav-billing' },
+        { icon: CalendarClock, label: 'Slot Management', path: `${base}/receptionist/slot-management`, id: 'nav-slots' },
+        { icon: User, label: 'My Profile', path: `${base}/receptionist/profile`, id: 'nav-profile' },
       ];
     } else if (role === 'Doctor') {
       return [
-        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/doctor/dashboard` },
-        { icon: Calendar, label: 'Appointments', path: `${base}/doctor/appointments` },
-        { icon: CalendarClock, label: 'Availability', path: `${base}/doctor/availability` },
-        { icon: FileText, label: 'Patients', path: `${base}/doctor/patients` },
-        { icon: User, label: 'My Profile', path: `${base}/doctor/profile` },
+        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/doctor/dashboard`, id: 'nav-dashboard' },
+        { icon: Calendar, label: 'Appointments', path: `${base}/doctor/appointments`, id: 'nav-appointments' },
+        { icon: CalendarClock, label: 'Availability', path: `${base}/doctor/availability`, id: 'nav-slots' },
+        { icon: FileText, label: 'Patients', path: `${base}/doctor/patients`, id: 'nav-patients' },
+        { icon: User, label: 'My Profile', path: `${base}/doctor/profile`, id: 'nav-profile' },
       ];
     } else if (role === 'Patient') {
       return [
@@ -220,6 +220,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
             return (
               <Link
                 key={item.path + item.label}
+                id={item.id}
                 href={item.path}
                 title={isCollapsed ? item.label : undefined}
                 onClick={() => {

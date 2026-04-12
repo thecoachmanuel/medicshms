@@ -338,8 +338,8 @@ export default function RadiologyRequestsPage() {
               <p className="font-black uppercase tracking-widest text-[10px]">No matches found in imaging archive</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+            <div className="table-container">
+              <table className="w-full min-w-[1000px] text-left border-collapse">
                 <thead>
                   <tr className="bg-gray-50/20 border-b border-gray-100">
                     <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Patient Profile</th>

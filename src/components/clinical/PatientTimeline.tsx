@@ -114,7 +114,7 @@ export default function PatientTimeline({ patientId }: { patientId: string }) {
             title: `Drug Regimen: ${p.medications?.[0]?.item_name || 'Pharmacotherapy'}`,
             date: p.prescribed_at,
             status: p.status,
-            clinician: p.doctor_profile?.name || 'Authorized Physician',
+            clinician: p.doctor?.profile?.name || 'Authorized Physician',
             details: p
           });
         });

@@ -77,6 +77,15 @@
   .glass {
     @apply bg-white/80 backdrop-blur-lg border border-white/20;
   }
+
+  .table-container {
+    @apply overflow-x-auto relative w-full;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-responsive {
+    @apply min-w-full inline-block align-middle;
+  }
 }
 
 /* Custom Scrollbar */

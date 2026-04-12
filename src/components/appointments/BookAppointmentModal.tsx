@@ -148,12 +148,18 @@ export default function BookAppointmentModal({ onClose, onSuccess }: Props) {
   useEffect(() => {
     if (formData.appointmentDate && formData.department) {
       setSlotsLoading(true);
-      appointmentsAPI.getTimeSlots(formData.appointmentDate, formData.department)
+      const deptId = departments.find(d => d.name === formData.department)?._id;
+      appointmentsAPI.getTimeSlots(
+        formData.appointmentDate, 
+        formData.department, 
+        formData.doctorAssigned || undefined,
+        deptId
+      )
         .then((res: any) => setTimeSlots(res.timeSlots || []))
         .catch(console.error)
         .finally(() => setSlotsLoading(false));
     }
-  }, [formData.appointmentDate, formData.department]);
+  }, [formData.appointmentDate, formData.department, formData.doctorAssigned, departments]);
 
   const filteredDoctors = doctors.filter(d => 
     !formData.department || d.department?.name === formData.department

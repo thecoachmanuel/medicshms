@@ -16,8 +16,12 @@ export async function GET(request: Request) {
       .select(`
         *,
         patient:patient_id(full_name, patient_id),
-        doctor_profile:doctor_id(name),
-        pharmacist_profile:pharmacist_id(name)
+        doctor:doctors!doctor_id(
+          profile:profiles!user_id(name)
+        ),
+        pharmacist:pharmacists!pharmacist_id(
+          profile:profiles!user_id(name)
+        )
       `)
       .eq('hospital_id', profile?.hospital_id)
       .order('prescribed_at', { ascending: false });

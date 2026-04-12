@@ -19,9 +19,14 @@ export async function GET(request: Request) {
         patient:patients!patient_id(
           id,
           full_name,
-          patient_id
+          patient_id,
+          gender,
+          date_of_birth
         ),
-        doctor_profile:profiles!doctor_id(name),
+        doctor:doctors!doctor_id(
+          id,
+          profile:profiles!user_id(name)
+        ),
         handled_by_profile:profiles!handled_by(name)
       `)
       .eq('hospital_id', profile?.hospital_id)

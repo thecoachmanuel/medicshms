@@ -172,7 +172,7 @@ export default function PrescriptionsPage() {
                       <div className="flex items-center gap-2 mt-2">
                         <div className="px-2 py-1 bg-white/80 rounded-lg border border-white shadow-sm text-[9px] font-black text-gray-400 uppercase tracking-tighter shrink-0">#{req.patient?.patient_id || 'ID-REDACTED'}</div>
                         <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-600 uppercase tracking-tight truncate bg-white/80 px-3 py-1 rounded-lg border border-white shadow-sm">
-                          <Stethoscope className="w-3 h-3 shrink-0" /> Dr. {req.doctor_profile?.name || 'Authorized Physician'}
+                          <Stethoscope className="w-3 h-3 shrink-0" /> Dr. {req.doctor?.profile?.name || 'Authorized Physician'}
                         </div>
                       </div>
                     </div>
@@ -225,7 +225,7 @@ export default function PrescriptionsPage() {
                         </div>
                         <div>
                           <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-0.5">Dispensed Protocol</p>
-                          <p className="text-[10px] text-emerald-600/70 font-bold uppercase tracking-tighter truncate">By {req.pharmacist_profile?.name || 'Staff'} • {new Date(req.dispensed_at || req.updated_at).toLocaleDateString()}</p>
+                          <p className="text-[10px] text-emerald-600/70 font-bold uppercase tracking-tighter truncate">By {req.pharmacist?.profile?.name || 'Staff'} • {new Date(req.dispensed_at || req.updated_at).toLocaleDateString()}</p>
                         </div>
                       </div>
                     </div>
