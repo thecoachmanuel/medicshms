@@ -57,7 +57,9 @@ export async function GET(request: Request) {
           { day: 'friday', enabled: true, startTime: defaultStart, endTime: defaultEnd, breakStart: defaultBreakStart, breakEnd: defaultBreakEnd },
           { day: 'saturday', enabled: false, startTime: defaultStart, endTime: '13:00', breakStart: '', breakEnd: '' },
           { day: 'sunday', enabled: false, startTime: '', endTime: '', breakStart: '', breakEnd: '' }
-        ]
+        ],
+        booking_mode: defaults.default_booking_mode || 'Slot',
+        sessions: defaults.default_sessions || []
       };
 
       if (doctorId) {
@@ -86,6 +88,8 @@ export async function GET(request: Request) {
       _id: config.id,
       workingDays: config.working_days,
       dateOverrides: config.date_overrides,
+      bookingMode: config.booking_mode || 'Slot',
+      sessions: config.sessions || [],
       minAdvanceBookingMinutes: config.min_advance_booking_minutes,
       sameDayCutoffTime: config.same_day_cutoff_time,
       maxBookingWindowDays: globalDefaults?.max_booking_window_days || 20
@@ -106,7 +110,7 @@ export async function PUT(request: Request) {
   const hospital_id = profile?.hospital_id;
 
   try {
-    const { workingDays, dateOverrides, minAdvanceBookingMinutes, sameDayCutoffTime, doctorId: targetDoctorId } = await request.json();
+    const { workingDays, dateOverrides, minAdvanceBookingMinutes, sameDayCutoffTime, bookingMode, sessions, doctorId: targetDoctorId } = await request.json();
     
     const isDoctor = profile?.role === 'Doctor';
     let doctorId = null;
@@ -132,6 +136,8 @@ export async function PUT(request: Request) {
     if (dateOverrides !== undefined) updateData.date_overrides = dateOverrides;
     if (minAdvanceBookingMinutes !== undefined) updateData.min_advance_booking_minutes = minAdvanceBookingMinutes;
     if (sameDayCutoffTime !== undefined) updateData.same_day_cutoff_time = sameDayCutoffTime;
+    if (bookingMode !== undefined) updateData.booking_mode = bookingMode;
+    if (sessions !== undefined) updateData.sessions = sessions;
     if (doctorId) updateData.doctor_id = doctorId;
 
     const { data: config, error } = await supabase
@@ -141,7 +147,14 @@ export async function PUT(request: Request) {
       .single();
 
     if (error) throw error;
-    return NextResponse.json({ ...config, _id: config.id, workingDays: config.working_days, dateOverrides: config.date_overrides });
+    return NextResponse.json({ 
+      ...config, 
+      _id: config.id, 
+      workingDays: config.working_days, 
+      dateOverrides: config.date_overrides,
+      bookingMode: config.booking_mode,
+      sessions: config.sessions
+    });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

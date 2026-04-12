@@ -38,6 +38,8 @@ export default function DoctorAvailabilityPage({ params }: { params: Promise<{ s
   
   const [workingDays, setWorkingDays] = useState<any[]>([]);
   const [dateOverrides, setDateOverrides] = useState<any[]>([]);
+  const [bookingMode, setBookingMode] = useState<'Slot' | 'Range'>('Slot');
+  const [sessions, setSessions] = useState<any[]>([]);
   const [newOverride, setNewOverride] = useState({ date: '', label: '', isClosed: true });
 
   useEffect(() => {
@@ -49,6 +51,8 @@ export default function DoctorAvailabilityPage({ params }: { params: Promise<{ s
       const res: any = await slotConfigAPI.getMyConfig();
       setWorkingDays(res.workingDays || []);
       setDateOverrides(res.dateOverrides || []);
+      setBookingMode(res.bookingMode || 'Slot');
+      setSessions(res.sessions || []);
     } catch (err) {
       toast.error('Failed to load availability settings');
     } finally {
@@ -61,7 +65,9 @@ export default function DoctorAvailabilityPage({ params }: { params: Promise<{ s
     try {
       await slotConfigAPI.updateConfig({
         workingDays,
-        dateOverrides
+        dateOverrides,
+        bookingMode,
+        sessions
       });
       toast.success('Availability Matrix Updated');
     } catch (err) {
@@ -139,77 +145,147 @@ export default function DoctorAvailabilityPage({ params }: { params: Promise<{ s
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         <div className="lg:col-span-8 space-y-6">
           {activeTab === 'regular' ? (
-            <div className="bg-white rounded-[3rem] border border-slate-100 shadow-2xl p-8 overflow-hidden relative group">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-primary-50 rounded-full blur-[100px] -mr-32 -mt-32 opacity-40 group-hover:opacity-60 transition-opacity" />
-              
-              <div className="space-y-4">
-                {workingDays.map((day) => (
-                  <div 
-                    key={day.day}
+            <div className="space-y-8">
+              {/* Booking Mode Toggle */}
+              <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl p-8 flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight mb-1">Booking Strategy</h3>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none">Choose how patients book your time</p>
+                </div>
+                <div className="flex items-center bg-slate-50 p-1 rounded-xl border border-slate-100">
+                  <button 
+                    onClick={() => setBookingMode('Slot')}
                     className={cn(
-                      "p-6 rounded-[2rem] border transition-all duration-500 group/day flex flex-col md:flex-row md:items-center gap-6",
-                      day.enabled 
-                        ? "bg-white border-slate-100 shadow-sm hover:shadow-xl hover:scale-[1.01] hover:border-primary-100" 
-                        : "bg-slate-50/50 border-transparent opacity-60 grayscale"
+                      "px-6 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                      bookingMode === 'Slot' ? "bg-white text-primary-600 shadow-sm border border-slate-100" : "text-slate-400 hover:text-slate-600"
                     )}
                   >
-                    <div className="flex items-center gap-4 min-w-[140px]">
-                      <button 
-                        onClick={() => updateDay(day.day, { enabled: !day.enabled })}
+                    Strict Slots (30m)
+                  </button>
+                  <button 
+                    onClick={() => setBookingMode('Range')}
+                    className={cn(
+                      "px-6 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                      bookingMode === 'Range' ? "bg-white text-primary-600 shadow-sm border border-slate-100" : "text-slate-400 hover:text-slate-600"
+                    )}
+                  >
+                    Time Ranges (High Volume)
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-[3rem] border border-slate-100 shadow-2xl p-8 overflow-hidden relative group">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary-50 rounded-full blur-[100px] -mr-32 -mt-32 opacity-40 group-hover:opacity-60 transition-opacity" />
+                
+                <div className="space-y-4">
+                  {workingDays.map((day) => (
+                    <div 
+                      key={day.day}
+                      className="space-y-4"
+                    >
+                      <div 
                         className={cn(
-                          "w-12 h-6 rounded-full transition-all relative",
-                          day.enabled ? "bg-primary-600" : "bg-slate-300"
+                          "p-6 rounded-[2rem] border transition-all duration-500 group/day flex flex-col md:flex-row md:items-center gap-6",
+                          day.enabled 
+                            ? "bg-white border-slate-100 shadow-sm hover:shadow-xl hover:scale-[1.01] hover:border-primary-100" 
+                            : "bg-slate-50/50 border-transparent opacity-60 grayscale"
                         )}
                       >
-                        <div className={cn(
-                          "absolute top-1 w-4 h-4 rounded-full bg-white transition-all",
-                          day.enabled ? "right-1" : "left-1"
-                        )} />
-                      </button>
-                      <span className="font-black text-xs uppercase tracking-widest text-slate-800">
-                        {day.day}
-                      </span>
-                    </div>
-
-                    {day.enabled && (
-                      <div className="flex flex-wrap items-center gap-4 md:flex-1">
-                        <div className="flex items-center gap-3 bg-slate-50 px-4 py-2.5 rounded-2xl border border-slate-100">
-                           <Sun className="w-3 h-3 text-amber-500" />
-                           <input 
-                             type="time" 
-                             value={day.startTime}
-                             onChange={(e) => updateDay(day.day, { startTime: e.target.value })}
-                             className="bg-transparent text-xs font-bold text-slate-700 outline-none"
-                           />
-                           <ChevronRight className="w-3 h-3 text-slate-300" />
-                           <input 
-                             type="time" 
-                             value={day.endTime}
-                             onChange={(e) => updateDay(day.day, { endTime: e.target.value })}
-                             className="bg-transparent text-xs font-bold text-slate-700 outline-none"
-                           />
+                        <div className="flex items-center gap-4 min-w-[140px]">
+                          <button 
+                            onClick={() => updateDay(day.day, { enabled: !day.enabled })}
+                            className={cn(
+                              "w-12 h-6 rounded-full transition-all relative",
+                              day.enabled ? "bg-primary-600" : "bg-slate-300"
+                            )}
+                          >
+                            <div className={cn(
+                              "absolute top-1 w-4 h-4 rounded-full bg-white transition-all",
+                              day.enabled ? "right-1" : "left-1"
+                            )} />
+                          </button>
+                          <span className="font-black text-xs uppercase tracking-widest text-slate-800">
+                            {day.day}
+                          </span>
                         </div>
 
-                        <div className="flex items-center gap-3 bg-primary-50 px-4 py-2.5 rounded-2xl border border-primary-100/50">
-                           <Coffee className="w-3 h-3 text-primary-600" />
-                           <span className="text-[10px] font-black uppercase tracking-widest text-primary-600/60">Break:</span>
-                           <input 
-                             type="time" 
-                             value={day.breakStart}
-                             onChange={(e) => updateDay(day.day, { breakStart: e.target.value })}
-                             className="bg-transparent text-xs font-bold text-primary-700 outline-none"
-                           />
-                           <input 
-                             type="time" 
-                             value={day.breakEnd}
-                             onChange={(e) => updateDay(day.day, { breakEnd: e.target.value })}
-                             className="bg-transparent text-xs font-bold text-primary-700 outline-none"
-                           />
-                        </div>
+                        {day.enabled && (
+                          bookingMode === 'Slot' ? (
+                            <div className="flex flex-wrap items-center gap-4 md:flex-1">
+                              <div className="flex items-center gap-3 bg-slate-50 px-4 py-2.5 rounded-2xl border border-slate-100">
+                                 <Sun className="w-3 h-3 text-amber-500" />
+                                 <input 
+                                   type="time" 
+                                   value={day.startTime}
+                                   onChange={(e) => updateDay(day.day, { startTime: e.target.value })}
+                                   className="bg-transparent text-xs font-bold text-slate-700 outline-none"
+                                 />
+                                 <ChevronRight className="w-3 h-3 text-slate-300" />
+                                 <input 
+                                   type="time" 
+                                   value={day.endTime}
+                                   onChange={(e) => updateDay(day.day, { endTime: e.target.value })}
+                                   className="bg-transparent text-xs font-bold text-slate-700 outline-none"
+                                 />
+                              </div>
+
+                              <div className="flex items-center gap-3 bg-primary-50 px-4 py-2.5 rounded-2xl border border-primary-100/50">
+                                 <Coffee className="w-3 h-3 text-primary-600" />
+                                 <span className="text-[10px] font-black uppercase tracking-widest text-primary-600/60">Break:</span>
+                                 <input 
+                                   type="time" 
+                                   value={day.breakStart}
+                                   onChange={(e) => updateDay(day.day, { breakStart: e.target.value })}
+                                   className="bg-transparent text-xs font-bold text-primary-700 outline-none"
+                                 />
+                                 <input 
+                                   type="time" 
+                                   value={day.breakEnd}
+                                   onChange={(e) => updateDay(day.day, { breakEnd: e.target.value })}
+                                   className="bg-transparent text-xs font-bold text-primary-700 outline-none"
+                                 />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex-1 flex flex-col gap-3">
+                              <div className="flex flex-wrap gap-2">
+                                {sessions
+                                  .filter(s => s.day === day.day)
+                                  .map((s, idx) => (
+                                    <div key={idx} className="flex items-center gap-3 bg-primary-50 px-4 py-2 rounded-xl border border-primary-100 group/session">
+                                      <div className="space-y-0.5">
+                                        <p className="text-[10px] font-black text-primary-900 uppercase leading-none">{s.name}</p>
+                                        <p className="text-[8px] font-bold text-primary-600/60 uppercase tracking-widest">{s.startTime} - {s.endTime} | Cap: {s.capacity || 50}</p>
+                                      </div>
+                                      <button 
+                                        onClick={() => setSessions(prev => prev.filter((_, i) => i !== prev.findIndex(ps => ps.day === s.day && ps.name === s.name)))}
+                                        className="p-1 hover:bg-white rounded-lg text-rose-500 transition-all opacity-0 group-hover/session:opacity-100"
+                                      >
+                                        <Trash2 className="w-3 h-3" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                  <button 
+                                    onClick={() => {
+                                      const name = prompt('Session Name (e.g. Morning)');
+                                      if (!name) return;
+                                      const start = prompt('Start Time (e.g. 09:00)', '09:00');
+                                      const end = prompt('End Time (e.g. 12:00)', '12:00');
+                                      const cap = prompt('Max Patients', '50');
+                                      setSessions(prev => [...prev, { day: day.day, name, startTime: start, endTime: end, capacity: parseInt(cap || '50'), enabled: true }]);
+                                    }}
+                                    className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-black hover:border-black transition-all"
+                                  >
+                                    <Plus className="w-3 h-3" /> Add Session
+                                  </button>
+                              </div>
+                            </div>
+                          )
+                        )}
                       </div>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           ) : (

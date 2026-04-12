@@ -373,17 +373,25 @@ export default function PublicBookingForm({ hospitalId, slug }: Props) {
                         No slots available for this selection
                       </div>
                     ) : (
-                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {timeSlots.map(slot => (
                           <button 
                             key={slot}
                             onClick={() => setFormData({...formData, appointmentTime: slot})}
                             className={cn(
-                              "py-3 rounded-xl text-[10px] font-black transition-all",
-                              formData.appointmentTime === slot ? "bg-primary-600 text-white shadow-lg shadow-primary-600/20" : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                              "px-4 py-4 rounded-2xl text-[10px] font-black transition-all border text-left flex items-center justify-between group",
+                              formData.appointmentTime === slot 
+                                ? "bg-primary-600 text-white border-primary-600 shadow-xl shadow-primary-600/20 active:scale-95" 
+                                : "bg-white text-gray-600 border-gray-100 hover:border-primary-200 hover:bg-gray-50"
                             )}
                           >
-                            {slot}
+                            <span className="truncate">{slot}</span>
+                            <div className={cn(
+                              "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
+                              formData.appointmentTime === slot ? "border-white bg-white/20" : "border-gray-200"
+                            )}>
+                              {formData.appointmentTime === slot && <div className="w-2 h-2 rounded-full bg-white" />}
+                            </div>
                           </button>
                         ))}
                       </div>

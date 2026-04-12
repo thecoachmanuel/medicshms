@@ -47,7 +47,6 @@ export default function AdminBillingPage() {
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
-      </div>
 
       <BillingList />
     </div>

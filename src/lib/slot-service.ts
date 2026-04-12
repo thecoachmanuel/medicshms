@@ -56,7 +56,38 @@ export const SlotService = {
     const isHoliday = dateOverrides.find((o: any) => o.date === date && o.isClosed);
     if (isHoliday) return [];
 
-    // 4. Generate Base Slots
+    // 4. Determine Mode (Slot vs Range)
+    const bookingMode = config?.booking_mode || defaults.default_booking_mode || 'Slot';
+
+    if (bookingMode === 'Range') {
+      const sessions = config?.sessions || defaults.default_sessions || [];
+      const daySessions = sessions.filter((s: any) => s.day === dayName && s.enabled !== false);
+      
+      if (daySessions.length === 0) return [];
+
+      // 5. Fetch Existing Bookings for Range Capacity
+      const { data: bookings } = await client
+        .from('public_appointments')
+        .select('appointment_time')
+        .eq('hospital_id', hospitalId)
+        .eq('appointment_date', date)
+        .not('appointment_status', 'eq', 'Cancelled');
+
+      const bookingCounts = (bookings || []).reduce((acc: any, b) => {
+        acc[b.appointment_time] = (acc[b.appointment_time] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Filter sessions by capacity
+      return daySessions
+        .filter((s: any) => {
+          const bookedCount = bookingCounts[s.name] || 0;
+          return bookedCount < (s.capacity || 50);
+        })
+        .map((s: any) => `${s.name} (${s.startTime} - ${s.endTime})`);
+    }
+
+    // 4. Generate Base Slots (Original Logic)
     const slots: string[] = [];
     const [startH, startM] = startTime.split(':').map(Number);
     const [endH, endM] = endTime.split(':').map(Number);
@@ -75,11 +106,7 @@ export const SlotService = {
       .eq('appointment_date', date)
       .not('appointment_status', 'eq', 'Cancelled');
 
-    const bookedTimes = new Set((bookings || []).map(b => {
-       // Standardize time format for comparison (ensure it matches our generator)
-       const t = b.appointment_time;
-       return t; 
-    }));
+    const bookedTimes = new Set((bookings || []).map(b => b.appointment_time));
 
     while (current < end) {
       const timeStr = current.toLocaleTimeString('en-US', { 

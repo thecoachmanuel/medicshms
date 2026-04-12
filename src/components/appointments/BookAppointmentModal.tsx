@@ -377,15 +377,44 @@ export default function BookAppointmentModal({ onClose, onSuccess }: Props) {
                     <label className="block text-sm font-bold text-gray-700 mb-2">Appointment Date</label>
                     <input type="date" className="input w-full" value={formData.appointmentDate} onChange={e => setFormData({...formData, appointmentDate: e.target.value, appointmentTime: ''})} min={new Date().toISOString().split('T')[0]} />
                   </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Available Slots</label>
-                    <div className="relative">
-                      <select className="input w-full pr-10" value={formData.appointmentTime} onChange={e => setFormData({...formData, appointmentTime: e.target.value})} disabled={!formData.appointmentDate || slotsLoading}>
-                        <option value="">Select Time</option>
-                        {timeSlots.map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
-                      {slotsLoading && <Loader2 className="absolute right-3 top-2.5 w-5 h-5 animate-spin text-gray-400" />}
-                    </div>
+                  <div className="md:col-span-2 space-y-3">
+                    <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Available Appointments</label>
+                    {!formData.appointmentDate || !formData.department ? (
+                       <div className="p-8 rounded-[2rem] bg-gray-50 border border-dashed border-gray-200 text-center text-gray-400 font-bold text-xs uppercase tracking-widest">
+                         Select date & department to view slots
+                       </div>
+                    ) : slotsLoading ? (
+                      <div className="flex items-center justify-center p-8">
+                        <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+                      </div>
+                    ) : timeSlots.length === 0 ? (
+                      <div className="p-8 rounded-[2rem] bg-red-50 border border-red-100 text-center text-red-500 font-bold text-xs uppercase tracking-widest">
+                        No availability found
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {timeSlots.map(slot => (
+                          <button 
+                            key={slot}
+                            onClick={() => setFormData({...formData, appointmentTime: slot})}
+                            className={cn(
+                              "px-4 py-4 rounded-2xl text-[10px] font-black transition-all border text-left flex items-center justify-between group",
+                              formData.appointmentTime === slot 
+                                ? "bg-primary-600 text-white border-primary-600 shadow-xl shadow-primary-600/20 active:scale-95" 
+                                : "bg-white text-gray-600 border-gray-100 hover:border-primary-200 hover:bg-gray-50"
+                            )}
+                          >
+                            <span className="truncate">{slot}</span>
+                            <div className={cn(
+                              "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
+                              formData.appointmentTime === slot ? "border-white bg-white/20" : "border-gray-200"
+                            )}>
+                              {formData.appointmentTime === slot && <div className="w-2 h-2 rounded-full bg-white" />}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
