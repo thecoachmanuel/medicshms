@@ -29,6 +29,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { authAPI } from '@/lib/api';
 import { toast } from 'react-hot-toast';
+import { isPlatformAdmin } from '@/lib/auth-helpers';
 
 interface Step {
   id: string;
@@ -55,10 +56,10 @@ export const OnboardingGuide = () => {
     // 1. Must NOT be a Platform Admin (they have their own tools)
     // 2. Must NOT have dismissed or completed onboarding already
     // 3. Must have a valid role (handled by steps lookup)
-    const isPlatformAdmin = user?.role === 'Platform Admin' || user?.role === 'platform_admin';
+    const isSuper = isPlatformAdmin(user?.role || '');
     const isReturningUser = prefs?.has_completed_onboarding || prefs?.dismissed_onboarding;
     
-    if (user && !isPlatformAdmin && !isReturningUser) {
+    if (user && !isSuper && !isReturningUser) {
       setIsVisible(true);
     } else {
       setIsVisible(false);

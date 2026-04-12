@@ -21,6 +21,8 @@ export interface User {
     auto_finalize_results: boolean;
     notification_sounds: boolean;
     sidebar_collapsed: boolean;
+    dismissed_onboarding?: boolean;
+    has_completed_onboarding?: boolean;
   };
   receptionistInfo?: {
     shift?: string;
