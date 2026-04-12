@@ -22,10 +22,29 @@ export async function GET(request: Request) {
 
     let query = (supabaseAdmin || supabase)
       .from('public_appointments')
-      .select('id, appointment_id, full_name, mobile_number, email_address, appointment_date, appointment_time, department, appointment_status, age, gender, date_of_birth, primary_concern, known_allergies, allergies_details, patient_id, doctors!doctor_assigned_id(id, profiles!user_id(name))', { count: 'exact' })
+      .select('id, appointment_id, full_name, mobile_number, email_address, appointment_date, appointment_time, department, appointment_status, age, gender, date_of_birth, primary_concern, doctor_notes, prescription, known_allergies, allergies_details, patient_id, doctors!doctor_assigned_id(id, profiles!user_id(name))', { count: 'exact' })
       .eq('hospital_id', userProfile?.hospital_id);
 
-    if (patientId) query = query.eq('patient_id', patientId);
+    if (patientId) {
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(patientId);
+      if (isUUID) {
+        // Resolve the human-readable patient_id from the UUID
+        const { data: patient } = await (supabaseAdmin || supabase)
+          .from('patients')
+          .select('patient_id')
+          .eq('id', patientId)
+          .single();
+        
+        if (patient?.patient_id) {
+          query = query.eq('patient_id', patient.patient_id);
+        } else {
+          // Fallback: if patient not found by UUID, try direct match (unlikely to succeed but safe)
+          query = query.eq('patient_id', patientId);
+        }
+      } else {
+        query = query.eq('patient_id', patientId);
+      }
+    }
     if (status && status !== 'All' && status !== 'all') query = query.eq('appointment_status', status);
     if (date) query = query.eq('appointment_date', date);
     if (search) {
@@ -55,6 +74,8 @@ export async function GET(request: Request) {
         age: apt.age || (apt.date_of_birth ? calculateAge(apt.date_of_birth) : null),
         gender: apt.gender,
         primaryConcern: apt.primary_concern,
+        doctor_notes: apt.doctor_notes,
+        prescription: apt.prescription,
         knownAllergies: apt.known_allergies ? 'Yes' : 'No',
         allergiesDetails: apt.allergies_details,
         patientId: apt.patient_id,
