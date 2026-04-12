@@ -49,10 +49,11 @@ export default function DoctorAvailabilityPage({ params }: { params: Promise<{ s
   const fetchConfig = async () => {
     try {
       const res: any = await slotConfigAPI.getMyConfig();
-      setWorkingDays(res.workingDays || []);
-      setDateOverrides(res.dateOverrides || []);
-      setBookingMode(res.bookingMode || 'Slot');
-      setSessions(res.sessions || []);
+      const data = res.data || res;
+      setWorkingDays(data.workingDays || []);
+      setDateOverrides(data.dateOverrides || []);
+      setBookingMode(data.bookingMode || 'Slot');
+      setSessions(data.sessions || []);
     } catch (err) {
       toast.error('Failed to load availability settings');
     } finally {

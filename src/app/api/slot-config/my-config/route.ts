@@ -5,8 +5,10 @@ import { withAuth } from '@/lib/auth';
 // Get shared slot config (Receptionist)
 // GET /api/slot-config/my-config
 export async function GET(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Receptionist', 'Admin', 'Doctor']) as any;
+  const { error: authError, profile, supabase: scopedSupabase } = await withAuth(request, ['Receptionist', 'Admin', 'Doctor']) as any;
   if (authError) return authError;
+
+  const db = scopedSupabase || supabase;
 
   const hospital_id = profile?.hospital_id;
 
@@ -26,7 +28,7 @@ export async function GET(request: Request) {
     const tenantSharedKey = doctorId ? `doctor_${doctorId}` : `shared_${hospital_id}`;
     const tenantGlobalKey = `global_${hospital_id}`;
 
-    let { data: config, error: configError } = await supabase
+    let { data: config, error: configError } = await db
       .from('slot_configs')
       .select('*')
       .eq('key', tenantSharedKey)
@@ -34,7 +36,9 @@ export async function GET(request: Request) {
 
     // Auto-create with defaults if not exists
     if (configError || !config) {
-      const { data: defaults } = await supabase
+      if (configError && configError.code !== 'PGRST116') throw configError;
+
+      const { data: defaults } = await db
         .from('slot_defaults')
         .select('*')
         .eq('key', tenantGlobalKey)
@@ -77,7 +81,7 @@ export async function GET(request: Request) {
     }
 
     // Attach maxBookingWindowDays from global defaults
-    const { data: globalDefaults } = await supabase
+    const { data: globalDefaults } = await db
       .from('slot_defaults')
       .select('*')
       .eq('key', tenantGlobalKey)
@@ -104,8 +108,10 @@ export async function GET(request: Request) {
 // Update shared slot config
 // PUT /api/slot-config/my-config
 export async function PUT(request: Request) {
-  const { error: authError, profile } = await withAuth(request, ['Receptionist', 'Admin', 'Doctor']) as any;
+  const { error: authError, profile, supabase: scopedSupabase } = await withAuth(request, ['Receptionist', 'Admin', 'Doctor']) as any;
   if (authError) return authError;
+
+  const db = scopedSupabase || supabase;
 
   const hospital_id = profile?.hospital_id;
 
@@ -140,7 +146,7 @@ export async function PUT(request: Request) {
     if (sessions !== undefined) updateData.sessions = sessions;
     if (doctorId) updateData.doctor_id = doctorId;
 
-    const { data: config, error } = await supabase
+    const { data: config, error } = await db
       .from('slot_configs')
       .upsert({ ...updateData, key: tenantSharedKey }, { onConflict: 'key' })
       .select()

@@ -18,11 +18,14 @@ export default function SlotSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [defaults, setDefaults] = useState({
-    slotDuration: 15,
-    startTime: '09:00',
-    endTime: '17:00',
-    bufferTime: 5,
-    maxDailyAppointments: 30
+    max_booking_window_days: 20,
+    default_slot_duration_minutes: 30,
+    default_working_hours_start: '09:00',
+    default_working_hours_end: '17:00',
+    default_break_start: '13:00',
+    default_break_end: '14:00',
+    default_daily_capacity: 20,
+    default_booking_mode: 'Slot'
   });
 
   useEffect(() => {
@@ -32,9 +35,21 @@ export default function SlotSettingsPage() {
   const fetchSettings = async () => {
     try {
       setLoading(true);
-      const res = await slotConfigAPI.getDefaults();
-      if (res.data) setDefaults(res.data);
-    } catch {
+      const res: any = await slotConfigAPI.getDefaults();
+      const data = res.data || res; // Handle both wrapped and unwrapped
+      if (data) {
+        setDefaults({
+          max_booking_window_days: data.max_booking_window_days || 20,
+          default_slot_duration_minutes: data.default_slot_duration_minutes || 30,
+          default_working_hours_start: data.default_working_hours_start || '09:00',
+          default_working_hours_end: data.default_working_hours_end || '17:00',
+          default_break_start: data.default_break_start || '13:00',
+          default_break_end: data.default_break_end || '14:00',
+          default_daily_capacity: data.default_daily_capacity || 20,
+          default_booking_mode: data.default_booking_mode || 'Slot'
+        });
+      }
+    } catch (err) {
       toast.error('Failed to fetch slot settings');
     } finally {
       setLoading(false);
@@ -74,33 +89,58 @@ export default function SlotSettingsPage() {
             <div className="w-10 h-10 rounded-2xl bg-primary-50 flex items-center justify-center">
               <Clock className="w-5 h-5 text-primary-600" />
             </div>
-            <h2 className="text-lg font-bold text-gray-900">Duration Settings</h2>
+            <h2 className="text-lg font-bold text-gray-900">Duration & Capacity</h2>
           </div>
 
           <div className="space-y-4">
-            <div>
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-2 block">Slot Duration (Minutes)</label>
-              <select 
-                value={defaults.slotDuration} 
-                onChange={e => setDefaults({...defaults, slotDuration: parseInt(e.target.value)})}
-                className="input py-3"
-              >
-                <option value={10}>10 Minutes</option>
-                <option value={15}>15 Minutes</option>
-                <option value={20}>20 Minutes</option>
-                <option value={30}>30 Minutes</option>
-                <option value={45}>45 Minutes</option>
-                <option value={60}>1 Hour</option>
-              </select>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-2 block">Slot Duration</label>
+                <select 
+                  value={defaults.default_slot_duration_minutes} 
+                  onChange={e => setDefaults({...defaults, default_slot_duration_minutes: parseInt(e.target.value)})}
+                  className="input py-3"
+                >
+                  <option value={10}>10 Minutes</option>
+                  <option value={15}>15 Minutes</option>
+                  <option value={20}>20 Minutes</option>
+                  <option value={30}>30 Minutes</option>
+                  <option value={45}>45 Minutes</option>
+                  <option value={60}>1 Hour</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-2 block">Booking Modal</label>
+                <select 
+                  value={defaults.default_booking_mode} 
+                  onChange={e => setDefaults({...defaults, default_booking_mode: e.target.value})}
+                  className="input py-3"
+                >
+                  <option value="Slot">Fixed Slots</option>
+                  <option value="Range">Time Ranges / Sessions</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-2 block">Buffer Time (Minutes)</label>
-              <input 
-                type="number" 
-                value={defaults.bufferTime || ''} 
-                onChange={e => setDefaults({...defaults, bufferTime: parseInt(e.target.value) || 0})}
-                className="input py-3"
-              />
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-2 block">Max Booking Window (Days)</label>
+                <input 
+                  type="number" 
+                  value={defaults.max_booking_window_days} 
+                  onChange={e => setDefaults({...defaults, max_booking_window_days: parseInt(e.target.value) || 1})}
+                  className="input py-3"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-2 block">Max Daily Capacity</label>
+                <input 
+                  type="number" 
+                  value={defaults.default_daily_capacity || ''} 
+                  onChange={e => setDefaults({...defaults, default_daily_capacity: parseInt(e.target.value) || 0})}
+                  className="input py-3"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -110,7 +150,7 @@ export default function SlotSettingsPage() {
             <div className="w-10 h-10 rounded-2xl bg-primary-50 flex items-center justify-center">
               <Calendar className="w-5 h-5 text-primary-600" />
             </div>
-            <h2 className="text-lg font-bold text-gray-900">Operation Timing</h2>
+            <h2 className="text-lg font-bold text-gray-900">Standard Operating Hours</h2>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -118,8 +158,8 @@ export default function SlotSettingsPage() {
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-2 block">Opening Time</label>
               <input 
                 type="time" 
-                value={defaults.startTime} 
-                onChange={e => setDefaults({...defaults, startTime: e.target.value})}
+                value={defaults.default_working_hours_start} 
+                onChange={e => setDefaults({...defaults, default_working_hours_start: e.target.value})}
                 className="input py-3"
               />
             </div>
@@ -127,20 +167,32 @@ export default function SlotSettingsPage() {
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-2 block">Closing Time</label>
               <input 
                 type="time" 
-                value={defaults.endTime} 
-                onChange={e => setDefaults({...defaults, endTime: e.target.value})}
+                value={defaults.default_working_hours_end} 
+                onChange={e => setDefaults({...defaults, default_working_hours_end: e.target.value})}
                 className="input py-3"
               />
             </div>
           </div>
-          <div>
-            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-2 block">Max Daily Appointments</label>
-            <input 
-              type="number" 
-              value={defaults.maxDailyAppointments || ''} 
-              onChange={e => setDefaults({...defaults, maxDailyAppointments: parseInt(e.target.value) || 0})}
-              className="input py-3"
-            />
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-2 block">Break Starts</label>
+              <input 
+                type="time" 
+                value={defaults.default_break_start} 
+                onChange={e => setDefaults({...defaults, default_break_start: e.target.value})}
+                className="input py-3"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-2 block">Break Ends</label>
+              <input 
+                type="time" 
+                value={defaults.default_break_end} 
+                onChange={e => setDefaults({...defaults, default_break_end: e.target.value})}
+                className="input py-3"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -151,7 +203,7 @@ export default function SlotSettingsPage() {
           <p className="text-[10px] font-bold uppercase tracking-widest">Changes reflect immediately across the booking engine</p>
         </div>
         <button onClick={fetchSettings} className="btn-secondary">Discard Changes</button>
-        <button onClick={handleSave} disabled={isSubmitting} className="btn-primary min-w-[140px]">
+        <button onClick={handleSave} disabled={isSubmitting || loading} className="btn-primary min-w-[140px]">
           {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-4 h-4" /> Save Settings</>}
         </button>
       </div>
