@@ -7,7 +7,7 @@ import {
   Eye, Edit2, Building2, FileText, Plus, Pill
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { appointmentAPI, pharmacyAPI, labAPI, radiologyAPI } from '@/lib/api';
+import { appointmentAPI, pharmacyAPI, labAPI, radiologyAPI, patientAPI } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import CreateLabRequestModal from '@/components/clinical/CreateLabRequestModal';
 import CreateRadiologyRequestModal from '@/components/clinical/CreateRadiologyRequestModal';
@@ -66,7 +66,7 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
     if (isUUID) {
       setPatientUUID(pId);
     } else {
-      patientsAPI.getById(pId).then(res => {
+      patientAPI.getById(pId).then(res => {
         if (res.data?._id) setPatientUUID(res.data._id);
       }).catch(err => console.error('UUID Resolve Error:', err));
     }
@@ -103,7 +103,7 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pId);
       if (!isUUID) {
         try {
-          const pRes = await patientsAPI.getById(pId);
+          const pRes = await patientAPI.getById(pId);
           if (pRes.data?._id) {
             pId = pRes.data._id;
           }
