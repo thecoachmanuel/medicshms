@@ -48,10 +48,19 @@ export async function GET(request: Request) {
       hospitalSettings = hSettings;
     }
 
-    // 4. Resolve Hospital Defaults from hospitals table (branding only)
+    // 4. Resolve Hospital Defaults from hospitals table (branding + subscription plan)
     let hospitalDefaults: any = {};
     if (targetHospitalId) {
-      const { data: hData } = await client.from('hospitals').select('name, logo_url, slug, custom_domain, email').eq('id', targetHospitalId).maybeSingle();
+      const { data: hData } = await client
+        .from('hospitals')
+        .select(`
+          name, logo_url, slug, custom_domain, email,
+          subscription_status,
+          plan:subscription_plans(id, name, slug, features, price_monthly, price_yearly)
+        `)
+        .eq('id', targetHospitalId)
+        .maybeSingle() as any;
+
       if (hData) {
         hospitalDefaults = {
           hospital_name: hData.name,
@@ -59,7 +68,9 @@ export async function GET(request: Request) {
           hospital_id: targetHospitalId,
           slug: hData.slug,
           custom_domain: hData.custom_domain,
-          contact_email: hData.email
+          contact_email: hData.email,
+          subscription_status: hData.subscription_status,
+          plan: hData.plan
         };
       }
     }

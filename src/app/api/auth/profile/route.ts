@@ -32,12 +32,13 @@ export async function PUT(request: Request) {
       return NextResponse.json({ message: 'Not authorized' }, { status: 401 });
     }
 
-    const { name, phone } = await request.json();
+    const { name, phone, clinical_preferences } = await request.json();
     
     // 1. Update base profile
     const updateData: any = {};
     if (name) updateData.name = name;
     if (phone) updateData.phone = phone;
+    if (clinical_preferences) updateData.clinical_preferences = clinical_preferences;
     updateData.updated_at = new Date().toISOString();
 
     const { error: profileError } = await (supabaseAdmin || supabase)

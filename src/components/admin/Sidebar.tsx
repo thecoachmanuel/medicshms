@@ -56,9 +56,13 @@ interface SidebarProps {
 
 import HospitalLogo from '../common/HospitalLogo';
 
+import { SidebarProps } from './Sidebar';
+import { useSiteSettings } from '@/context/SettingsContext';
+
 export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleCollapse }: SidebarProps) => {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { settings, hasFeature } = useSiteSettings();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const parts = pathname.split('/');
@@ -85,7 +89,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
     }
 
     if (role === 'Admin') {
-      return [
+      const items = [
         { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/admin/dashboard` },
         { icon: Calendar, label: 'Appointments', path: `${base}/admin/appointments` },
         { icon: FileText, label: 'Patients', path: `${base}/admin/patients` },
@@ -93,19 +97,21 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
         { icon: ShieldCheck, label: 'Admin', path: `${base}/admin/users` },
         { icon: Stethoscope, label: 'Doctors', path: `${base}/admin/doctors` },
         { icon: Users, label: 'Hospital Staff', path: `${base}/admin/staff` },
-        { icon: FlaskConical, label: 'Laboratory Matrix', path: `${base}/admin/laboratory` },
+        { icon: FlaskConical, label: 'Laboratory Matrix', path: `${base}/admin/laboratory`, feature: 'Laboratory' },
         { icon: Building2, label: 'Departments', path: `${base}/admin/departments` },
         { icon: CalendarClock, label: 'Slot Settings', path: `${base}/admin/slot-settings` },
         { icon: FileCheck, label: 'Template', path: `${base}/admin/invoice-template` },
         { icon: Megaphone, label: 'Announcements', path: `${base}/admin/announcements` },
         { icon: Settings, label: 'Portal Settings', path: `${base}/admin/settings` },
-        { icon: Code, label: 'Embed Integration', path: `${base}/admin/embed` },
-        { icon: LineChart, label: 'Productivity Hub', path: `${base}/admin/productivity` },
+        { icon: Code, label: 'Embed Integration', path: `${base}/admin/embed`, feature: 'Integration' },
+        { icon: LineChart, label: 'Productivity Hub', path: `${base}/admin/productivity`, feature: 'Analytics' },
         { icon: CreditCard, label: 'Account & Billing', path: `${base}/admin/account` },
         { icon: ActivitySquare, label: 'Site Updates', path: `${base}/admin/site-updates` },
         { icon: Headphones, label: 'Support', path: `${base}/admin/support` },
         { icon: User, label: 'My Profile', path: `${base}/admin/profile` },
       ];
+
+      return items.filter(item => !item.feature || hasFeature(item.feature));
     } else if (role === 'Receptionist') {
       return [
         { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/receptionist/dashboard` },

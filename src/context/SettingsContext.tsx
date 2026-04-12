@@ -11,6 +11,7 @@ interface SettingsContextType {
   refreshSettings: () => Promise<void>;
   slug: string | undefined;
   pathname: string;
+  hasFeature: (feature: string) => boolean;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -83,8 +84,16 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     return () => window.removeEventListener('medics-settings-updated', handleRefresh);
   }, [slug, user?.hospital_id, authLoading]);
 
+  const hasFeature = (featureName: string): boolean => {
+    if (!settings?.plan?.features) return false;
+    // Allow case-insensitive matching and partial matches for flexibility
+    return settings.plan.features.some((f: string) => 
+      f.toLowerCase().includes(featureName.toLowerCase())
+    );
+  };
+
   return (
-    <SettingsContext.Provider value={{ settings, loading, refreshSettings: fetchSettings, slug, pathname }}>
+    <SettingsContext.Provider value={{ settings, loading, refreshSettings: fetchSettings, slug, pathname, hasFeature }}>
       {children}
     </SettingsContext.Provider>
   );
