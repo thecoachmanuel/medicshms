@@ -54,9 +54,9 @@ export const AIAgent = {
       const content = data.response;
       
       // Parse potential tool calls
-      const toolMatch = content.match(/<tool>(.*?)<\/tool>/s);
+      const toolMatch = content.match(/<tool>([\s\S]*?)<\/tool>/);
       let tools: ToolCall[] = [];
-      let text = content.replace(/<tool>.*?<\/tool>/gs, '').trim();
+      let text = content.replace(/<tool>[\s\S]*?<\/tool>/g, '').trim();
 
       if (toolMatch) {
         try {
