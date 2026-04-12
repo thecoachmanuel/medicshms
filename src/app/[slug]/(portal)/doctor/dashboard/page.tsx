@@ -12,6 +12,7 @@ import {
   ArrowRight, Beaker, Camera
 } from 'lucide-react';
 import { DashboardCard } from '@/components/admin/DashboardCard';
+import { toast } from 'react-hot-toast';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
