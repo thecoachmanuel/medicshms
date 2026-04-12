@@ -133,7 +133,7 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
     { label: 'Completed', value: stats.cards.totalCompleted || 0, icon: CheckCircle, color: 'emerald', description: 'Total successful consultations' },
     { label: 'My Patients', value: stats.cards.uniquePatients || 0, icon: UsersIcon, color: 'purple', description: 'Unique patients treated overall' },
     { label: 'Consultations', value: stats.cards.monthConsultations || 0, icon: Activity, color: 'amber', description: 'Consultations this month' },
-  ] : [];
+  ];
 
   return (
     <div className="relative min-h-screen space-y-6 pb-12">

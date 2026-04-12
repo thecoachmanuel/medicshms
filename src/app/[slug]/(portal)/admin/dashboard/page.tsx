@@ -148,7 +148,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
       description: 'Efficiency of billed vs collected',
       progress: stats.cards.monthRevenue.collectionRate
     },
-  ] : [];
+  ];
 
   return (
     <div className="relative min-h-screen space-y-6 pb-12">
