@@ -23,6 +23,7 @@ export class SpeechEngine {
 
       // Pre-load voices
       if (this.synthesis) {
+        this.voices = this.synthesis.getVoices();
         this.synthesis.onvoiceschanged = () => {
           this.voices = this.synthesis?.getVoices() || [];
         };
@@ -103,18 +104,33 @@ export class SpeechEngine {
     if (!this.synthesis) return;
 
     this.cancelSpeech();
+
+    // Sanitize text: Remove <tool>...</tool> blocks and any other XML-like tags
+    const cleanText = text.replace(/<[\s\S]*?>/g, '').trim();
+    if (!cleanText) {
+      if (onEnd) onEnd();
+      return;
+    }
     
-    const utterance = new SpeechSynthesisUtterance(text);
+    const utterance = new SpeechSynthesisUtterance(cleanText);
     
+    // Resilient voice selection
+    if (this.voices.length === 0) {
+      this.voices = this.synthesis.getVoices();
+    }
+
     // Prefer professional voices (Google, Microsoft, etc.)
     const preferredVoice = this.voices.find(v => 
-      (v.name.includes('Google') || v.name.includes('Microsoft') || v.name.includes('Natural')) && 
+      (v.name.toLowerCase().includes('google') || 
+       v.name.toLowerCase().includes('microsoft') || 
+       v.name.toLowerCase().includes('natural') ||
+       v.name.toLowerCase().includes('premium')) && 
       v.lang.startsWith('en')
-    ) || this.voices.find(v => v.lang.startsWith('en'));
+    ) || this.voices.find(v => v.lang.startsWith('en')) || this.voices[0];
 
     if (preferredVoice) utterance.voice = preferredVoice;
     
-    utterance.rate = 1.0;
+    utterance.rate = 1.05; // Slightly faster for hospital efficiency
     utterance.pitch = 1.0;
     utterance.volume = 1.0;
 
@@ -123,6 +139,12 @@ export class SpeechEngine {
     };
 
     utterance.onend = () => {
+      if (this.onStatusChange) this.onStatusChange('idle');
+      if (onEnd) onEnd();
+    };
+
+    utterance.onerror = (e) => {
+      console.error('TTS Error:', e);
       if (this.onStatusChange) this.onStatusChange('idle');
       if (onEnd) onEnd();
     };
