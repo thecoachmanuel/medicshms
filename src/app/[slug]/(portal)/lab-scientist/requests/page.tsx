@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { labAPI, usersAPI } from '@/lib/api';
+import { labAPI, usersAPI, appointmentsAPI } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 import { TestTubes, Search, CheckCircle, UploadCloud, Printer, Download, Eye, FileText, Clock, User, ChevronRight, X, AlertCircle, Info, Megaphone, RefreshCw } from 'lucide-react';
@@ -430,7 +430,7 @@ export default function LabRequestsPage() {
                                 onClick={async () => {
                                 try {
                                   setCallingId(req.appointment_id || req.id);
-                                  const res = await labAPI.call(req.appointment_id || req.id, { station: 'Phlebotomy Bay' }) as any;
+                                  const res = await appointmentsAPI.call(req.appointment_id || req.id, { station: 'Phlebotomy Bay' }) as any;
                                   const appointment = res.data;
 
                                   // Broadcast signal

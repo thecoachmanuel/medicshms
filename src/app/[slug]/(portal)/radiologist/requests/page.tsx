@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { radiologyAPI } from '@/lib/api';
+import { radiologyAPI, appointmentsAPI } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 import { Scan, Search, CheckCircle, UploadCloud, Printer, Download, Eye, Link as LinkIcon, Clock, User, ChevronRight, X, AlertCircle, ImageIcon, Activity, Megaphone, RefreshCw } from 'lucide-react';
@@ -81,24 +81,6 @@ export default function RadiologyRequestsPage() {
     }
   };
 
-  const handleCallPatient = async (request: any) => {
-    setCallingId(request.id);
-    try {
-      await supabase.from('broadcasts').insert({
-        type: 'PATIENT_CALLED',
-        payload: {
-          patient_name: request.patient?.full_name,
-          department: 'Radiology',
-          room: 'Imaging Suite'
-        }
-      });
-      toast.success(`Called ${request.patient?.full_name} to Radiology`);
-    } catch (error) {
-      toast.error('Failed to broadcast call');
-    } finally {
-      setCallingId(null);
-    }
-  };
 
   const fetchMetadata = async () => {
     try {
@@ -422,7 +404,7 @@ export default function RadiologyRequestsPage() {
                               onClick={async () => {
                                 try {
                                   setCallingId(req.appointment_id || req.id);
-                                  const res = await radiologyAPI.call(req.appointment_id || req.id, { station: 'Radiology Suite' }) as any;
+                                  const res = await appointmentsAPI.call(req.appointment_id || req.id, { station: 'Radiology Suite' }) as any;
                                   const appointment = res.data;
 
                                   // Broadcast signal
