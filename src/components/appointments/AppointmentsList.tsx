@@ -377,7 +377,7 @@ export default function AppointmentsList({ role }: Props) {
                           <XCircle className="w-4.5 h-4.5" />
                         </button>
                       )}
-                      {(isDoctor || role === 'Admin') && apt.appointmentStatus === 'Confirmed' && (
+                      {(isDoctor || role === 'Admin') && ['Confirmed', 'Arrived', 'Triaged'].includes(apt.appointmentStatus) && (
                         <button 
                           onClick={() => openModal(apt, 'complete')}
                           className={cn(

@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { subscriptionAPI } from '@/lib/api';
+import { subscriptionAPI, subscriptionPlansAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { CreditCard, ShieldCheck, CheckCircle2, Clock, CalendarIcon, AlertCircle, ArrowRight } from 'lucide-react';
 import { PaystackButton } from 'react-paystack';
+import { cn } from '@/lib/utils';
 
 export default function SubscriptionPage() {
   const { user, updateUser } = useAuth();
