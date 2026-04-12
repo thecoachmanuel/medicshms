@@ -20,20 +20,53 @@ export async function PATCH(
     }
     const { doctor_notes, prescription } = body as any;
     const { id } = await params;
+    const client = (supabaseAdmin || supabase);
 
-    // 1. Get Doctor ID if user is a doctor
-    let doctorId = null;
-    if (userProfile?.role === 'Doctor') {
-      const { data: doctor } = await (supabaseAdmin || supabase)
-        .from('doctors')
-        .select('id')
-        .eq('user_id', userProfile?.id)
-        .single();
-      doctorId = doctor?.id;
+    // 1. PHASE A: DISCOVERY - Fetch Appointment & Doctor Record
+    const [appointmentFetch, doctorFetch] = await Promise.all([
+      client.from('public_appointments').select('*').eq('id', id).single(),
+      userProfile?.role === 'Doctor' 
+        ? client.from('doctors').select('id').eq('user_id', userProfile?.id).single()
+        : Promise.resolve({ data: null })
+    ]);
+
+    const appointment = appointmentFetch.data;
+    const doctor = doctorFetch.data;
+
+    // 2. PHASE B: VALIDATION MATRIX
+    if (!appointment) {
+      return NextResponse.json({ success: false, message: 'Appointment ticket not found' }, { status: 404 });
     }
 
-    // 2. Perform Resilient Update
-    let updateQuery = (supabaseAdmin || supabase)
+    // 2.1 Hospital Isolation Check
+    if (appointment.hospital_id !== userProfile?.hospital_id) {
+      console.error('[Auth Denied] Hospital Mismatch:', { appointmentHosp: appointment.hospital_id, userHosp: userProfile?.hospital_id });
+      return NextResponse.json({ success: false, message: 'Cross-hospital access denied' }, { status: 403 });
+    }
+
+    // 2.2 Role-Based Assignment Check
+    let isAuthorized = false;
+    if (userProfile?.role === 'Admin') {
+      isAuthorized = true; // Admins have master completion rights
+    } else if (userProfile?.role === 'Doctor') {
+      const assignedId = appointment.doctor_assigned_id;
+      // Authorize if assignedId matches either the doctor record ID or the user UUID
+      if (assignedId === doctor?.id || assignedId === userProfile.id) {
+        isAuthorized = true;
+      } else {
+        console.error('[Auth Denied] Doctor Mismatch:', { assignedId, doctorId: doctor?.id, userId: userProfile.id });
+      }
+    }
+
+    if (!isAuthorized) {
+      return NextResponse.json({ 
+        success: false, 
+        message: 'You are not authorized to finalize this specific clinical session.' 
+      }, { status: 403 });
+    }
+
+    // 3. PHASE C: FINALIZED UPDATE
+    const { data: updatedApt, error: updateError } = await client
       .from('public_appointments')
       .update({ 
         appointment_status: 'Completed',
@@ -42,28 +75,15 @@ export async function PATCH(
         completed_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
-      .eq('id', id);
-    
-    // If it's a doctor, enforce assignment check (flexible for both doctor table ID and user UUID)
-    if (userProfile?.role === 'Doctor') {
-      if (doctorId) {
-        updateQuery = updateQuery.or(`doctor_assigned_id.eq.${doctorId},doctor_assigned_id.eq.${userProfile.id}`);
-      } else {
-        updateQuery = updateQuery.eq('doctor_assigned_id', userProfile.id);
-      }
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (updateError) {
+      throw updateError;
     }
 
-    const { data: appointment, error } = await updateQuery.select().single();
-
-    if (error || !appointment) {
-      console.error('[Doctor Complete Error]:', error);
-      return NextResponse.json({ 
-        success: false, 
-        message: 'Appointment not found or you are not authorized to complete this specific session.' 
-      }, { status: 403 });
-    }
-
-    return NextResponse.json({ success: true, message: 'Appointment marked as completed', data: { ...appointment, _id: appointment.id } });
+    return NextResponse.json({ success: true, message: 'Appointment marked as completed', data: { ...updatedApt, _id: updatedApt.id } });
   } catch (error: any) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
