@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { labAPI, usersAPI } from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 import { TestTubes, Search, CheckCircle, UploadCloud, Printer, Download, Eye, FileText, Clock, User, ChevronRight, X, AlertCircle, Info, Megaphone, RefreshCw } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -427,17 +428,35 @@ export default function LabRequestsPage() {
                             <div className="flex items-center gap-2">
                               <button 
                                 onClick={async () => {
-                                  try {
-                                    setCallingId(req.appointment_id || req.id);
-                                    const { appointmentsAPI } = await import('@/lib/api');
-                                    await appointmentsAPI.call(req.appointment_id || req.id, { station: user?.role || 'Lab' });
-                                    toast.success('Patient called to phlebotomy');
-                                  } catch (e) {
-                                    toast.error('Failed to call patient');
-                                  } finally {
-                                    setCallingId(null);
+                                try {
+                                  setCallingId(req.appointment_id || req.id);
+                                  const res = await labAPI.call(req.appointment_id || req.id, { station: 'Phlebotomy Bay' }) as any;
+                                  const appointment = res.data;
+
+                                  // Broadcast signal
+                                  if (slug && appointment) {
+                                    const channel = supabase.channel(`hospital:${slug}:queue`);
+                                    await channel.subscribe();
+                                    await channel.send({
+                                      type: 'broadcast',
+                                      event: 'PATIENT_CALLED',
+                                      payload: { 
+                                        id: appointment.id, 
+                                        fullName: appointment.full_name || appointment.fullName, 
+                                        station: appointment.calling_station,
+                                        department: appointment.department
+                                      }
+                                    });
+                                    await supabase.removeChannel(channel);
                                   }
-                                }}
+                                  
+                                  toast.success('Patient called to phlebotomy');
+                                } catch (e) {
+                                  toast.error('Failed to call patient');
+                                } finally {
+                                  setCallingId(null);
+                                }
+                              }}
                                 disabled={callingId === (req.appointment_id || req.id)}
                                 className="w-10 h-10 flex items-center justify-center bg-amber-50 border border-amber-100/50 rounded-xl text-amber-600 hover:bg-amber-600 hover:text-white transition-all shadow-sm disabled:opacity-50"
                                 title="Call Patient to Phlebotomy"

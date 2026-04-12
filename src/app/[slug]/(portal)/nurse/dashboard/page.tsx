@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, use } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { appointmentsAPI } from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 import { getLagosDate, formatDate } from '@/lib/utils';
 import { DashboardCard } from '@/components/admin/DashboardCard';
 import { 
@@ -32,35 +33,31 @@ export default function NurseDashboard({ params }: { params: Promise<{ slug: str
   const [callingId, setCallingId] = useState<string | null>(null);
   const [stats, setStats] = useState({ arrived: 0, triaged: 0, total: 0 });
 
-  const fetchAll = useCallback(async () => {
-    try {
-      setRefreshing(true);
-      const today = new Date().toISOString().split('T')[0];
-      
-      // Fetch today's appointments to derive nursing stats
-      const res = (await appointmentsAPI.getAll({ date: today, limit: 100 })) as any;
-      const allToday = res?.data || [];
-      
-      setAppointments(allToday.filter((a: any) => a.appointmentStatus === 'Arrived'));
-      setStats({
-        arrived: allToday.filter((a: any) => a.appointmentStatus === 'Arrived').length,
-        triaged: allToday.filter((a: any) => a.appointmentStatus === 'Triaged').length,
-        total: allToday.length
-      });
-    } catch (err) {
-      console.error('Nursing Uplink Failure:', err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
   const handleCall = async (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     e.stopPropagation();
     try {
       setCallingId(id);
-      await appointmentsAPI.call(id, { station: 'Triage Room' });
+      const res = await appointmentsAPI.call(id, { station: 'Triage Room' }) as any;
+      const appointment = res.data;
+
+      // Broadcast high-speed signal to monitor
+      if (slug && appointment) {
+        const channel = supabase.channel(`hospital:${slug}:queue`);
+        await channel.subscribe();
+        await channel.send({
+          type: 'broadcast',
+          event: 'PATIENT_CALLED',
+          payload: { 
+            id: appointment.id, 
+            fullName: appointment.full_name || appointment.fullName, 
+            station: appointment.calling_station,
+            department: appointment.department
+          }
+        });
+        await supabase.removeChannel(channel);
+      }
+
       toast.success('Patient called to triage');
     } catch (error) {
       toast.error('Failed to call patient');
@@ -71,8 +68,25 @@ export default function NurseDashboard({ params }: { params: Promise<{ slug: str
 
   useEffect(() => {
     fetchAll();
-    const interval = setInterval(fetchAll, 30000); // Auto-sync every 30s
-    return () => clearInterval(interval);
+
+    // Millisecond Realtime Sync for Nurse Dashboard
+    const channel = supabase
+      .channel('nurse_dashboard_sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'public_appointments' },
+        (payload) => {
+          console.log('Realtime Update Received:', payload);
+          fetchAll(); // Instant re-sync on any change
+        }
+      )
+      .subscribe();
+
+    const fallback = setInterval(fetchAll, 60000); // 60s fallback instead of 30s
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(fallback);
+    };
   }, [fetchAll]);
 
   if (loading) {

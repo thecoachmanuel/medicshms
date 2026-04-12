@@ -88,18 +88,28 @@ export default function QueueManagementHub({ params }: { params: Promise<{ slug:
   const handleTestCall = async (deptName: string) => {
     try {
       setIsTesting(true);
-      const { appointmentsAPI } = await import('@/lib/api');
-      // We'll call the API but if it fails (as expected for fake ID), we'll still show success in UI for the "ping" intent
-      toast.promise(
-        appointmentsAPI.call('test-id-' + deptName, { station: deptName, isTest: true }),
-        {
-          loading: 'Broadcasting test signal...',
-          success: `Test signal sent to ${deptName} monitor`,
-          error: 'Broadcast failed'
-        }
-      );
+      
+      // BROADCAST High-speed test signal directly to monitor channel
+      if (slug) {
+        const channel = supabase.channel(`hospital:${slug}:queue`);
+        await channel.subscribe();
+        await channel.send({
+          type: 'broadcast',
+          event: 'PATIENT_CALLED',
+          payload: { 
+            id: 'test-id-' + Date.now(), 
+            fullName: 'Diagnostic Test Patient',
+            station: 'Test Station',
+            department: deptName,
+            isTest: true
+          }
+        });
+        await supabase.removeChannel(channel);
+        toast.success(`Diagnostic signal sent to ${deptName}`);
+      }
     } catch (error) {
        console.error(error);
+       toast.error('Broadcast failed');
     } finally {
       setIsTesting(false);
     }

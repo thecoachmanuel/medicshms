@@ -24,6 +24,9 @@ export default function DepartmentQueueDisplay({ params }: { params: Promise<{ s
   const [voiceActive, setVoiceActive] = useState(false);
   const [realtimeStatus, setRealtimeStatus] = useState<'connecting' | 'online' | 'offline'>('connecting');
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [overlayData, setOverlayData] = useState<any>(null);
+  const overlayTimeoutRef = useRef<any>(null);
 
   // Use refs to keep state accessible in the realtime listener
   const voiceActiveRef = useRef(voiceActive);
@@ -60,7 +63,9 @@ export default function DepartmentQueueDisplay({ params }: { params: Promise<{ s
 
   const fetchQueue = useCallback(async () => {
     try {
-      // We fetch all "Arrived" or "Triaged" patients for this hospital
+      // Re-normalize dept slug for comparison
+      const normalizedTarget = deptSlug.toLowerCase().replace(/\s+/g, '-');
+
       const res = (await appointmentsAPI.getAll({ 
         status: 'Arrived,Triaged', 
         hospitalSlug: slug,
@@ -70,10 +75,10 @@ export default function DepartmentQueueDisplay({ params }: { params: Promise<{ s
       const all = res.data || [];
       
       // Filter by department slug or name
-      const filtered = all.filter((a: any) => 
-        a.department?.toLowerCase().replace(/\s+/g, '-') === deptSlug ||
-        a.department === deptSlug
-      );
+      const filtered = all.filter((a: any) => {
+        const aDeptNormalized = (a.department || '').toLowerCase().replace(/\s+/g, '-');
+        return aDeptNormalized === normalizedTarget || a.department === deptSlug;
+      });
 
       // Identify currently calling patient (most recent called_at that is_calling)
       const calling = filtered
@@ -81,9 +86,9 @@ export default function DepartmentQueueDisplay({ params }: { params: Promise<{ s
         .sort((a: any, b: any) => new Date(b.called_at).getTime() - new Date(a.called_at).getTime())[0];
 
       setNowCalling((prev: any) => {
-        // Only announce if a new patient is being called
+        // Only announce if a new patient is being called and no overlay is active (to avoid double trigger)
         if (calling && (!prev || prev.id !== calling.id || prev.called_at !== calling.called_at)) {
-          announcePatient(calling);
+          if (!showOverlay) announcePatient(calling);
         }
         return calling || null;
       });
@@ -93,14 +98,14 @@ export default function DepartmentQueueDisplay({ params }: { params: Promise<{ s
     } finally {
       setLoading(false);
     }
-  }, [slug, deptSlug, announcePatient]);
+  }, [slug, deptSlug, announcePatient, showOverlay]);
 
   useEffect(() => {
     fetchQueue();
 
     // 1. Supabase Realtime Subscription (Milliseconds Precision)
     const channel = supabase
-      .channel('queue_updates')
+      .channel(`hospital:${slug}:queue`)
       .on(
         'system',
         { event: 'subscribe' },
@@ -109,13 +114,39 @@ export default function DepartmentQueueDisplay({ params }: { params: Promise<{ s
       .on(
         'postgres_changes',
         {
-          event: '*', // Listen for INSERT, UPDATE, DELETE
+          event: '*',
           schema: 'public',
           table: 'public_appointments'
         },
         (payload) => {
           console.log('Realtime Queue Packet Received:', payload);
           fetchQueue();
+        }
+      )
+      .on(
+        'broadcast',
+        { event: 'PATIENT_CALLED' },
+        (payload) => {
+          const { payload: data } = payload;
+          console.log('BROADCAST Received:', data);
+          
+          // Check if it's for this department
+          const targetDept = deptSlug.toLowerCase().replace(/\s+/g, '-');
+          const broadcastDept = (data.department || '').toLowerCase().replace(/\s+/g, '-');
+          
+          if (broadcastDept === targetDept || data.department === deptSlug) {
+            // Trigger Overlay & Voice
+            setOverlayData(data);
+            setShowOverlay(true);
+            announcePatient(data);
+            
+            // Auto-hide overlay after 6 seconds
+            if (overlayTimeoutRef.current) clearTimeout(overlayTimeoutRef.current);
+            overlayTimeoutRef.current = setTimeout(() => setShowOverlay(false), 6000);
+            
+            // Re-fetch queue to sync list
+            fetchQueue();
+          }
         }
       )
       .subscribe((status) => {
@@ -165,6 +196,42 @@ export default function DepartmentQueueDisplay({ params }: { params: Promise<{ s
 
   return (
     <div className="flex flex-col h-screen bg-slate-950 text-white overflow-hidden font-sans selection:bg-emerald-500/30">
+      {/* Just Called Overlay */}
+      {showOverlay && overlayData && (
+        <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center p-20 animate-in fade-in zoom-in duration-300">
+           <div className="absolute inset-0 opacity-20">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150vw] h-[150vw] bg-emerald-500 rounded-full blur-[200px] animate-pulse" />
+           </div>
+           
+           <div className="relative text-center">
+              <div className="inline-flex items-center gap-4 px-8 py-3 bg-emerald-500 text-black rounded-full font-black uppercase tracking-[0.4em] mb-12 shadow-[0_0_50px_rgba(16,185,129,0.5)]">
+                 <Bell className="w-6 h-6 animate-bounce" />
+                 Now Calling
+              </div>
+              
+              <h1 className="text-[15vw] font-black leading-none uppercase tracking-tighter drop-shadow-2xl">
+                 {overlayData.fullName}
+              </h1>
+              
+              <div className="mt-20 flex items-center justify-center gap-10">
+                 <div className="px-12 py-8 bg-white/5 border border-white/10 rounded-[3rem] backdrop-blur-3xl">
+                    <p className="text-xs font-black uppercase tracking-[0.5em] text-white/30 mb-4 text-center">Proceed To</p>
+                    <p className="text-6xl font-black uppercase text-emerald-400 flex items-center gap-6">
+                       <ArrowRight className="w-10 h-10" />
+                       {overlayData.station || 'Clinical Hub'}
+                    </p>
+                 </div>
+              </div>
+           </div>
+           
+           <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 text-white/20">
+              <div className="w-64 h-1 bg-white/10 rounded-full overflow-hidden">
+                 <div className="h-full bg-emerald-500 animate-[progress_6s_linear]" />
+              </div>
+              <p className="text-[10px] font-black uppercase tracking-[0.5em]">Synchronizing Monitor State</p>
+           </div>
+        </div>
+      )}
       {/* Dynamic Background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
         <div className="absolute top-1/4 -left-1/4 w-[1000px] h-[1000px] bg-emerald-500/10 rounded-full blur-[160px] animate-pulse" />

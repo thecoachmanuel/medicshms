@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { radiologyAPI } from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 import { Scan, Search, CheckCircle, UploadCloud, Printer, Download, Eye, Link as LinkIcon, Clock, User, ChevronRight, X, AlertCircle, ImageIcon, Activity, Megaphone, RefreshCw } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -77,6 +78,25 @@ export default function RadiologyRequestsPage() {
       toast.error('Failed to load radiology requests');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCallPatient = async (request: any) => {
+    setCallingId(request.id);
+    try {
+      await supabase.from('broadcasts').insert({
+        type: 'PATIENT_CALLED',
+        payload: {
+          patient_name: request.patient?.full_name,
+          department: 'Radiology',
+          room: 'Imaging Suite'
+        }
+      });
+      toast.success(`Called ${request.patient?.full_name} to Radiology`);
+    } catch (error) {
+      toast.error('Failed to broadcast call');
+    } finally {
+      setCallingId(null);
     }
   };
 
@@ -402,8 +422,26 @@ export default function RadiologyRequestsPage() {
                               onClick={async () => {
                                 try {
                                   setCallingId(req.appointment_id || req.id);
-                                  const { appointmentsAPI } = await import('@/lib/api');
-                                  await appointmentsAPI.call(req.appointment_id || req.id, { station: 'Radiology Suite' });
+                                  const res = await radiologyAPI.call(req.appointment_id || req.id, { station: 'Radiology Suite' }) as any;
+                                  const appointment = res.data;
+
+                                  // Broadcast signal
+                                  if (slug && appointment) {
+                                    const channel = supabase.channel(`hospital:${slug}:queue`);
+                                    await channel.subscribe();
+                                    await channel.send({
+                                      type: 'broadcast',
+                                      event: 'PATIENT_CALLED',
+                                      payload: { 
+                                        id: appointment.id, 
+                                        fullName: appointment.full_name || appointment.fullName, 
+                                        station: appointment.calling_station,
+                                        department: appointment.department
+                                      }
+                                    });
+                                    await supabase.removeChannel(channel);
+                                  }
+
                                   toast.success('Patient called to radiology');
                                 } catch (e) {
                                   toast.error('Failed to call patient');

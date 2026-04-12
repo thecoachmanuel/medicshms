@@ -13,6 +13,8 @@ import { formatDate } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 import BookAppointmentModal from './BookAppointmentModal';
 import AppointmentModal from './AppointmentModal';
+import { useParams } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -26,6 +28,8 @@ interface Props {
 
 export default function AppointmentsList({ role }: Props) {
   const { user } = useAuth();
+  const params = useParams();
+  const slug = params?.slug as string;
   const isDoctor = role === 'Doctor';
   const isAdminOrReceptionist = role === 'Admin' || role === 'Receptionist';
 
@@ -112,7 +116,26 @@ export default function AppointmentsList({ role }: Props) {
   const handleCall = async (id: string) => {
     try {
       setCallingId(id);
-      await appointmentAPI.call(id);
+      const res = await appointmentAPI.call(id) as any;
+      const appointment = res.data;
+
+      // Broadcast high-speed signal to monitor
+      if (slug && appointment) {
+        const channel = supabase.channel(`hospital:${slug}:queue`);
+        await channel.subscribe();
+        await channel.send({
+          type: 'broadcast',
+          event: 'PATIENT_CALLED',
+          payload: { 
+            id: appointment.id, 
+            fullName: appointment.full_name || appointment.fullName, 
+            station: appointment.calling_station,
+            department: appointment.department
+          }
+        });
+        await supabase.removeChannel(channel);
+      }
+
       toast.success('Patient called to queue');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Call failed');
