@@ -185,6 +185,7 @@ export default function DepartmentQueueDisplay({ params }: { params: Promise<{ s
           </div>
         </div>
 
+        <div className="flex items-center gap-6">
           <div className="flex items-center gap-4 px-6 py-4 bg-white/5 rounded-2xl border border-white/10">
              <div className={cn(
                 "w-2 h-2 rounded-full",
