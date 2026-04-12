@@ -350,7 +350,7 @@ export default function DoctorAvailabilityPage({ params }: { params: Promise<{ s
             className="flex items-center gap-2 px-8 py-3 bg-primary-600 text-white rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary-200 hover:bg-primary-700 hover:scale-105 transition-all active:scale-95 disabled:opacity-50"
           >
             {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
-            Commit Matrix
+            Save Availability
           </button>
         </div>
       </div>

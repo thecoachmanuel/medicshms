@@ -118,6 +118,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
         { icon: Calendar, label: 'Appointments', path: `${base}/receptionist/appointments` },
         { icon: FileText, label: 'Patients', path: `${base}/receptionist/patients` },
         { icon: TestTubes, label: 'Lab Services', path: `${base}/receptionist/lab-requests` },
+        { icon: Scan, label: 'Radiology Intake', path: `${base}/receptionist/radiology-requests` },
         { icon: DollarSign, label: 'Billing', path: `${base}/receptionist/billing` },
         { icon: CalendarClock, label: 'Slot Management', path: `${base}/receptionist/slot-management` },
         { icon: User, label: 'My Profile', path: `${base}/receptionist/profile` },

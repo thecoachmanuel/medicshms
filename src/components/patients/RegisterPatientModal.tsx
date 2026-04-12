@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, User, Phone, Mail, MapPin, Calendar, Heart, Loader2 } from 'lucide-react';
+import { X, User, Phone, Mail, MapPin, Calendar, Heart, Loader2, ShieldCheck } from 'lucide-react';
 import { patientsAPI } from '@/lib/api';
 import { toast } from 'react-hot-toast';
 
@@ -25,15 +25,21 @@ export default function RegisterPatientModal({ isOpen, onClose, onSuccess }: Pro
     emergencyContactNumber: '',
   });
 
+  const [duplicatePatient, setDuplicatePatient] = useState<any>(null);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setDuplicatePatient(null);
     try {
       const res = (await patientsAPI.getAll({ search: formData.mobileNumber })) as any;
-      if (res.data && res.data.length > 0) {
-        toast.error('A patient with this mobile number already exists');
+      const existing = (res.data || res.patients || []).find((p: any) => p.mobile_number === formData.mobileNumber || p.profile?.phone === formData.mobileNumber);
+      
+      if (existing) {
+        setDuplicatePatient(existing);
+        setLoading(false);
         return;
       }
 
@@ -47,6 +53,12 @@ export default function RegisterPatientModal({ isOpen, onClose, onSuccess }: Pro
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleUseExisting = () => {
+    toast.success('Using existing patient profile');
+    onSuccess(); // The parent might need the patient ID, but usually it fetches the list again
+    onClose();
   };
 
   return (
@@ -67,6 +79,26 @@ export default function RegisterPatientModal({ isOpen, onClose, onSuccess }: Pro
             <X className="w-6 h-6 text-gray-400" />
           </button>
         </div>
+
+        {duplicatePatient && (
+          <div className="px-8 py-4 bg-amber-50 border-b border-amber-100 flex items-center justify-between animate-in slide-in-from-top-4 duration-300">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-sm font-black text-amber-900 uppercase tracking-tight">Existing Profile Found</p>
+                <p className="text-[10px] text-amber-600 font-bold uppercase tracking-widest">{duplicatePatient.profile?.name || duplicatePatient.fullName} | {duplicatePatient.patient_id}</p>
+              </div>
+            </div>
+            <button 
+              onClick={handleUseExisting}
+              className="px-6 py-2 bg-amber-600 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-amber-200 hover:bg-amber-700 transition-all active:scale-95"
+            >
+              Select Profile
+            </button>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-8 py-8 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

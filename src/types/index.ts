@@ -95,6 +95,22 @@ export interface Patient {
   appointments?: Appointment[];
 }
 
+export interface LedgerExportRecord {
+  appointmentId: string;
+  fullName: string;
+  patientId: string;
+  appointmentDate: string;
+  department: string;
+  doctorName: string;
+  billNumber: string;
+  totalAmount: number;
+  paidAmount: number;
+  dueAmount: number;
+  paymentStatus: string;
+  paymentMethod: string;
+  transactionId: string;
+}
+
 export interface APIResponse<T> {
   success: boolean;
   data: T;

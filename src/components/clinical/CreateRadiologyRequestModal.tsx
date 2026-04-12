@@ -58,9 +58,11 @@ export default function CreateRadiologyRequestModal({ isOpen, onClose, onSuccess
     if (isOpen && user) {
       if (isDoctor && user.name) {
         setRequestData(prev => ({ ...prev, requested_by_name: user.name }));
+      } else if (userRole === 'Receptionist' && user.name) {
+        setRequestData(prev => ({ ...prev, requested_by_name: `Reception: ${user.name}` }));
       }
     }
-  }, [isOpen, user, isDoctor]);
+  }, [isOpen, user, isDoctor, userRole]);
 
   useEffect(() => {
     if (isOpen) {

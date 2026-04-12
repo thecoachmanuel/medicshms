@@ -9,6 +9,7 @@ import {  FileText, Plus, Search, Filter, Calendar,
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
 import { billingAPI, departmentsAPI } from '@/lib/api';
+import { LedgerExportRecord } from '@/types';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import GenerateInvoiceModal from './GenerateInvoiceModal';
@@ -95,11 +96,11 @@ export default function BillingList() {
         search: searchTerm || undefined
       };
       const res = await billingAPI.download(params) as any;
-      const records = res.data || [];
+      const records: LedgerExportRecord[] = res.data || [];
       
       if (!records.length) {
         toast.dismiss();
-        toast.error('No records to download');
+        toast.error('No records found for current filters');
         return;
       }
 
@@ -111,34 +112,43 @@ export default function BillingList() {
       
       const csvData = [
         headers.join(','),
-        ...records.map((item: any) => [
-          item.appointmentId,
-          `"${item.fullName}"`,
-          item.patientId,
-          item.appointmentDate,
-          item.department,
-          `"${item.doctorName}"`,
-          item.billNumber,
-          item.totalAmount,
-          item.paidAmount,
-          item.dueAmount,
-          item.paymentStatus,
-          item.paymentMethod,
-          item.transactionId
-        ].join(','))
+        ...records.map((item: LedgerExportRecord) => {
+          // Robust date formatting for Excel
+          const dateStr = item.appointmentDate ? new Date(item.appointmentDate).toISOString().split('T')[0] : 'N/A';
+          
+          return [
+            item.appointmentId || 'N/A',
+            `"${(item.fullName || 'N/A').replace(/"/g, '""')}"`, // Handle names with quotes
+            item.patientId || 'N/A',
+            dateStr,
+            `"${(item.department || 'N/A').replace(/"/g, '""')}"`,
+            `"${(item.doctorName || 'N/A').replace(/"/g, '""')}"`,
+            item.billNumber || 'N/A',
+            item.totalAmount || 0,
+            item.paidAmount || 0,
+            item.dueAmount || 0,
+            item.paymentStatus || 'Pending',
+            item.paymentMethod || 'N/A',
+            item.transactionId || 'N/A'
+          ].join(',');
+        })
       ].join('\n');
 
-      const blob = new Blob([csvData], { type: 'text/csv' });
+      const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `billing_records_${new Date().toISOString().split('T')[0]}.csv`;
-      a.click();
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `financial_ledger_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
       toast.dismiss();
-      toast.success('Download started');
+      toast.success('Ledger exported successfully');
     } catch (err) {
       toast.dismiss();
-      toast.error('Download failed');
+      toast.error('Ledger export failed');
+      console.error('[CSV Export Error]:', err);
     }
   };
 

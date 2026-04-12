@@ -210,7 +210,6 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
           </div>
 
           <div class="footer">
-            <p>This is a computer generated document. Valid without original signature.</p>
             <p>&copy; ${new Date().getFullYear()} ${template?.hospital_name || 'Hospital HMS'}. All Rights Reserved.</p>
           </div>
         </body>
@@ -369,9 +368,6 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
                 <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest mb-1">Authorized By</p>
                 <div className="h-10 w-40 border-b border-gray-200 mb-2"></div>
                 <p className="text-[10px] font-bold text-gray-500 uppercase">Hospital Administrator</p>
-              </div>
-              <div className="text-right">
-                <p className="text-[10px] font-bold text-gray-400">This is a system generated document.</p>
               </div>
             </div>
           </div>
