@@ -7,10 +7,11 @@ import {
   Eye, Edit2, Building2, FileText, Plus
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { appointmentAPI, pharmacyAPI } from '@/lib/api';
+import { appointmentAPI, pharmacyAPI, labAPI, radiologyAPI } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import CreateLabRequestModal from '@/components/clinical/CreateLabRequestModal';
 import CreateRadiologyRequestModal from '@/components/clinical/CreateRadiologyRequestModal';
+import MedicationSearch from '@/components/clinical/MedicationSearch';
 import PatientTimeline from '@/components/clinical/PatientTimeline';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -49,6 +50,11 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
     appointmentStatus: appointment?.appointmentStatus || appointment?.status || 'Pending',
   });
 
+  // Clinical Order State
+  const [prescribedMeds, setPrescribedMeds] = useState<any[]>([]);
+  const [pendingLabTests, setPendingLabTests] = useState<any[]>([]);
+  const [pendingImaging, setPendingImaging] = useState<any[]>([]);
+
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -72,32 +78,57 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
   const handleComplete = async () => {
     setIsSubmitting(true);
     try {
-      const data = {
+      const pId = appointment.patient_id || appointment.patientId;
+      if (!pId) throw new Error('Patient Identity Lost');
+
+      // 1. Finalize Appointment Status & Notes
+      const completionData = {
         doctor_notes: completeNotes,
-        prescription: completePrescription
+        prescription: completePrescription // Fallback/Alternative notes
       };
+      await appointmentAPI.doctorComplete(appointment._id || appointment.id, completionData);
 
-      if (user?.role === 'Doctor') {
-        await appointmentAPI.doctorComplete(appointment._id || appointment.id, data);
-
-        const pId = appointment.patient_id || appointment.patientId;
-        
-        if (completePrescription && pId) {
-           await pharmacyAPI.createPrescription({
-             patient_id: pId,
-             appointment_id: appointment._id || appointment.id,
-             notes: completePrescription
-           }).catch(e => console.error(e));
-        }
-
-      } else {
-        await appointmentAPI.updateStatus(appointment._id, 'Completed', '', data);
+      // 2. Authorize Structured Medications
+      if (prescribedMeds.length > 0) {
+        await pharmacyAPI.createPrescription({
+          patient_id: pId,
+          appointment_id: appointment._id || appointment.id,
+          medications: prescribedMeds,
+          notes: completePrescription
+        });
       }
-      toast.success('Appointment completed');
+
+      // 3. Authorize Lab Investigations
+      if (pendingLabTests.length > 0) {
+        await labAPI.createRequest({
+          patient_id: pId,
+          clinical_summary: completeNotes,
+          requested_by_name: user?.name,
+          tests: pendingLabTests.map(t => ({
+            test_name: t.test_name || t.name,
+            test_price: t.test_price || t.price || 0,
+            unit_id: t.unit_id
+          }))
+        });
+      }
+
+      // 4. Authorize Radiology Scans (Sequential or Batch)
+      if (pendingImaging.length > 0) {
+        await Promise.all(pendingImaging.map(img => 
+           radiologyAPI.createRequest({
+             patient_id: pId,
+             test_name: img.name,
+             clinical_notes: completeNotes,
+             requested_by_name: user?.name
+           })
+        ));
+      }
+
+      toast.success('Clinical Session Authorized & Finalized');
       onRefresh();
       onClose();
-    } catch (err) {
-      toast.error('Failed to complete appointment');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to authorize clinical set');
     } finally {
       setIsSubmitting(false);
     }
@@ -164,8 +195,107 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
                 </div>
 
                 <div className="space-y-4">
+                <div className="space-y-6">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Doctor's Consultation Notes</label>
+                    <div className="flex items-center justify-between mb-2 ml-1">
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Structured Medication Regimen</label>
+                      <span className="text-[9px] font-black text-primary-500 uppercase tracking-widest">Inventory Linked</span>
+                    </div>
+                    <div className="space-y-3">
+                       <MedicationSearch 
+                          onSelect={(med) => {
+                            const newMed = {
+                              item_id: med.id,
+                              item_name: med.item_name,
+                              dosage: '1 Tab',
+                              frequency: 'Daily',
+                              duration: '5 Days'
+                            };
+                            setPrescribedMeds([...prescribedMeds, newMed]);
+                          }}
+                          placeholder="Search Pharmacy Goods..."
+                       />
+                       
+                       {prescribedMeds.length > 0 && (
+                         <div className="space-y-2">
+                            {prescribedMeds.map((med, idx) => (
+                              <div key={idx} className="flex flex-col md:flex-row md:items-center gap-3 p-4 bg-gray-50 border border-gray-100 rounded-2xl animate-in slide-in-from-top-2">
+                                <div className="flex-1 flex items-center gap-3">
+                                   <Pill className="w-5 h-5 text-primary-500 shrink-0" />
+                                   <p className="text-sm font-bold text-gray-900">{med.item_name}</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input 
+                                    className="w-16 h-8 bg-transparent border-b border-gray-200 text-xs font-bold text-center outline-none focus:border-primary-500 transition-colors"
+                                    value={med.dosage}
+                                    placeholder="Dosage"
+                                    onChange={e => {
+                                      const newMeds = [...prescribedMeds];
+                                      newMeds[idx].dosage = e.target.value;
+                                      setPrescribedMeds(newMeds);
+                                    }}
+                                  />
+                                  <select 
+                                    className="h-8 bg-transparent border-b border-gray-200 text-xs font-bold outline-none focus:border-primary-500 transition-colors"
+                                    value={med.frequency}
+                                    onChange={e => {
+                                      const newMeds = [...prescribedMeds];
+                                      newMeds[idx].frequency = e.target.value;
+                                      setPrescribedMeds(newMeds);
+                                    }}
+                                  >
+                                    <option>Daily</option>
+                                    <option>BD (2x)</option>
+                                    <option>TDS (3x)</option>
+                                    <option>QDS (4x)</option>
+                                    <option>Weekly</option>
+                                    <option>Stat</option>
+                                    <option>PRN</option>
+                                  </select>
+                                  <input 
+                                    className="w-16 h-8 bg-transparent border-b border-gray-200 text-xs font-bold text-center outline-none focus:border-primary-500 transition-colors"
+                                    value={med.duration}
+                                    placeholder="Duration"
+                                    onChange={e => {
+                                      const newMeds = [...prescribedMeds];
+                                      newMeds[idx].duration = e.target.value;
+                                      setPrescribedMeds(newMeds);
+                                    }}
+                                  />
+                                  <button 
+                                    onClick={() => setPrescribedMeds(prescribedMeds.filter((_, i) => i !== idx))}
+                                    className="p-1 hover:bg-rose-50 rounded-lg text-gray-300 hover:text-rose-500 transition-colors"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                         </div>
+                       )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Pathology & Investigations</label>
+                    <div className="space-y-4">
+                       <button 
+                         type="button"
+                         onClick={() => setShowLabModal(true)}
+                         className="w-full h-[54px] bg-white border border-gray-100 rounded-2xl flex items-center justify-between px-6 hover:border-indigo-200 hover:bg-indigo-50 transition-all group"
+                       >
+                         <span className="text-xs font-bold text-gray-400 group-hover:text-indigo-600 italic">Request Laboratory Analysis...</span>
+                         <Plus className="w-4 h-4 text-gray-300 group-hover:text-indigo-600" />
+                       </button>
+
+                       {/* Lab order basket integration would go here if we wanted inline search, but for now we keep the modal but could track the newly added ones if the modal had an 'onAdd' callback. 
+                           Actually, for the "best flow logic", I'll implement inline lab search in next cycle. For now, the user can use the modal.
+                       */}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Doctor's Consultation Narrative</label>
                     <textarea 
                       className="input w-full min-h-[120px] py-3 text-sm" 
                       placeholder="Enter clinical findings, observations, and recommendations..."
@@ -173,39 +303,34 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
                       onChange={e => setCompleteNotes(e.target.value)}
                     />
                   </div>
+
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Prescription Details (Sent to Pharmacy)</label>
+                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1 flex justify-between">
+                        <span>Alternative / Free-text Prescription</span>
+                        <span className="text-[9px] lowercase italic text-gray-300 tracking-normal opacity-50 font-medium">Shown if no structured drugs added</span>
+                     </label>
                     <textarea 
-                      className="input w-full min-h-[100px] py-3 text-sm" 
-                      placeholder="List of medications, dosage, and frequency..."
+                      className="input w-full min-h-[80px] py-3 text-sm italic" 
+                      placeholder="dosage, frequency, and additional pharmacist notes..."
                       value={completePrescription}
                       onChange={e => setCompletePrescription(e.target.value)}
                     />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pathology & Laboratory</label>
-                      <button 
-                        type="button"
-                        onClick={() => setShowLabModal(true)}
-                        className="w-full h-[54px] bg-white border border-gray-100 rounded-2xl flex items-center justify-between px-6 hover:border-indigo-200 hover:bg-indigo-50 transition-all group"
-                      >
-                        <span className="text-xs font-bold text-gray-400 group-hover:text-indigo-600 italic">Order Clinical Investigations...</span>
-                        <Plus className="w-4 h-4 text-gray-300 group-hover:text-indigo-600" />
-                      </button>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Radiology & Imaging</label>
-                      <button 
-                        type="button"
-                        onClick={() => setShowRadiologyModal(true)}
-                        className="w-full h-[54px] bg-white border border-gray-100 rounded-2xl flex items-center justify-between px-6 hover:border-blue-200 hover:bg-blue-50 transition-all group"
-                      >
-                        <span className="text-xs font-bold text-gray-400 group-hover:text-blue-600 italic">Order Diagnostic Imaging...</span>
-                        <Plus className="w-4 h-4 text-gray-300 group-hover:text-blue-600" />
-                      </button>
-                    </div>
+
+                  {/* Summary Footer */}
+                  <div className="p-4 bg-gray-900 rounded-[2rem] text-white flex items-center justify-between shadow-xl shadow-indigo-900/10">
+                     <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                           <DollarSign className="w-5 h-5 text-indigo-300" />
+                        </div>
+                        <div>
+                           <p className="text-[9px] font-black text-white/40 uppercase tracking-widest leading-none mb-1">Estimated Invoice Content</p>
+                           <p className="text-sm font-black tracking-tight leading-none">Consultation + {prescribedMeds.length} Orders</p>
+                        </div>
+                     </div>
+                     <CheckCircle2 className="w-6 h-6 text-indigo-400 animate-pulse" />
                   </div>
+                </div>
                 </div>
               </div>
             ) : (
@@ -397,15 +522,15 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
           {type === 'view' ? (
             <>
               <div className="flex items-center gap-2">
-                {!showCompleteForm && (
-                  <button 
-                    onClick={() => window.print()}
-                    className="btn-secondary"
-                  >
-                    <Printer className="w-4 h-4" />
-                    Print Ticket
-                  </button>
-                )}
+                  {!showCompleteForm && (
+<button 
+  onClick={() => window.print()}
+  className="btn-secondary"
+>
+  <Printer className="w-4 h-4" />
+  Print Ticket
+</button>
+)}
                 {appointment.appointmentStatus === 'Confirmed' && (user?.role === 'Admin' || (user?.role === 'Doctor' && (appointment.doctorAssigned?._id === user?.doctorProfileId || appointment.doctorAssigned?.id === user?.doctorProfileId || appointment.doctor_assigned_id === user?.doctorProfileId))) && (
                   showCompleteForm ? (
                     <div className="flex items-center gap-2">

@@ -135,6 +135,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
       return [
         { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/patient/dashboard`, id: 'nav-dashboard' },
         { icon: ClipboardList, label: 'Medical Records', path: `${base}/patient/records`, id: 'nav-records' },
+        { icon: Pill, label: 'Prescriptions', path: `${base}/patient/prescriptions`, id: 'nav-prescriptions' },
         { icon: DollarSign, label: 'My Invoices', path: `${base}/patient/invoices`, id: 'nav-billing' },
         { icon: Calendar, label: 'Appointments', path: `${base}/patient/appointments`, id: 'nav-appointments' },
         { icon: User, label: 'My Profile', path: `${base}/patient/profile`, id: 'nav-profile' },

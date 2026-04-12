@@ -111,7 +111,9 @@ export default function PatientTimeline({ patientId }: { patientId: string }) {
           allEvents.push({
             id: p.id,
             type: 'Prescription',
-            title: `Drug Regimen: ${p.medications?.[0]?.item_name || 'Pharmacotherapy'}`,
+            title: p.medications?.length > 1 
+              ? `Multi-Drug Regimen (${p.medications.length} items)`
+              : `Drug Regimen: ${p.medications?.[0]?.item_name || 'Pharmacotherapy'}`,
             date: p.prescribed_at,
             status: p.status,
             clinician: p.doctor?.profile?.name || 'Authorized Physician',
@@ -390,13 +392,22 @@ export default function PatientTimeline({ patientId }: { patientId: string }) {
                       )}
                       {event.type === 'Prescription' && (
                         <div className="space-y-3">
-                           <div className="flex flex-wrap gap-1.5">
+                           <div className="grid grid-cols-1 gap-2">
                              {event.details.medications?.map((m: any, i: number) => (
-                               <span key={i} className="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-lg text-[8px] font-black uppercase tracking-widest border border-amber-200/50">
-                                 {m.item_name}
-                               </span>
+                               <div key={i} className="flex items-center justify-between p-3 bg-amber-50/50 rounded-xl border border-amber-100/50">
+                                 <div>
+                                   <p className="text-[10px] font-black text-amber-900 uppercase leading-none mb-1">{m.item_name}</p>
+                                   <p className="text-[8px] text-amber-600 font-bold uppercase tracking-widest leading-none">
+                                     {m.dosage} • {m.frequency} {m.duration && `• ${m.duration}`}
+                                   </p>
+                                 </div>
+                                 <Pill className="w-3.5 h-3.5 text-amber-300" />
+                               </div>
                              ))}
                            </div>
+                           {event.details.notes && (
+                             <p className="text-[9px] text-gray-400 italic">Note: {event.details.notes}</p>
+                           )}
                         </div>
                       )}
                    </div>
