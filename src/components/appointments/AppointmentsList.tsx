@@ -37,7 +37,7 @@ export default function AppointmentsList({ role }: Props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
-  const [modalType, setModalType] = useState<'view' | 'edit' | 'assign'>('view');
+  const [modalType, setModalType] = useState<'view' | 'edit' | 'assign' | 'complete'>('view');
   const [showModal, setShowModal] = useState(false);
   const [showBookModal, setShowBookModal] = useState(false);
   
@@ -108,7 +108,7 @@ export default function AppointmentsList({ role }: Props) {
     }
   };
 
-  const openModal = (apt: any, type: 'view' | 'edit' | 'assign') => {
+  const openModal = (apt: any, type: 'view' | 'edit' | 'assign' | 'complete') => {
     setSelectedAppointment(apt);
     setModalType(type);
     setShowModal(true);
@@ -379,7 +379,7 @@ export default function AppointmentsList({ role }: Props) {
                       )}
                       {(isDoctor || role === 'Admin') && apt.appointmentStatus === 'Confirmed' && (
                         <button 
-                          onClick={() => handleStatusUpdate(apt._id, 'Completed')}
+                          onClick={() => openModal(apt, 'complete')}
                           className={cn(
                             "p-2.5 rounded-xl shadow-sm transition-all border",
                             isDoctor 

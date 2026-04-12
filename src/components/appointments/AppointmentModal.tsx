@@ -23,7 +23,7 @@ function cn(...inputs: ClassValue[]) {
 
 interface Props {
   appointment: any;
-  type: 'view' | 'edit' | 'assign';
+  type: 'view' | 'edit' | 'assign' | 'complete';
   doctors: any[];
   departments: any[];
   onClose: () => void;
@@ -34,7 +34,7 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(appointment?.doctorAssigned?._id || appointment?.doctorAssigned?.id || '');
-  const [showCompleteForm, setShowCompleteForm] = useState(false);
+  const [showCompleteForm, setShowCompleteForm] = useState(type === 'complete');
   const [completeNotes, setCompleteNotes] = useState('');
   const [completePrescription, setCompletePrescription] = useState('');
   const [labRequest, setLabRequest] = useState('');
@@ -209,7 +209,7 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">
-                {type === 'view' ? (showCompleteForm ? 'Complete Consultation' : 'Appointment Ticket') : type === 'edit' ? 'Reschedule Appointment' : 'Assign Specialist'}
+                {type === 'view' || type === 'complete' ? (showCompleteForm ? 'Complete Consultation' : 'Appointment Ticket') : type === 'edit' ? 'Reschedule Appointment' : 'Assign Specialist'}
               </h2>
               <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">{appointment.appointmentId}</p>
             </div>
@@ -648,7 +648,7 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
         </div>
 
         <div className="px-8 py-6 border-t border-gray-100 flex items-center justify-between bg-gray-50/30">
-          {type === 'view' ? (
+          {type === 'view' || type === 'complete' ? (
             <>
               <div className="flex items-center gap-2">
                   {!showCompleteForm && (
