@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Sidebar } from '@/components/admin/Sidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { InteractiveTour } from '@/components/common/InteractiveTour';
+import AIAssistant from '@/components/ai/AIAssistant';
 import { useSiteSettings } from '@/context/SettingsContext';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -162,6 +163,7 @@ export default function PortalLayout({
         
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative">
           <InteractiveTour />
+          <AIAssistant />
           {children}
         </main>
       </div>
