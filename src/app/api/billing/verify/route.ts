@@ -8,19 +8,42 @@ export async function POST(request: Request) {
   if (authError) return authError;
 
   try {
-    const { reference, planType } = await request.json();
+    const { reference, planId, cycle } = await request.json();
 
-    if (!reference) {
-      return NextResponse.json({ message: 'Transaction reference is required' }, { status: 400 });
+    if (!reference || !planId || !cycle) {
+      return NextResponse.json({ message: 'Reference, Plan ID, and Cycle are required' }, { status: 400 });
+    }
+
+    const client = supabaseAdmin || supabase;
+    if (!client) throw new Error('Supabase client failure');
+
+    // 0. Fetch the Plan Details
+    const { data: plan, error: planError } = await client
+      .from('subscription_plans')
+      .select('*')
+      .eq('id', planId)
+      .single();
+
+    if (planError || !plan) {
+      return NextResponse.json({ message: 'Invalid subscription plan selected' }, { status: 404 });
+    }
+
+    const expectedPrice = cycle === 'yearly' ? plan.price_yearly : plan.price_monthly;
+    
+    // 1. Fetch current Hospital data for additive logic
+    const { data: hospital, error: hospError } = await client
+      .from('hospitals')
+      .select('next_billing_date, trial_end_date, subscription_status')
+      .eq('id', profile?.hospital_id)
+      .single();
+
+    if (hospError || !hospital) {
+      return NextResponse.json({ message: 'Hospital profile not found' }, { status: 404 });
     }
 
     const secretKey = process.env.PAYSTACK_SECRET_KEY;
-    if (!secretKey) {
-      console.warn('PAYSTACK_SECRET_KEY is not defined. Bypassing strict verification for development.');
-    }
-
     let isSuccess = false;
-    let amount = 0;
+    let amountPaid = 0;
     let customerCode = 'dev_customer';
     let rawData = {};
 
@@ -32,33 +55,45 @@ export async function POST(request: Request) {
       const data = paystackRes.data.data;
       
       if (data.status !== 'success') {
-        return NextResponse.json({ message: 'Transaction was not totally successful from Paystack' }, { status: 400 });
+        return NextResponse.json({ message: 'Transaction was not successful from Paystack' }, { status: 400 });
+      }
+
+      // Verify Amount (Paystack amount is in Kobo)
+      amountPaid = data.amount / 100;
+      if (amountPaid < expectedPrice) {
+        return NextResponse.json({ message: `Insufficient payment: Expected ₦${expectedPrice}` }, { status: 400 });
       }
 
       isSuccess = true;
-      amount = data.amount / 100;
       customerCode = data.customer?.customer_code || 'unknown';
       rawData = data;
     } else {
-      // Mock success for development if keys aren't added yet
+      // Mock success for development
       isSuccess = true;
-      amount = planType === 'yearly' ? 500000 : 50000;
+      amountPaid = expectedPrice;
       rawData = { mock: true, reference };
     }
 
-    // Calculate new expiry date based on plan
-    const daysToAdd = planType === 'yearly' ? 365 : 30;
-    const nextDate = new Date();
+    // 2. Additive Extension Logic
+    // Current end date: next_billing_date is our source of truth, fallback to trial_end_date
+    const currentExpiryStr = hospital.next_billing_date || hospital.trial_end_date;
+    const currentExpiry = currentExpiryStr ? new Date(currentExpiryStr) : new Date();
+    const now = new Date();
+
+    // If already expired, start from now. If active, add to existing time.
+    const baseDate = currentExpiry > now ? currentExpiry : now;
+    const daysToAdd = cycle === 'yearly' ? 365 : 30;
+    
+    const nextDate = new Date(baseDate);
     nextDate.setDate(nextDate.getDate() + daysToAdd);
 
-    const client = supabaseAdmin || supabase;
-
-    // Update Hospital Subscription
+    // 3. Update Hospital Subscription
     const { error: updateError } = await client
       .from('hospitals')
       .update({
         subscription_status: 'active',
-        subscription_plan: planType,
+        plan_id: planId,
+        billing_cycle: cycle,
         next_billing_date: nextDate.toISOString(),
         paystack_customer_id: customerCode,
       })
@@ -66,19 +101,19 @@ export async function POST(request: Request) {
 
     if (updateError) throw updateError;
 
-    // Log the transaction
+    // 4. Log the transaction
     await client.from('payment_transactions').insert([{
        hospital_id: profile?.hospital_id,
        reference: reference,
-       amount: amount,
-       plan: planType,
+       amount: amountPaid,
+       plan: `${plan.name} (${cycle})`,
        status: 'success',
        metadata: rawData
     }]);
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Subscription fully activated', 
+      message: `Successfully subscribed to ${plan.name}`, 
       next_billing_date: nextDate 
     });
   } catch (error: any) {

@@ -10,6 +10,7 @@ export interface User {
   hospital_slug?: string;
   subscription_status?: string;
   trial_end_date?: string;
+  next_billing_date?: string;
   profilePhoto?: string;
   doctorProfileId?: string;
   createdAt?: string;
