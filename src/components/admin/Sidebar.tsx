@@ -144,6 +144,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
       return [
         { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/nurse/dashboard`, id: 'nav-dashboard' },
         { icon: ClipboardList, label: 'Appointments', path: `${base}/nurse/appointments`, id: 'nav-appointments' },
+        { icon: FileText, label: 'Patients', path: `${base}/nurse/patients`, id: 'nav-patients' },
         { icon: Activity, label: 'Patient Vitals', path: `${base}/nurse/vitals`, id: 'nav-vitals' },
         { icon: User, label: 'My Profile', path: `${base}/nurse/profile`, id: 'nav-profile' },
       ];

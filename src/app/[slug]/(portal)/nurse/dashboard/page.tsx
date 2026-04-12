@@ -122,7 +122,7 @@ export default function NurseDashboard({ params }: { params: Promise<{ slug: str
             ) : appointments.map((apt) => (
               <Link 
                 key={apt._id} 
-                href={`/${slug}/nurse/vitals?patientId=${apt.patientId}&appointmentId=${apt._id}`}
+                href={`/${slug}/nurse/vitals?patientId=${apt.patientId || apt._id}&appointmentId=${apt._id}`}
                 className="block p-4 bg-white/60 backdrop-blur-md rounded-xl border border-white hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group cursor-pointer"
               >
                 <div className="flex justify-between items-start mb-2">
@@ -130,8 +130,17 @@ export default function NurseDashboard({ params }: { params: Promise<{ slug: str
                     <h4 className="text-sm font-black text-gray-900 group-hover:text-emerald-600 transition-colors">{apt.fullName}</h4>
                     <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">{apt.department} • {apt.appointmentTime}</p>
                   </div>
-                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                    <Thermometer className="w-4 h-4 animate-bounce" />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={(e) => handleCall(e, apt._id)}
+                      className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center hover:bg-amber-600 hover:text-white transition-colors"
+                      title="Call to Triage"
+                    >
+                      <Megaphone className="w-4 h-4" />
+                    </button>
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                      <Thermometer className="w-4 h-4 animate-bounce" />
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 mt-3">

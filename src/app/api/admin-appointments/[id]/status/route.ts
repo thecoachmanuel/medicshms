@@ -12,7 +12,11 @@ export async function PATCH(
     const { error: authError, profile } = await withAuth(request, ['Admin', 'Receptionist', 'Doctor']);
     if (authError) return authError;
 
-    const updateData: any = { appointment_status: status };
+    const updateData: any = { 
+      appointment_status: status,
+      is_calling: false,
+      called_at: null
+    };
     if (status === 'Cancelled' && reason) {
       updateData.cancel_reason = reason;
     }

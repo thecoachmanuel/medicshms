@@ -22,7 +22,7 @@ export async function GET(request: Request) {
 
     let query = (supabaseAdmin || supabase)
       .from('public_appointments')
-      .select('id, appointment_id, full_name, mobile_number, email_address, appointment_date, appointment_time, department, appointment_status, age, gender, date_of_birth, primary_concern, doctor_notes, prescription, known_allergies, allergies_details, patient_id, doctors!doctor_assigned_id(id, profiles!user_id(name))', { count: 'exact' })
+      .select('id, appointment_id, full_name, mobile_number, email_address, appointment_date, appointment_time, department, appointment_status, age, gender, date_of_birth, primary_concern, doctor_notes, prescription, known_allergies, allergies_details, patient_id, is_calling, called_at, calling_station, doctors!doctor_assigned_id(id, profiles!user_id(name))', { count: 'exact' })
       .eq('hospital_id', userProfile?.hospital_id);
 
     if (patientId) {
@@ -79,6 +79,9 @@ export async function GET(request: Request) {
         knownAllergies: apt.known_allergies ? 'Yes' : 'No',
         allergiesDetails: apt.allergies_details,
         patientId: apt.patient_id,
+        is_calling: apt.is_calling,
+        called_at: apt.called_at,
+        calling_station: apt.calling_station,
         doctorAssigned: doctor ? {
           ...doctor,
           user: profile

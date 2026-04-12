@@ -5,7 +5,7 @@ import {
   Calendar, Search, Edit2, Eye, UserPlus, Check, X, Clock, 
   RefreshCw, XCircle, CheckCircle, UserMinus, Printer, 
   Download, Filter, ChevronDown, Loader2, Plus, MoreHorizontal,
-  Mail, Phone, Building2, Stethoscope, ArrowUpRight, User
+  Mail, Phone, Building2, Stethoscope, ArrowUpRight, User, Megaphone
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { appointmentAPI, departmentAPI, doctorAPI } from '@/lib/api';
@@ -105,6 +105,15 @@ export default function AppointmentsList({ role }: Props) {
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message || 'Operation failed';
       toast.error(`Uplink failed: ${msg}`);
+    }
+  };
+
+  const handleCall = async (id: string) => {
+    try {
+      await appointmentAPI.call(id);
+      toast.success('Patient called to queue');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Call failed');
     }
   };
 
@@ -367,6 +376,15 @@ export default function AppointmentsList({ role }: Props) {
                           className="p-2.5 bg-white border border-gray-100 rounded-xl shadow-sm text-gray-400 hover:text-amber-600 hover:border-amber-100 transition-all"
                         >
                           <Edit2 className="w-4.5 h-4.5" />
+                        </button>
+                      )}
+                      {['Admin', 'Receptionist', 'Doctor', 'Nurse', 'Lab Scientist', 'Radiologist', 'Pharmacist'].includes(role) && apt.appointmentStatus !== 'Cancelled' && apt.appointmentStatus !== 'Completed' && (
+                        <button 
+                          onClick={() => handleCall(apt._id)}
+                          className="p-2.5 bg-amber-50 border border-amber-100/50 rounded-xl shadow-sm text-amber-600 hover:bg-amber-600 hover:text-white transition-all group/call"
+                          title="Call Patient to Queue"
+                        >
+                          <Megaphone className="w-4.5 h-4.5 group-hover:animate-bounce" />
                         </button>
                       )}
                       {isAdminOrReceptionist && apt.appointmentStatus !== 'Cancelled' && apt.appointmentStatus !== 'Completed' && (
