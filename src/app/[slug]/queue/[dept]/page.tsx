@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, use, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { appointmentsAPI } from '@/lib/api';
+import { toast } from 'react-hot-toast';
 import { 
   Volume2, VolumeX, Users, Clock, 
   ArrowRight, Activity, Monitor, Bell,
