@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { radiologyAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Scan, Search, CheckCircle, UploadCloud, Printer, Download, Eye, Link as LinkIcon, Clock, User, ChevronRight, X, AlertCircle, ImageIcon, Activity, Megaphone } from 'lucide-react';
+import { Scan, Search, CheckCircle, UploadCloud, Printer, Download, Eye, Link as LinkIcon, Clock, User, ChevronRight, X, AlertCircle, ImageIcon, Activity, Megaphone, RefreshCw } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useSearchParams } from 'next/navigation';
