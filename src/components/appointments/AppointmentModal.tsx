@@ -55,6 +55,22 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
   const [prescribedMeds, setPrescribedMeds] = useState<any[]>([]);
   const [pendingLabTests, setPendingLabTests] = useState<any[]>([]);
   const [pendingImaging, setPendingImaging] = useState<any[]>([]);
+  const [patientUUID, setPatientUUID] = useState<string | null>(null);
+
+  // Resolve UUID for Timeline and Requests
+  React.useEffect(() => {
+    const pId = appointment.patient_id || appointment.patientId;
+    if (!pId) return;
+
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pId);
+    if (isUUID) {
+      setPatientUUID(pId);
+    } else {
+      patientsAPI.getById(pId).then(res => {
+        if (res.data?._id) setPatientUUID(res.data._id);
+      }).catch(err => console.error('UUID Resolve Error:', err));
+    }
+  }, [appointment]);
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,8 +95,22 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
   const handleComplete = async () => {
     setIsSubmitting(true);
     try {
-      const pId = appointment.patient_id || appointment.patientId;
+      let pId = patientUUID || appointment.patient_id || appointment.patientId;
       if (!pId) throw new Error('Patient Identity Lost');
+
+      // 0. Resolve Patient UUID if needed (Diagnostic APIs require UUID)
+      // If patientUUID wasn't resolved by the useEffect yet, do it now.
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pId);
+      if (!isUUID) {
+        try {
+          const pRes = await patientsAPI.getById(pId);
+          if (pRes.data?._id) {
+            pId = pRes.data._id;
+          }
+        } catch (resError) {
+          console.error('Failed to resolve patient UUID:', resError);
+        }
+      }
 
       // 1. Finalize Appointment Status & Notes
       const completionData = {
@@ -191,7 +221,7 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
                       <span className="text-[9px] font-bold text-slate-400">Holistic Insight</span>
                    </div>
                    <div className="max-h-[300px] overflow-y-auto p-4 bg-white/50">
-                      <PatientTimeline patientId={appointment.patient_id || appointment.patientId} />
+                       <PatientTimeline patientId={patientUUID || appointment.patient_id || appointment.patientId} />
                    </div>
                 </div>
 
@@ -288,10 +318,6 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
                          <span className="text-xs font-bold text-gray-400 group-hover:text-indigo-600 italic">Request Laboratory Analysis...</span>
                          <Plus className="w-4 h-4 text-gray-300 group-hover:text-indigo-600" />
                        </button>
-
-                       {/* Lab order basket integration would go here if we wanted inline search, but for now we keep the modal but could track the newly added ones if the modal had an 'onAdd' callback. 
-                           Actually, for the "best flow logic", I'll implement inline lab search in next cycle. For now, the user can use the modal.
-                       */}
                     </div>
                   </div>
 
@@ -581,12 +607,12 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
       <CreateLabRequestModal 
         isOpen={showLabModal}
         onClose={() => setShowLabModal(false)}
-        initialPatientId={appointment.patient_id || appointment.patientId}
+        initialPatientId={patientUUID || appointment.patient_id || appointment.patientId}
       />
       <CreateRadiologyRequestModal 
         isOpen={showRadiologyModal}
         onClose={() => setShowRadiologyModal(false)}
-        initialPatientId={appointment.patient_id || appointment.patientId}
+        initialPatientId={patientUUID || appointment.patient_id || appointment.patientId}
       />
     </div>
   );

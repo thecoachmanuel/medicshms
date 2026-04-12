@@ -52,12 +52,15 @@ export const OnboardingGuide = () => {
     setMounted(true);
     const prefs = user?.clinical_preferences;
     
+    // Safety check for localStorage (if DB sync is pending)
+    const localDismissed = typeof window !== 'undefined' && localStorage.getItem(`hms_onboarding_dismissed_${user?.id}`);
+    
     // Logic for "First Time User":
     // 1. Must NOT be a Platform Admin (they have their own tools)
-    // 2. Must NOT have dismissed or completed onboarding already
+    // 2. Must NOT have dismissed or completed onboarding already (DB or Local)
     // 3. Must have a valid role (handled by steps lookup)
     const isSuper = isPlatformAdmin(user?.role || '');
-    const isReturningUser = prefs?.has_completed_onboarding || prefs?.dismissed_onboarding;
+    const isReturningUser = prefs?.has_completed_onboarding || prefs?.dismissed_onboarding || localDismissed === 'true';
     
     if (user && !isSuper && !isReturningUser) {
       setIsVisible(true);
@@ -262,6 +265,12 @@ export const OnboardingGuide = () => {
 
       await authAPI.updateProfile({ clinical_preferences: newPrefs });
       updateUser({ clinical_preferences: newPrefs });
+      
+      // Persist locally for immediate suppression across reloads
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`hms_onboarding_dismissed_${user?.id}`, 'true');
+      }
+      
       setIsVisible(false);
       
       if (type === 'complete') {

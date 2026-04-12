@@ -34,7 +34,14 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
   const { slug } = use(params);
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<any>({
+    cards: {
+      todayAppointments: 0,
+      totalCompleted: 0,
+      uniquePatients: 0,
+      monthConsultations: 0
+    }
+  });
   const [todayAppointments, setTodayAppointments] = useState<any[]>([]);
   const [activities, setActivities] = useState<any[]>([]);
   const [investigations, setInvestigations] = useState<any[]>([]);
@@ -121,7 +128,7 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
     </div>;
   }
 
-  const statCards = (stats && stats.cards) ? [
+  const statCards = [
     { label: "Today's Queue", value: stats.cards.todayAppointments || 0, icon: Clock, color: 'primary', description: 'Patients waiting for consultation' },
     { label: 'Completed', value: stats.cards.totalCompleted || 0, icon: CheckCircle, color: 'emerald', description: 'Total successful consultations' },
     { label: 'My Patients', value: stats.cards.uniquePatients || 0, icon: UsersIcon, color: 'purple', description: 'Unique patients treated overall' },

@@ -36,6 +36,7 @@ export async function PATCH(
         appointment_status: 'Completed',
         doctor_notes,
         prescription,
+        completed_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
       .eq('id', id)

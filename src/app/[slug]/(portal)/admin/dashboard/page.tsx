@@ -40,7 +40,17 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<any>({
+    cards: {
+      totalPatients: { value: 0 },
+      todayAppointments: { value: 0 },
+      totalDoctors: { value: 0 },
+      monthRevenue: { value: 0, projected: 0, change: 0, collectionRate: 0 }
+    },
+    departmentRevenue: [],
+    revenueTrend: [],
+    appointmentStatus: { pending: 0, confirmed: 0, completed: 0, total: 1 }
+  });
   const [recentAppointments, setRecentAppointments] = useState<any[]>([]);
   const [activityFeed, setActivityFeed] = useState<any[]>([]);
   const [monthlyAppointments, setMonthlyAppointments] = useState<any[]>([]);
@@ -118,7 +128,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
     );
   }
 
-  const statCards = stats ? [
+  const statCards = [
     { label: 'Total Patients', value: stats.cards.totalPatients.value, icon: UsersIcon, color: 'blue', description: 'Overall registered patients' },
     { label: "Today's Appointments", value: stats.cards.todayAppointments.value, icon: Calendar, color: 'purple', description: 'Scheduled for follow-up/consult' },
     { label: 'Active Doctors', value: stats.cards.totalDoctors.value, icon: Stethoscope, color: 'emerald', description: 'Doctors currently enabled' },

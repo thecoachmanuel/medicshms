@@ -285,7 +285,7 @@ export default function PatientsList({ role }: Props) {
                            </button>
                          )}
                          <Link 
-                          href={`/${slug}/${portalRole}/patients/${patient.patientId || patient._id}`}
+                          href={`/${slug}/${portalRole}/patients/${patient._id}`}
                           className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 border border-indigo-500 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:shadow-indigo-200 transition-all active:scale-95 w-full justify-center"
                         >
                           <History className="w-3.5 h-3.5" />
