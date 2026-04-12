@@ -88,34 +88,41 @@ export async function POST(request: Request) {
 
         if (existingUser) {
           userId = existingUser.id;
-        } else if (email) {
-          // Create new auth user
-          const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-            email,
-            password: 'hms@patient',
-            email_confirm: true,
-            user_metadata: { 
-              name: body.fullName, 
-              role: 'Patient', 
-              phone: mobileNumber, 
-              hospital_id: userProfile?.hospital_id 
-            }
-          });
-
-          if (!authError && authData.user) {
-            userId = authData.user.id;
-            // Create profile
-            await (supabaseAdmin || supabase).from('profiles').insert([{
-              id: userId,
-              name: body.fullName,
-              email,
-              phone: mobileNumber,
-              role: 'Patient',
-              hospital_id: userProfile?.hospital_id,
-              is_active: true
-            }]);
+        } else {
+          // Determine primary identifier for auth
+          const authIdentifier = email || mobileNumber;
+          if (!authIdentifier) {
+             console.warn('Cannot create account: No email or phone provided');
           } else {
-            console.error('Failed to create auth user for patient:', authError?.message);
+            // Create new auth user
+            const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+              [email ? 'email' : 'phone']: authIdentifier,
+              password: 'hms@patient',
+              phone_confirm: !email,
+              email_confirm: !!email,
+              user_metadata: { 
+                name: body.fullName, 
+                role: 'Patient', 
+                phone: mobileNumber, 
+                hospital_id: userProfile?.hospital_id 
+              }
+            });
+
+            if (!authError && authData.user) {
+              userId = authData.user.id;
+              // Create profile
+              await (supabaseAdmin || supabase).from('profiles').insert([{
+                id: userId,
+                name: body.fullName,
+                email: email || null,
+                phone: mobileNumber,
+                role: 'Patient',
+                hospital_id: userProfile?.hospital_id,
+                is_active: true
+              }]);
+            } else {
+              console.error('Failed to create auth user for patient:', authError?.message);
+            }
           }
         }
       }

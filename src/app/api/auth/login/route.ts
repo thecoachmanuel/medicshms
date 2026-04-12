@@ -16,15 +16,21 @@ export async function POST(request: Request) {
     // Pre-check: Does user exist in profiles?
     const { data: preCheckProfile } = await client
       .from('profiles')
-      .select('id, email, role, hospital_id')
+      .select('id, email, role, hospital_id, phone')
       .or(`email.eq.${identifier},phone.eq.${identifier}`)
       .maybeSingle();
 
     if (preCheckProfile) {
       console.log(`[Login API] Pre-check found profile: ${preCheckProfile.id} | Role: ${preCheckProfile.role} | Email: ${preCheckProfile.email}`);
-      // Use the email specifically from the profile for auth
-      loginIdentifier = preCheckProfile.email;
-      isEmail = true;
+      
+      // Smart Identifier Selection: Use email if available, otherwise stay with phone
+      if (preCheckProfile.email) {
+        loginIdentifier = preCheckProfile.email;
+        isEmail = true;
+      } else if (preCheckProfile.phone) {
+        loginIdentifier = preCheckProfile.phone;
+        isEmail = false;
+      }
 
       // Deep Check: Does user exist in auth.users?
       if (supabaseAdmin) {
