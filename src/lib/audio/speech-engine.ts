@@ -12,6 +12,9 @@ export class SpeechEngine {
 
   private synthesis?: SpeechSynthesis;
   private voices: SpeechSynthesisVoice[] = [];
+  private isListening: boolean = false;
+  private onResultCallback?: (text: string) => void;
+  private onStatusChange?: (status: 'idle' | 'listening' | 'processing' | 'speaking') => void;
 
   constructor() {
     if (typeof window !== 'undefined') {
