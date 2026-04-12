@@ -9,6 +9,7 @@ import {
   appointmentsAPI,
   patientAPI 
 } from '@/lib/api';
+import { toast } from 'react-hot-toast';
 import { 
   History,
   HeartPulse,
