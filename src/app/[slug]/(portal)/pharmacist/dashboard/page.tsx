@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback, use } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { OnboardingGuide } from '@/components/common/OnboardingGuide';
 import { pharmacyAPI } from '@/lib/api';
 import { DashboardCard } from '@/components/admin/DashboardCard';
 import { 

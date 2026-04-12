@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback, use } from 'react';
 import Link from 'next/link';
-import { OnboardingGuide } from '@/components/common/OnboardingGuide';
 import { useAuth } from '@/context/AuthContext';
 import { appointmentsAPI } from '@/lib/api';
 import { getLagosDate, formatDate } from '@/lib/utils';

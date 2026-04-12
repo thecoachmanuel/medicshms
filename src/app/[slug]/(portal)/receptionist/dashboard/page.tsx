@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, use } from 'react';
-import { OnboardingGuide } from '@/components/common/OnboardingGuide';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { dashboardAPI, appointmentsAPI } from '@/lib/api';
@@ -38,9 +37,9 @@ export default function ReceptionistDashboard({ params }: { params: Promise<{ sl
         dashboardAPI.getRecentAppointments(),
         dashboardAPI.getChartData('daily-appointments'),
       ]) as [any, any, any];
-      setStats(statsRes);
-      setRecentAppointments(aptsRes);
-      setDailyAppointments(dailyRes);
+      setStats(statsRes?.data || statsRes);
+      setRecentAppointments(aptsRes?.data || aptsRes || []);
+      setDailyAppointments(dailyRes?.data || dailyRes || []);
     } catch (err) {
       console.error('Dashboard fetch error:', err);
     } finally {
@@ -67,13 +66,13 @@ export default function ReceptionistDashboard({ params }: { params: Promise<{ sl
     </div>;
   }
 
-  const statCards = stats ? [
-    { label: "Today's Appointments", value: stats.cards.todayAppointments.value, icon: Calendar, color: 'purple', description: 'Appointments scheduled for today' },
-    { label: 'Total Patients', value: stats.cards.totalPatients.value, icon: Users, color: 'blue', description: 'Total patients in system' },
-    { label: 'Active Doctors', value: stats.cards.totalDoctors.value, icon: Stethoscope, color: 'emerald', description: 'Doctors currently on duty' },
-    { label: 'New Patients', value: stats.cards.newPatients.value, icon: UserPlus, color: 'cyan', description: 'New registrations this month' },
-    { label: 'Monthly Revenue', value: formatCurrency(stats.cards.monthRevenue.value), icon: Wallet, color: 'amber', description: 'Total revenue this month' },
-    { label: 'Pending Bills', value: stats.cards.pendingBills.value, icon: FileWarning, color: 'rose', description: 'Unpaid or partial bills' },
+  const statCards = (stats && stats.cards) ? [
+    { label: "Today's Appointments", value: stats.cards.todayAppointments?.value || 0, icon: Calendar, color: 'purple', description: 'Appointments scheduled for today' },
+    { label: 'Total Patients', value: stats.cards.totalPatients?.value || 0, icon: Users, color: 'blue', description: 'Total patients in system' },
+    { label: 'Active Doctors', value: stats.cards.totalDoctors?.value || 0, icon: Stethoscope, color: 'emerald', description: 'Doctors currently on duty' },
+    { label: 'New Patients', value: stats.cards.newPatients?.value || 0, icon: UserPlus, color: 'cyan', description: 'New registrations this month' },
+    { label: 'Monthly Revenue', value: formatCurrency(stats.cards.monthRevenue?.value || 0), icon: Wallet, color: 'amber', description: 'Total revenue this month' },
+    { label: 'Pending Bills', value: stats.cards.pendingBills?.value || 0, icon: FileWarning, color: 'rose', description: 'Unpaid or partial bills' },
   ] : [];
 
   return (
@@ -98,9 +97,6 @@ export default function ReceptionistDashboard({ params }: { params: Promise<{ sl
           </button>
         </div>
       </div>
-
-      {/* Welcome & Onboarding Section */}
-      <OnboardingGuide />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {statCards.map((card, i) => (

@@ -146,11 +146,16 @@ export const InteractiveTour = () => {
     }
   };
 
-  if (!mounted || !isVisible || !targetRect) return null;
+  if (!mounted || !isVisible || !targetRect || typeof document === 'undefined' || !document.body) return null;
 
   const step = DEFAULT_STEPS[currentStep];
   
-  // Calculate tooltip position
+  // Calculate tooltip position with safety
+  const tooltipHeight = 300;
+  const tooltipWidth = 320;
+  const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
+  const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+
   const top = targetRect.top + targetRect.height / 2;
   const left = targetRect.right + 20;
 

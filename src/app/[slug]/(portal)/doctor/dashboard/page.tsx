@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, use } from 'react';
-import { OnboardingGuide } from '@/components/common/OnboardingGuide';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { doctorDashboardAPI, labAPI, radiologyAPI } from '@/lib/api';
@@ -52,10 +51,11 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
         doctorDashboardAPI.getChartData('monthly-trend'),
       ]);
 
-      setStats(statsRes.data || {});
-      setTodayAppointments(apptsRes.data || []);
-      setActivities(activityRes.data || []);
-      setMonthlyTrend(monthlyData);
+      const statsData = statsRes?.data || statsRes;
+      setStats(statsData || {});
+      setTodayAppointments(apptsRes?.data || apptsRes || []);
+      setActivities(activityRes?.data || activityRes || []);
+      setMonthlyTrend(monthlyData?.data || monthlyData || []);
       
       const combined = [
         ...(labRes.data || []).map((l: any) => ({ ...l, origin: 'Laboratory' })),
@@ -89,11 +89,11 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
     </div>;
   }
 
-  const statCards = stats ? [
-    { label: "Today's Queue", value: stats.cards.todayAppointments, icon: Clock, color: 'primary', description: 'Patients waiting for consultation' },
-    { label: 'Completed', value: stats.cards.totalCompleted, icon: CheckCircle, color: 'emerald', description: 'Total successful consultations' },
-    { label: 'My Patients', value: stats.cards.uniquePatients, icon: UsersIcon, color: 'purple', description: 'Unique patients treated overall' },
-    { label: 'Consultations', value: stats.cards.monthConsultations, icon: Activity, color: 'amber', description: 'Consultations this month' },
+  const statCards = (stats && stats.cards) ? [
+    { label: "Today's Queue", value: stats.cards.todayAppointments || 0, icon: Clock, color: 'primary', description: 'Patients waiting for consultation' },
+    { label: 'Completed', value: stats.cards.totalCompleted || 0, icon: CheckCircle, color: 'emerald', description: 'Total successful consultations' },
+    { label: 'My Patients', value: stats.cards.uniquePatients || 0, icon: UsersIcon, color: 'purple', description: 'Unique patients treated overall' },
+    { label: 'Consultations', value: stats.cards.monthConsultations || 0, icon: Activity, color: 'amber', description: 'Consultations this month' },
   ] : [];
 
   return (
@@ -111,8 +111,6 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
           Sync Schedule
         </button>
       </div>
-
-      <OnboardingGuide />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {statCards.map((card, i) => (

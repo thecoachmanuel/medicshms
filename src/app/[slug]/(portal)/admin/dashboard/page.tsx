@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { dashboardAPI } from '@/lib/api';
-import { OnboardingGuide } from '@/components/common/OnboardingGuide';
 import { getLagosDate, formatDate, formatCurrency } from '@/lib/utils';
 import {
   RefreshCw, Calendar, Building2, AlertCircle,
@@ -60,8 +59,12 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
 
       const [statsRes, appointmentsRes, activityRes, monthlyAptRes] = results;
 
-      if (statsRes.status === 'fulfilled') {
-        setStats(statsRes.value);
+      if (statsRes.status === 'fulfilled' && statsRes.value) {
+        // Ensure we handle both wrapped (data) and unwrapped responses safely
+        const statsData = statsRes.value.data || statsRes.value;
+        if (statsData && typeof statsData === 'object') {
+          setStats(statsData);
+        }
       } else {
         console.error('Stats fetch error:', statsRes.reason);
         setError('Partial data loading error. Some statistics may be missing.');
@@ -99,7 +102,6 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
     return (
       <div className="space-y-6 animate-pulse">
         <div className="h-8 w-64 bg-gray-200 rounded"></div>
-        <OnboardingGuide />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>

@@ -4,7 +4,6 @@ import React, { useState, useEffect, useCallback, use } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { radiologyAPI } from '@/lib/api';
-import { OnboardingGuide } from '@/components/common/OnboardingGuide';
 import { DashboardCard } from '@/components/admin/DashboardCard';
 import { 
   Scan, Bone, AlertCircle, FileText, 

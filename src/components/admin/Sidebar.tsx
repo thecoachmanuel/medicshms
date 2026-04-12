@@ -66,7 +66,8 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
 
   const parts = pathname.split('/');
   const isPlatformRoute = pathname.startsWith('/platform-admin');
-  const slug = (!isPlatformRoute && parts.length > 1 && parts[1] !== 'login' && parts[1] !== 'admin' && parts[1] !== 'doctor' && parts[1] !== 'receptionist') 
+  const portalRoles = ['login', 'admin', 'doctor', 'receptionist', 'nurse', 'lab-scientist', 'pharmacist', 'radiologist', 'patient'];
+  const slug = (!isPlatformRoute && parts.length > 1 && !portalRoles.includes(parts[1])) 
     ? parts[1] 
     : '';
 
