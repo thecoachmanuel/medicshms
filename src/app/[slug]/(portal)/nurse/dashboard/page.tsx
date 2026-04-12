@@ -8,8 +8,9 @@ import { getLagosDate, formatDate } from '@/lib/utils';
 import { DashboardCard } from '@/components/admin/DashboardCard';
 import { 
   Activity, Calendar, HeartPulse, Stethoscope, 
-  RefreshCw, ClipboardList, Thermometer, UserCheck 
+  RefreshCw, ClipboardList, Thermometer, UserCheck, Megaphone
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
@@ -52,6 +53,17 @@ export default function NurseDashboard({ params }: { params: Promise<{ slug: str
       setRefreshing(false);
     }
   }, []);
+
+  const handleCall = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await appointmentsAPI.call(id, { station: 'Triage Room' });
+      toast.success('Patient called to triage');
+    } catch (error) {
+      toast.error('Failed to call patient');
+    }
+  };
 
   useEffect(() => {
     fetchAll();
