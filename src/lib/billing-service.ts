@@ -107,12 +107,24 @@ export const BillingService = {
         
         finalizedServices = [...(existingBill.services || []), ...nonDuplicateNewServices];
     } else if (sourceType === 'Appointment' && finalizedServices.length === 0) {
-      const { data: apt } = await client.from('public_appointments').select('doctor_assigned_id, department').eq('id', sourceId).single();
-      let fee = 5000;
+      const { data: apt } = await client.from('public_appointments').select('doctor_assigned_id, department_id, department').eq('id', sourceId).single();
+      let fee = 0;
+      
+      // 1. Try Doctor specific fee
       if (apt?.doctor_assigned_id) {
          const { data: doctor } = await client.from('doctors').select('fees').eq('id', apt.doctor_assigned_id).single();
          if (doctor?.fees) fee = doctor.fees;
       }
+      
+      // 2. Try Department default fee if no doctor fee
+      if (fee <= 0 && apt?.department_id) {
+         const { data: dept } = await client.from('departments').select('default_consultation_fee').eq('id', apt.department_id).single();
+         if (dept?.default_consultation_fee) fee = dept.default_consultation_fee;
+      }
+
+      // 3. Fallback to 10,000 as a sensible default if everything else fails
+      if (fee <= 0) fee = 10000;
+
       finalizedServices = [{ id: 'consultation', name: 'Medical Consultation', price: fee, amount: fee, quantity: 1, total: fee, source_id: sourceId }];
     }
 

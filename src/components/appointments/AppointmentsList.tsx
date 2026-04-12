@@ -102,8 +102,9 @@ export default function AppointmentsList({ role }: Props) {
       }
       toast.success(`Appointment status synchronized`);
       fetchAppointments();
-    } catch (err) {
-      toast.error('Uplink failed: protocol mismatch');
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || 'Operation failed';
+      toast.error(`Uplink failed: ${msg}`);
     }
   };
 

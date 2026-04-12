@@ -42,7 +42,7 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
 
   const fetchAll = useCallback(async () => {
     try {
-      const [statsRes, apptsRes, activityRes, labRes, radRes, monthlyData] = await Promise.all([
+      const results = await Promise.allSettled([
         doctorDashboardAPI.getStats(),
         doctorDashboardAPI.getTodayAppointments(),
         doctorDashboardAPI.getActivity(),
@@ -51,25 +51,56 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
         doctorDashboardAPI.getChartData('monthly-trend'),
       ]);
 
-      const statsData = statsRes?.data || statsRes;
-      setStats(statsData || {});
-      setTodayAppointments(apptsRes?.data || apptsRes || []);
-      setActivities(activityRes?.data || activityRes || []);
-      setMonthlyTrend(monthlyData?.data || monthlyData || []);
+      const [statsRes, apptsRes, activityRes, labRes, radRes, monthlyData] = results;
+
+      // Stats handling
+      if (statsRes.status === 'fulfilled') {
+        const statsData = statsRes.value?.data || statsRes.value;
+        setStats(statsData || {});
+      } else {
+        console.error('Stats fetch error:', statsRes.reason);
+        const msg = statsRes.reason?.response?.data?.message || '';
+        if (msg.includes('Doctor profile not found')) {
+           toast.error('Clinical Profile Missing: Please contact Admin to complete your staff setup.');
+        }
+      }
+
+      // Appointments handling
+      if (apptsRes.status === 'fulfilled') {
+        setTodayAppointments(apptsRes.value?.data || apptsRes.value || []);
+      }
+
+      // Activity handling
+      if (activityRes.status === 'fulfilled') {
+        setActivities(activityRes.value?.data || activityRes.value || []);
+      }
+
+      // Investigations handling (Lab & Radiology)
+      const combined = [];
+      if (labRes.status === 'fulfilled') {
+        combined.push(...(labRes.value.data || []).map((l: any) => ({ ...l, origin: 'Laboratory' })));
+      }
+      if (radRes.status === 'fulfilled') {
+        combined.push(...(radRes.value.data || []).map((r: any) => ({ ...r, origin: 'Radiology' })));
+      }
       
-      const combined = [
-        ...(labRes.data || []).map((l: any) => ({ ...l, origin: 'Laboratory' })),
-        ...(radRes.data || []).map((r: any) => ({ ...r, origin: 'Radiology' }))
-      ].sort((a: any, b: any) => new Date(b.requested_at).getTime() - new Date(a.requested_at).getTime());
-      
-      setInvestigations(combined.slice(0, 10));
+      setInvestigations(combined.sort((a: any, b: any) => 
+        new Date(b.requested_at).getTime() - new Date(a.requested_at).getTime()
+      ).slice(0, 10));
+
+      // Trend handling
+      if (monthlyData.status === 'fulfilled') {
+        setMonthlyTrend(monthlyData.value?.data || monthlyData.value || []);
+      }
+
     } catch (err) {
-      console.error('Doctor dashboard fetch error:', err);
+      console.error('Doctor dashboard critical fetch error:', err);
+      toast.error('Partial data load failure. Background updates are still syncing.');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [user?.id]);
+  }, [user?.id, slug]);
 
   const router = useRouter();
 
