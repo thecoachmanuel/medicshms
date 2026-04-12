@@ -58,8 +58,8 @@ export async function GET(request: Request) {
           { day: 'saturday', enabled: false, startTime: defaultStart, endTime: '13:00', breakStart: '', breakEnd: '' },
           { day: 'sunday', enabled: false, startTime: '', endTime: '', breakStart: '', breakEnd: '' }
         ],
-        booking_mode: defaults.default_booking_mode || 'Slot',
-        sessions: defaults.default_sessions || []
+        booking_mode: defaults?.default_booking_mode || 'Slot',
+        sessions: defaults?.default_sessions || []
       };
 
       if (doctorId) {
