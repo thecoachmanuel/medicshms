@@ -59,10 +59,10 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
 
       const [statsRes, appointmentsRes, activityRes, monthlyAptRes] = results;
 
-      if (statsRes.status === 'fulfilled' && statsRes.value) {
+      if (statsRes.status === 'fulfilled') {
         // Ensure we handle both wrapped (data) and unwrapped responses safely
         const statsData = statsRes.value.data || statsRes.value;
-        if (statsData && typeof statsData === 'object') {
+        if (statsData && typeof statsData === 'object' && Object.keys(statsData).length > 0) {
           setStats(statsData);
         }
       } else {
@@ -71,15 +71,18 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
       }
 
       if (appointmentsRes.status === 'fulfilled') {
-        setRecentAppointments(appointmentsRes.value as any[]);
+        const aptsData = appointmentsRes.value.data || appointmentsRes.value;
+        setRecentAppointments(Array.isArray(aptsData) ? aptsData : []);
       }
       
       if (activityRes.status === 'fulfilled') {
-        setActivityFeed(activityRes.value as any[]);
+        const feedData = activityRes.value.data || activityRes.value;
+        setActivityFeed(Array.isArray(feedData) ? feedData : []);
       }
 
       if (monthlyAptRes.status === 'fulfilled') {
-        setMonthlyAppointments(monthlyAptRes.value as any[]);
+        const chartData = monthlyAptRes.value.data || monthlyAptRes.value;
+        setMonthlyAppointments(Array.isArray(chartData) ? chartData : []);
       }
 
     } catch (err: any) {
