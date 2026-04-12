@@ -17,10 +17,10 @@ export interface User {
   department?: string;
   departmentId?: string;
   clinical_preferences?: {
-    default_appointment_duration: number;
-    auto_finalize_results: boolean;
-    notification_sounds: boolean;
-    sidebar_collapsed: boolean;
+    default_appointment_duration?: number;
+    auto_finalize_results?: boolean;
+    notification_sounds?: boolean;
+    sidebar_collapsed?: boolean;
     dismissed_onboarding?: boolean;
     has_completed_onboarding?: boolean;
   };
