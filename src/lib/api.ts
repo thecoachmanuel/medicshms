@@ -44,7 +44,7 @@ api.interceptors.request.use(
       if (!isPlatformAdmin && pathParts.length > 1) {
         const possibleSlug = pathParts[1];
         // Simple validation: ignore common non-slug parts or specialized routes
-        if (possibleSlug && !['login', 'register', 'auth', 'platform-admin', 'admin', 'doctor', 'receptionist'].includes(possibleSlug)) {
+        if (possibleSlug && !['login', 'register', 'auth', 'platform-admin', 'admin', 'doctor', 'receptionist', 'nurse', 'lab-scientist', 'pharmacist', 'radiologist', 'patient'].includes(possibleSlug)) {
           config.headers['x-hospital-slug'] = possibleSlug;
         }
       }
@@ -64,7 +64,7 @@ api.interceptors.response.use(
       if (!window.location.pathname.includes('/login')) {
         const parts = window.location.pathname.split('/');
         const isPlatformAdmin = window.location.pathname.startsWith('/platform-admin');
-        const slug = (!isPlatformAdmin && parts.length > 1 && parts[1] !== 'admin' && parts[1] !== 'doctor' && parts[1] !== 'receptionist') 
+        const slug = (!isPlatformAdmin && parts.length > 1 && !['admin', 'receptionist', 'nurse', 'doctor', 'lab-scientist', 'radiologist', 'pharmacist', 'patient'].includes(parts[1])) 
           ? parts[1] 
           : '';
         

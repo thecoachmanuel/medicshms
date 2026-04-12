@@ -120,7 +120,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const pathname = window.location.pathname;
     const parts = pathname.split('/');
     const isPlatformRoute = pathname.startsWith('/platform-admin');
-    const portalRoles = ['login', 'admin', 'doctor', 'receptionist', 'nurse', 'lab-scientist', 'pharmacist', 'radiologist'];
+    const portalRoles = ['login', 'admin', 'doctor', 'receptionist', 'nurse', 'lab-scientist', 'pharmacist', 'radiologist', 'patient'];
     const slug = (!isPlatformRoute && parts.length > 1 && !portalRoles.includes(parts[1])) 
       ? parts[1] 
       : '';

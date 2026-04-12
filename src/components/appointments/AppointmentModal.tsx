@@ -102,7 +102,7 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
       if (pendingLabTests.length > 0) {
         await labAPI.createRequest({
           patient_id: pId,
-          clinical_summary: completeNotes,
+          clinical_notes: completeNotes,
           requested_by_name: user?.name,
           tests: pendingLabTests.map(t => ({
             test_name: t.test_name || t.name,

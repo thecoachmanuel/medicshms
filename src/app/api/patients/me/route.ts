@@ -14,8 +14,14 @@ export async function GET(request: Request) {
       .eq('user_id', userProfile?.id)
       .maybeSingle();
 
-    if (patientError) return NextResponse.json({ message: patientError.message }, { status: 500 });
-    if (!patient) return NextResponse.json({ message: 'Patient profile not found' }, { status: 404 });
+    if (patientError) {
+      console.error(`[Patient Me API] Database error for UUID ${userProfile?.id}:`, patientError.message);
+      return NextResponse.json({ message: patientError.message }, { status: 500 });
+    }
+    if (!patient) {
+      console.warn(`[Patient Me API] No patient record found for user UUID ${userProfile?.id}. Expected link in 'patients' table missing.`);
+      return NextResponse.json({ message: 'Patient profile not found. Please contact administration to link your account.' }, { status: 404 });
+    }
 
     // 2. Fetch all related data in parallel for the dashboard
     const [vitalsRes, requestsRes, appointmentsRes, prescriptionsRes, billsRes] = await Promise.all([
