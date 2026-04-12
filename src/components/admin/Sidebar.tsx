@@ -132,41 +132,41 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
       ];
     } else if (role === 'Patient') {
       return [
-        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/patient/dashboard` },
-        { icon: ClipboardList, label: 'Medical Records', path: `${base}/patient/records` },
-        { icon: DollarSign, label: 'My Invoices', path: `${base}/patient/invoices` },
-        { icon: Calendar, label: 'Appointments', path: `${base}/patient/appointments` },
-        { icon: User, label: 'My Profile', path: `${base}/patient/profile` },
+        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/patient/dashboard`, id: 'nav-dashboard' },
+        { icon: ClipboardList, label: 'Medical Records', path: `${base}/patient/records`, id: 'nav-records' },
+        { icon: DollarSign, label: 'My Invoices', path: `${base}/patient/invoices`, id: 'nav-billing' },
+        { icon: Calendar, label: 'Appointments', path: `${base}/patient/appointments`, id: 'nav-appointments' },
+        { icon: User, label: 'My Profile', path: `${base}/patient/profile`, id: 'nav-profile' },
       ];
     } else if (role === 'Nurse') {
       return [
-        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/nurse/dashboard` },
-        { icon: ClipboardList, label: 'Appointments', path: `${base}/nurse/appointments` },
-        { icon: Activity, label: 'Patient Vitals', path: `${base}/nurse/vitals` },
-        { icon: User, label: 'My Profile', path: `${base}/nurse/profile` },
+        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/nurse/dashboard`, id: 'nav-dashboard' },
+        { icon: ClipboardList, label: 'Appointments', path: `${base}/nurse/appointments`, id: 'nav-appointments' },
+        { icon: Activity, label: 'Patient Vitals', path: `${base}/nurse/vitals`, id: 'nav-vitals' },
+        { icon: User, label: 'My Profile', path: `${base}/nurse/profile`, id: 'nav-profile' },
       ];
     } else if (role === 'Lab Scientist') {
       return [
-        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/lab-scientist/dashboard` },
-        { icon: FileText, label: 'Patients', path: `${base}/lab-scientist/patients` },
-        { icon: TestTubes, label: 'Lab Requests', path: `${base}/lab-scientist/requests` },
-        { icon: Microscope, label: 'Verified Results', path: `${base}/lab-scientist/results` },
-        { icon: User, label: 'My Profile', path: `${base}/lab-scientist/profile` },
+        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/lab-scientist/dashboard`, id: 'nav-dashboard' },
+        { icon: FileText, label: 'Patients', path: `${base}/lab-scientist/patients`, id: 'nav-patients' },
+        { icon: TestTubes, label: 'Lab Requests', path: `${base}/lab-scientist/requests`, id: 'nav-lab' },
+        { icon: Microscope, label: 'Verified Results', path: `${base}/lab-scientist/results`, id: 'nav-results' },
+        { icon: User, label: 'My Profile', path: `${base}/lab-scientist/profile`, id: 'nav-profile' },
       ];
     } else if (role === 'Pharmacist') {
       return [
-        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/pharmacist/dashboard` },
-        { icon: Pill, label: 'Prescriptions', path: `${base}/pharmacist/prescriptions` },
-        { icon: Package, label: 'Inventory', path: `${base}/pharmacist/inventory` },
-        { icon: User, label: 'My Profile', path: `${base}/pharmacist/profile` },
+        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/pharmacist/dashboard`, id: 'nav-dashboard' },
+        { icon: Pill, label: 'Prescriptions', path: `${base}/pharmacist/prescriptions`, id: 'nav-prescriptions' },
+        { icon: Package, label: 'Inventory', path: `${base}/pharmacist/inventory`, id: 'nav-inventory' },
+        { icon: User, label: 'My Profile', path: `${base}/pharmacist/profile`, id: 'nav-profile' },
       ];
     } else if (role === 'Radiologist') {
       return [
-        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/radiologist/dashboard` },
-        { icon: FileText, label: 'Patients', path: `${base}/radiologist/patients` },
-        { icon: Scan, label: 'Scan Requests', path: `${base}/radiologist/requests` },
-        { icon: ImageIcon, label: 'Verified Reports', path: `${base}/radiologist/reports` },
-        { icon: User, label: 'My Profile', path: `${base}/radiologist/profile` },
+        { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/radiologist/dashboard`, id: 'nav-dashboard' },
+        { icon: FileText, label: 'Patients', path: `${base}/radiologist/patients`, id: 'nav-patients' },
+        { icon: Scan, label: 'Scan Requests', path: `${base}/radiologist/requests`, id: 'nav-radiology' },
+        { icon: ImageIcon, label: 'Verified Reports', path: `${base}/radiologist/reports`, id: 'nav-reports' },
+        { icon: User, label: 'My Profile', path: `${base}/radiologist/profile`, id: 'nav-profile' },
       ];
     }
     return [];
