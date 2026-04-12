@@ -33,6 +33,29 @@ export default function NurseDashboard({ params }: { params: Promise<{ slug: str
   const [callingId, setCallingId] = useState<string | null>(null);
   const [stats, setStats] = useState({ arrived: 0, triaged: 0, total: 0 });
 
+  const fetchAll = useCallback(async () => {
+    try {
+      setRefreshing(true);
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Fetch today's appointments to derive nursing stats
+      const res = (await appointmentsAPI.getAll({ date: today, limit: 100 })) as any;
+      const allToday = res?.data || [];
+      
+      setAppointments(allToday.filter((a: any) => a.appointmentStatus === 'Arrived'));
+      setStats({
+        arrived: allToday.filter((a: any) => a.appointmentStatus === 'Arrived').length,
+        triaged: allToday.filter((a: any) => a.appointmentStatus === 'Triaged').length,
+        total: allToday.length
+      });
+    } catch (err) {
+      console.error('Nursing Uplink Failure:', err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
   const handleCall = async (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     e.stopPropagation();
