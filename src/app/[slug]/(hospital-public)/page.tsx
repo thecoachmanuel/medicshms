@@ -32,6 +32,20 @@ export default function HomePage({ params }: { params: Promise<{ slug: string }>
   const isAdmin = user?.role === 'Admin';
   const emergencyContact = settings?.emergency_contact;
 
+  if (contentLoading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-8 animate-in fade-in duration-500">
+        <div className="w-20 h-20 rounded-[2rem] bg-gray-50 flex items-center justify-center animate-pulse">
+          <Zap className="w-10 h-10 text-gray-200" />
+        </div>
+        <div className="space-y-3 flex flex-col items-center">
+          <div className="h-8 w-64 bg-gray-100 rounded-xl animate-pulse"></div>
+          <div className="h-4 w-96 bg-gray-50 rounded-lg animate-pulse"></div>
+        </div>
+      </div>
+    );
+  }
+
   const EditButton = ({ section }: { section: string }) => {
     if (!isAdmin) return null;
     return (

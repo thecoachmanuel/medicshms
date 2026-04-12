@@ -20,9 +20,23 @@ const ICON_MAP: Record<string, any> = {
 export default function AboutPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const { user } = useAuth();
-  const { getContent, refresh } = useContent('about', slug);
+  const { getContent, refresh, loading: contentLoading } = useContent('about', slug);
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const isAdmin = user?.role === 'Admin';
+
+  if (contentLoading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-8 animate-in fade-in duration-500">
+        <div className="w-20 h-20 rounded-[2rem] bg-indigo-50 flex items-center justify-center animate-pulse">
+           <Zap className="w-10 h-10 text-indigo-300" />
+        </div>
+        <div className="space-y-3 flex flex-col items-center">
+          <div className="h-4 w-48 bg-gray-100 rounded-lg animate-pulse"></div>
+          <div className="h-10 w-80 bg-gray-50 rounded-xl animate-pulse"></div>
+        </div>
+      </div>
+    );
+  }
 
   const EditButton = ({ section }: { section: string }) => {
     if (!isAdmin) return null;
