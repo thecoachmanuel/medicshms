@@ -23,6 +23,8 @@ export interface User {
     sidebar_collapsed?: boolean;
     dismissed_onboarding?: boolean;
     has_completed_onboarding?: boolean;
+    dismissed_tour?: boolean;
+    has_completed_tour?: boolean;
   };
   receptionistInfo?: {
     shift?: string;
