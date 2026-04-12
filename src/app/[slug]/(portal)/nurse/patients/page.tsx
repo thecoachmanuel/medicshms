@@ -11,7 +11,7 @@ export default function NursePatientsPage() {
         <p className="text-gray-500 text-sm">Review full clinical profiles and historical records.</p>
       </div>
       
-      <PatientsList />
+      <PatientsList role="Nurse" />
     </div>
   );
 }
