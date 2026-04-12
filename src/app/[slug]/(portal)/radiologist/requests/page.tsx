@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { radiologyAPI, appointmentsAPI } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
@@ -14,7 +14,8 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export default function RadiologyRequestsPage() {
+export default function RadiologyRequestsPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const [requests, setRequests] = useState<any[]>([]);
