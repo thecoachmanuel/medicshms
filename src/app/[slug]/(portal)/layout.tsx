@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Sidebar } from '@/components/admin/Sidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import { OnboardingGuide } from '@/components/common/OnboardingGuide';
 import { useSiteSettings } from '@/context/SettingsContext';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -160,6 +161,7 @@ export default function PortalLayout({
         <AdminHeader toggleSidebar={() => setSidebarOpen(true)} />
         
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative">
+          <OnboardingGuide />
           {children}
         </main>
       </div>

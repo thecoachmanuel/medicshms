@@ -56,7 +56,6 @@ interface SidebarProps {
 
 import HospitalLogo from '../common/HospitalLogo';
 
-import { SidebarProps } from './Sidebar';
 import { useSiteSettings } from '@/context/SettingsContext';
 
 export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleCollapse }: SidebarProps) => {

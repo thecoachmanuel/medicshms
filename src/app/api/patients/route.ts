@@ -68,11 +68,58 @@ export async function POST(request: Request) {
     const body = await request.json();
     console.log('Registration request body:', body);
     console.log('Registration user profile role:', userProfile?.role);
-    const canLinkUserId = userProfile?.role === 'Admin' || userProfile?.role === 'Receptionist' || userProfile?.role === 'Patient';
+    const canLinkUserId = userProfile?.role === 'Admin' || userProfile?.role === 'Receptionist';
     
-    // If not admin/receptionist or self-registering patient, DO NOT use current user's profile ID
-    const userId = canLinkUserId ? (body.userId || userProfile?.id) : null;
+    let userId = body.userId;
     const mobileNumber = body.mobileNumber;
+    const email = body.emailAddress?.trim().toLowerCase();
+
+    // 1. Auto-create account if it doesn't exist and we have enough info
+    if (!userId && (email || mobileNumber)) {
+      if (!supabaseAdmin) {
+        console.error('Account creation skipped: supabaseAdmin not configured');
+      } else {
+        // Check if profile exists first
+        const { data: existingUser } = await (supabaseAdmin || supabase)
+          .from('profiles')
+          .select('id')
+          .or(`email.eq.${email || '____'},phone.eq.${mobileNumber || '____'}`)
+          .maybeSingle();
+
+        if (existingUser) {
+          userId = existingUser.id;
+        } else if (email) {
+          // Create new auth user
+          const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+            email,
+            password: 'hms@patient',
+            email_confirm: true,
+            user_metadata: { 
+              name: body.fullName, 
+              role: 'Patient', 
+              phone: mobileNumber, 
+              hospital_id: userProfile?.hospital_id 
+            }
+          });
+
+          if (!authError && authData.user) {
+            userId = authData.user.id;
+            // Create profile
+            await (supabaseAdmin || supabase).from('profiles').insert([{
+              id: userId,
+              name: body.fullName,
+              email,
+              phone: mobileNumber,
+              role: 'Patient',
+              hospital_id: userProfile?.hospital_id,
+              is_active: true
+            }]);
+          } else {
+            console.error('Failed to create auth user for patient:', authError?.message);
+          }
+        }
+      }
+    }
 
     // Check if patient profile already exists within THIS hospital
     let existingProfile = null;
