@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { labAPI, usersAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { TestTubes, Search, CheckCircle, UploadCloud, Printer, Download, Eye, FileText, Clock, User, ChevronRight, X, AlertCircle, Info } from 'lucide-react';
+import { TestTubes, Search, CheckCircle, UploadCloud, Printer, Download, Eye, FileText, Clock, User, ChevronRight, X, AlertCircle, Info, Megaphone } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useSearchParams, useParams, useRouter, usePathname } from 'next/navigation';
@@ -423,13 +423,30 @@ export default function LabRequestsPage() {
                             </button>
                           )}
                           {activeTab === 'Pending' ? (
-                            <button 
-                              onClick={() => handleMarkCollected(req.id)}
-                              className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100 active:scale-95 flex items-center gap-2"
-                            >
-                              <TestTubes className="w-3.5 h-3.5" />
-                              Receive Sample
-                            </button>
+                            <div className="flex items-center gap-2">
+                              <button 
+                                onClick={async () => {
+                                  try {
+                                    const { appointmentsAPI } = await import('@/lib/api');
+                                    await appointmentsAPI.call(req.appointment_id || req.id, { station: user?.role || 'Lab' });
+                                    toast.success('Patient called to phlebotomy');
+                                  } catch (e) {
+                                    toast.error('Failed to call patient');
+                                  }
+                                }}
+                                className="w-10 h-10 flex items-center justify-center bg-amber-50 border border-amber-100/50 rounded-xl text-amber-600 hover:bg-amber-600 hover:text-white transition-all shadow-sm"
+                                title="Call Patient to Phlebotomy"
+                              >
+                                <Megaphone className="w-5 h-5" />
+                              </button>
+                              <button 
+                                onClick={() => handleMarkCollected(req.id)}
+                                className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100 active:scale-95 flex items-center gap-2"
+                              >
+                                <TestTubes className="w-3.5 h-3.5" />
+                                Receive Sample
+                              </button>
+                            </div>
                           ) : activeTab === 'Collected' ? (
                               <button 
                                 onClick={() => handleOpenUpdate(req)}

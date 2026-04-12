@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { radiologyAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Scan, Search, CheckCircle, UploadCloud, Printer, Download, Eye, Link as LinkIcon, Clock, User, ChevronRight, X, AlertCircle, ImageIcon, Activity } from 'lucide-react';
+import { Scan, Search, CheckCircle, UploadCloud, Printer, Download, Eye, Link as LinkIcon, Clock, User, ChevronRight, X, AlertCircle, ImageIcon, Activity, Megaphone } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useSearchParams } from 'next/navigation';
@@ -396,12 +396,29 @@ export default function RadiologyRequestsPage() {
                       </td>
                       <td className="px-6 py-5 text-right">
                         {activeTab === 'Pending' ? (
-                          <button 
-                            onClick={() => handleOpenUpdate(req)}
-                            className="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg shadow-gray-200 active:scale-95"
-                          >
-                            Read & Report
-                          </button>
+                          <div className="flex items-center justify-end gap-2">
+                            <button 
+                              onClick={async () => {
+                                try {
+                                  const { appointmentsAPI } = await import('@/lib/api');
+                                  await appointmentsAPI.call(req.appointment_id || req.id, { station: 'Radiology Suite' });
+                                  toast.success('Patient called to radiology');
+                                } catch (e) {
+                                  toast.error('Failed to call patient');
+                                }
+                              }}
+                              className="w-10 h-10 flex items-center justify-center bg-amber-50 border border-amber-100/50 rounded-xl text-amber-600 hover:bg-amber-600 hover:text-white transition-all shadow-sm"
+                              title="Call Patient to Radiology"
+                            >
+                              <Megaphone className="w-5 h-5" />
+                            </button>
+                            <button 
+                              onClick={() => handleOpenUpdate(req)}
+                              className="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg shadow-gray-200 active:scale-95"
+                            >
+                              Read & Report
+                            </button>
+                          </div>
                         ) : (
                           <div className="flex items-center justify-end gap-3 transition-all duration-300 group-hover:translate-x-[-4px]">
                             {req.dicom_url && (
