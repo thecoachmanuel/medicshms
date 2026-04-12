@@ -18,6 +18,7 @@ export default function AIAssistant() {
   const [isLiveMode, setIsLiveMode] = useState(false);
   const [status, setStatus] = useState<'idle' | 'listening' | 'processing' | 'speaking'>('idle');
   const [prompt, setPrompt] = useState('');
+  const transcriptRef = useRef('');
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; text: string }[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -34,6 +35,7 @@ export default function AIAssistant() {
 
   const handleVoiceResult = (text: string) => {
     setPrompt(text);
+    transcriptRef.current = text;
   };
 
   const startLiveConversation = () => {
@@ -41,12 +43,13 @@ export default function AIAssistant() {
     setIsOpen(true);
     setMessages([]);
     setPrompt('');
+    transcriptRef.current = '';
     
     // Auto-start listening
     speechEngine.start(handleVoiceResult, (newStatus: any) => {
       setStatus(newStatus);
-      if (newStatus === 'idle' && prompt.trim()) {
-        handleSubmit(prompt);
+      if (newStatus === 'idle' && transcriptRef.current.trim()) {
+        handleSubmit(transcriptRef.current);
       }
     });
   };
@@ -54,13 +57,14 @@ export default function AIAssistant() {
   const toggleListening = () => {
     if (status === 'listening') {
       speechEngine.stop();
-      if (prompt.trim()) handleSubmit(prompt);
+      // Manual stop also triggers the idle callback which handles submission
     } else {
       setPrompt('');
+      transcriptRef.current = '';
       speechEngine.start(handleVoiceResult, (newStatus: any) => {
         setStatus(newStatus);
-        if (newStatus === 'idle' && prompt.trim()) {
-          handleSubmit(prompt);
+        if (newStatus === 'idle' && transcriptRef.current.trim()) {
+          handleSubmit(transcriptRef.current);
         }
       });
     }
