@@ -87,13 +87,15 @@ export const SlotService = {
       }, {});
 
       // Filter sessions by capacity
-      return daySessions
+      const slots = daySessions
         .filter((s: any) => {
           const sessionLabel = `${s.name} (${s.startTime} - ${s.endTime})`;
           const bookedCount = bookingCounts[sessionLabel] || 0;
           return bookedCount < (s.capacity || 50);
         })
         .map((s: any) => `${s.name} (${s.startTime} - ${s.endTime})`);
+
+      return { slots, bookingMode };
     }
 
     // 4. Generate Base Slots (Original Logic)
@@ -156,6 +158,6 @@ export const SlotService = {
       current.setMinutes(current.getMinutes() + slotDuration);
     }
 
-    return slots;
+    return { slots, bookingMode };
   }
 };

@@ -27,7 +27,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: false, message: 'Date and Hospital ID are required' }, { status: 400 });
     }
 
-    const timeSlots = await SlotService.getAvailableSlots({
+    const { slots: timeSlots, bookingMode } = await SlotService.getAvailableSlots({
       date,
       hospitalId,
       doctorId,
@@ -37,7 +37,8 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ 
       success: true, 
-      timeSlots
+      timeSlots,
+      bookingMode
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, message: 'Failed to fetch time slots' }, { status: 500 });

@@ -4,7 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   X, Search, User, Heart, Calendar, MapPin, ShieldCheck,
   ArrowLeft, ArrowRight, Phone, Mail, Loader2, CheckCircle,
-  Stethoscope, UserPlus, RotateCcw, AlertCircle
+  Stethoscope, UserPlus, RotateCcw, AlertCircle,
+  Sun, CloudSun, Moon, Sunrise
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { appointmentsAPI, departmentsAPI, doctorsAPI } from '@/lib/api';
@@ -47,6 +48,7 @@ export default function BookAppointmentModal({ onClose, onSuccess }: Props) {
   const [departments, setDepartments] = useState<any[]>([]);
   const [doctors, setDoctors] = useState<any[]>([]);
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
+  const [bookingMode, setBookingMode] = useState<'Slot' | 'Range'>('Slot');
   const [slotsLoading, setSlotsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -158,7 +160,11 @@ export default function BookAppointmentModal({ onClose, onSuccess }: Props) {
         deptId,
         user?.hospital_id
       )
-        .then((res: any) => setTimeSlots(res.timeSlots || []))
+        .then((res: any) => {
+          const data = res.data || res;
+          setTimeSlots(data.timeSlots || []);
+          setBookingMode(data.bookingMode || 'Slot');
+        })
         .catch(console.error)
         .finally(() => setSlotsLoading(false));
     }
@@ -400,17 +406,65 @@ export default function BookAppointmentModal({ onClose, onSuccess }: Props) {
                       <div className="p-8 rounded-[2rem] bg-red-50 border border-red-100 text-center text-red-500 font-bold text-xs uppercase tracking-widest">
                         No availability found
                       </div>
+                    ) : bookingMode === 'Range' ? (
+                      <div className="grid grid-cols-1 gap-4">
+                        {timeSlots.map(slot => {
+                          const isMorning = slot.toLowerCase().includes('morning') || slot.includes('09:') || slot.includes('10:') || slot.includes('11:');
+                          const isEvening = slot.toLowerCase().includes('evening') || slot.includes('18:') || slot.includes('19:') || slot.includes('20:');
+                          const isAfternoon = !isMorning && !isEvening;
+
+                          return (
+                            <button 
+                              key={slot}
+                              onClick={() => setFormData({...formData, appointmentTime: slot})}
+                              className={cn(
+                                "relative p-6 rounded-3xl border-2 transition-all text-left flex items-center gap-6 overflow-hidden group",
+                                formData.appointmentTime === slot 
+                                  ? "border-primary-600 bg-primary-50 shadow-xl shadow-primary-600/5 ring-1 ring-primary-600" 
+                                  : "border-gray-100 bg-white hover:border-primary-200 hover:bg-gray-50/50"
+                              )}
+                            >
+                              <div className={cn(
+                                "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
+                                formData.appointmentTime === slot ? "bg-primary-600 text-white" : "bg-gray-100 text-gray-400"
+                              )}>
+                                {isMorning ? <Sunrise className="w-7 h-7" /> : isAfternoon ? <Sun className="w-7 h-7" /> : <Moon className="w-7 h-7" />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className={cn(
+                                  "font-bold text-lg leading-none mb-1 truncate",
+                                  formData.appointmentTime === slot ? "text-primary-900" : "text-gray-900"
+                                )}>
+                                  {slot.split(' (')[0]}
+                                </h4>
+                                <p className={cn(
+                                  "text-sm font-bold opacity-60 uppercase tracking-widest",
+                                  formData.appointmentTime === slot ? "text-primary-600" : "text-gray-400"
+                                )}>
+                                  {slot.includes('(') ? slot.match(/\(([^)]+)\)/)?.[1] : 'Full Window'}
+                                </p>
+                              </div>
+                              <div className={cn(
+                                "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
+                                formData.appointmentTime === slot ? "border-primary-600 bg-primary-600" : "border-gray-200"
+                              )}>
+                                {formData.appointmentTime === slot && <div className="w-2 h-2 rounded-full bg-white" />}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
                     ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {timeSlots.map(slot => (
                           <button 
                             key={slot}
                             onClick={() => setFormData({...formData, appointmentTime: slot})}
                             className={cn(
-                              "px-4 py-4 rounded-2xl text-[10px] font-black transition-all border text-left flex items-center justify-between group",
-                              formData.appointmentTime === slot 
-                                ? "bg-primary-600 text-white border-primary-600 shadow-xl shadow-primary-600/20 active:scale-95" 
-                                : "bg-white text-gray-600 border-gray-100 hover:border-primary-200 hover:bg-gray-50"
+                                "px-4 py-4 rounded-2xl text-[10px] font-black transition-all border text-left flex items-center justify-between group",
+                                formData.appointmentTime === slot 
+                                  ? "bg-primary-600 text-white border-primary-600 shadow-xl shadow-primary-600/20 active:scale-95" 
+                                  : "bg-white text-gray-600 border-gray-100 hover:border-primary-200 hover:bg-gray-50"
                             )}
                           >
                             <span className="truncate">{slot}</span>
