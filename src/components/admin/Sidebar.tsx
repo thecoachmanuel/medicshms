@@ -36,7 +36,8 @@ import {
   Package,
   Scan,
   ImageIcon,
-  FlaskConical
+  FlaskConical,
+  Monitor
 } from 'lucide-react';
 import NairaSign from '@/components/common/NairaSign';
 import { isPlatformAdmin } from '@/lib/auth-helpers';
@@ -99,6 +100,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
         { icon: Users, label: 'Hospital Staff', path: `${base}/admin/staff`, id: 'nav-staff' },
         { icon: FlaskConical, label: 'Laboratory Matrix', path: `${base}/admin/laboratory`, feature: 'Laboratory', id: 'nav-lab' },
         { icon: Building2, label: 'Departments', path: `${base}/admin/departments`, id: 'nav-depts' },
+        { icon: Monitor, label: 'Queue Display', path: `${base}/admin/queue`, id: 'nav-queue' },
         { icon: CalendarClock, label: 'Slot Settings', path: `${base}/admin/slot-settings`, id: 'nav-slots' },
         { icon: FileCheck, label: 'Template', path: `${base}/admin/invoice-template`, id: 'nav-invoice' },
         { icon: Megaphone, label: 'Announcements', path: `${base}/admin/announcements`, id: 'nav-announcements' },
@@ -120,6 +122,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
         { icon: TestTubes, label: 'Lab Services', path: `${base}/receptionist/lab-requests`, id: 'nav-lab' },
         { icon: Scan, label: 'Radiology Intake', path: `${base}/receptionist/radiology-requests`, id: 'nav-radiology' },
         { icon: NairaSign, label: 'Billing', path: `${base}/receptionist/billing`, id: 'nav-billing' },
+        { icon: Monitor, label: 'Queue Display', path: `${base}/admin/queue`, id: 'nav-queue' },
         { icon: CalendarClock, label: 'Slot Management', path: `${base}/receptionist/slot-management`, id: 'nav-slots' },
         { icon: User, label: 'My Profile', path: `${base}/receptionist/profile`, id: 'nav-profile' },
       ];
