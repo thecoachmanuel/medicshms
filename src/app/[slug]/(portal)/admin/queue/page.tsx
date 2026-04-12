@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, use } from 'react';
+import { supabase } from '@/lib/supabase';
 import { departmentAPI, appointmentsAPI } from '@/lib/api';
 import { 
   Monitor, ExternalLink, Copy, Check, Users, 
@@ -52,8 +53,24 @@ export default function QueueManagementHub({ params }: { params: Promise<{ slug:
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 30000); // 30s auto-refresh
-    return () => clearInterval(interval);
+
+    // Millisecond Realtime Sync for Staff Hub
+    const channel = supabase
+      .channel('hub_queue_sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'public_appointments' },
+        () => {
+          fetchData(); // Instant re-sync on any change
+        }
+      )
+      .subscribe();
+
+    const fallback = setInterval(fetchData, 60000); // 60s fallback
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(fallback);
+    };
   }, [fetchData]);
 
   const handleCopyLink = (deptSlug: string) => {
@@ -111,10 +128,9 @@ export default function QueueManagementHub({ params }: { params: Promise<{ slug:
           const count = queueStats[dept.name] || 0;
           return (
             <div 
-              key={dept._id}
+              key={dept._id || dept.id}
               className="group relative bg-white border border-slate-200 rounded-[2.5rem] p-8 transition-all duration-500 hover:shadow-2xl hover:shadow-slate-200 hover:-translate-y-2 overflow-hidden"
             >
-              {/* Decorative Corner */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-bl-[5rem] -mr-8 -mt-8 -z-10 group-hover:bg-primary-50 transition-colors" />
 
               <div className="flex items-start justify-between mb-8">
@@ -124,9 +140,9 @@ export default function QueueManagementHub({ params }: { params: Promise<{ slug:
                 <div className="text-right">
                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100 mb-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Live Stream</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest">Millisecond Sync</span>
                    </div>
-                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Station ID: {dept.slug}</p>
+                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">STATION ID: {dept.slug}</p>
                 </div>
               </div>
 
@@ -165,7 +181,7 @@ export default function QueueManagementHub({ params }: { params: Promise<{ slug:
               <div className="mt-8 pt-6 border-t border-slate-50 flex items-center justify-between text-slate-400 opacity-60">
                  <div className="flex items-center gap-2">
                     <Bell className="w-3.5 h-3.5" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Voice Active</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Realtime Feed</span>
                  </div>
                  <ArrowRight className="w-4 h-4 hover:translate-x-1 transition-transform cursor-pointer" />
               </div>
