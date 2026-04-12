@@ -111,7 +111,7 @@ export default function SubscriptionPage() {
                       <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
                         <CalendarIcon className="w-3 h-3"/> Next Billing Cycle
                       </span>
-                      <span className="text-sm font-black text-gray-900">{new Date(user.next_billing_date || user.trial_end_date).toLocaleDateString(undefined, { dateStyle: 'long' })}</span>
+                      <span className="text-sm font-black text-gray-900">{new Date((user.next_billing_date || user.trial_end_date) as string).toLocaleDateString(undefined, { dateStyle: 'long' })}</span>
                    </div>
                  </div>
                )}
