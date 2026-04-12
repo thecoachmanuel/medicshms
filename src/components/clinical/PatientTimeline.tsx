@@ -45,6 +45,27 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+const parseAppointmentDateTime = (dateStr: string, timeStr: string) => {
+  if (!dateStr) return new Date().toISOString();
+  if (!timeStr) return new Date(dateStr).toISOString();
+
+  try {
+    // Handle formats like "09:30 AM" or "14:30"
+    const [time, modifier] = timeStr.split(' ');
+    let [hours, minutes] = (time || '00:00').split(':').map(Number);
+
+    if (modifier === 'PM' && hours < 12) hours += 12;
+    if (modifier === 'AM' && hours === 12) hours = 0;
+
+    const date = new Date(dateStr);
+    date.setHours(hours || 0, minutes || 0, 0, 0);
+    return date.toISOString();
+  } catch (e) {
+    console.error('Time Parse Error:', e);
+    return new Date(dateStr).toISOString();
+  }
+};
+
 interface TimelineEvent {
   id: string;
   type: 'Vitals' | 'Prescription' | 'Laboratory' | 'Radiology' | 'Appointment';
@@ -160,7 +181,7 @@ export default function PatientTimeline({ patientId }: { patientId: string }) {
             id: a._id || a.id,
             type: 'Appointment',
             title: `Clinical Encounter: ${a.department || 'General Medicine'}`,
-            date: a.appointmentDate + 'T' + (a.appointmentTime || '00:00:00'),
+            date: parseAppointmentDateTime(a.appointmentDate, a.appointmentTime),
             status: a.appointmentStatus,
             clinician: a.doctorAssigned?.user?.name || 'Staff Physician',
             details: a

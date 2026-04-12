@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             trial_end_date: userProfile.trial_end_date,
             phone: userProfile.phone || '',
             profilePhoto: userProfile.profilePhoto || userProfile.profile_photo,
-            doctorProfileId: userProfile.doctor_profile_id || userProfile.doctorProfileId,
+            doctorProfileId: userProfile.doctorProfile?._id || userProfile.doctor_profile_id || userProfile.doctorProfileId,
             clinical_preferences: userProfile.clinical_preferences
           };
           localStorage.setItem('user', JSON.stringify(latestUser));
@@ -89,7 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         trial_end_date: loginUser.trial_end_date,
         phone: loginUser.phone,
         profilePhoto: loginUser.profilePhoto || loginUser.profile_photo,
-        doctorProfileId: loginUser.doctor_id || loginUser.doctorProfileId,
+        doctorProfileId: loginUser.doctorProfile?._id || loginUser.doctor_id || loginUser.doctorProfileId,
         clinical_preferences: loginUser.clinical_preferences
       };
 

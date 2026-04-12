@@ -8,7 +8,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { error: authError, profile: userProfile } = await withAuth(request, ['Doctor']);
+  const { error: authError, profile: userProfile } = await withAuth(request, ['Doctor', 'Admin']);
   if (authError) return authError;
 
   try {
@@ -19,18 +19,21 @@ export async function PATCH(
       // Handle empty body gracefully
     }
     const { doctor_notes, prescription } = body as any;
-    const { data: doctor } = await (supabaseAdmin || supabase)
-      .from('doctors')
-      .select('id')
-      .eq('user_id', userProfile?.id)
-      .single();
+    const { id } = await params;
 
-    if (!doctor) {
-      return NextResponse.json({ success: false, message: 'Doctor profile not found' }, { status: 404 });
+    // 1. Get Doctor ID if user is a doctor
+    let doctorId = null;
+    if (userProfile?.role === 'Doctor') {
+      const { data: doctor } = await (supabaseAdmin || supabase)
+        .from('doctors')
+        .select('id')
+        .eq('user_id', userProfile?.id)
+        .single();
+      doctorId = doctor?.id;
     }
 
-    const { id } = await params;
-    const { data: appointment, error } = await (supabaseAdmin || supabase)
+    // 2. Perform Resilient Update
+    let updateQuery = (supabaseAdmin || supabase)
       .from('public_appointments')
       .update({ 
         appointment_status: 'Completed',
@@ -39,13 +42,25 @@ export async function PATCH(
         completed_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
-      .eq('id', id)
-      .eq('doctor_assigned_id', doctor.id)
-      .select()
-      .single();
+      .eq('id', id);
+    
+    // If it's a doctor, enforce assignment check (flexible for both doctor table ID and user UUID)
+    if (userProfile?.role === 'Doctor') {
+      if (doctorId) {
+        updateQuery = updateQuery.or(`doctor_assigned_id.eq.${doctorId},doctor_assigned_id.eq.${userProfile.id}`);
+      } else {
+        updateQuery = updateQuery.eq('doctor_assigned_id', userProfile.id);
+      }
+    }
+
+    const { data: appointment, error } = await updateQuery.select().single();
 
     if (error || !appointment) {
-      return NextResponse.json({ success: false, message: 'Appointment not found or not assigned to you' }, { status: 404 });
+      console.error('[Doctor Complete Error]:', error);
+      return NextResponse.json({ 
+        success: false, 
+        message: 'Appointment not found or you are not authorized to complete this specific session.' 
+      }, { status: 403 });
     }
 
     return NextResponse.json({ success: true, message: 'Appointment marked as completed', data: { ...appointment, _id: appointment.id } });

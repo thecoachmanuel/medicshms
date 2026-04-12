@@ -98,15 +98,12 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
       let pId = patientUUID || appointment.patient_id || appointment.patientId;
       if (!pId) throw new Error('Patient Identity Lost');
 
-      // 0. Resolve Patient UUID if needed (Diagnostic APIs require UUID)
-      // If patientUUID wasn't resolved by the useEffect yet, do it now.
+      // 0. Resolve Patient UUID if needed
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pId);
       if (!isUUID) {
         try {
           const pRes = await patientAPI.getById(pId);
-          if (pRes.data?._id) {
-            pId = pRes.data._id;
-          }
+          if (pRes.data?._id) pId = pRes.data._id;
         } catch (resError) {
           console.error('Failed to resolve patient UUID:', resError);
         }
@@ -115,45 +112,12 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
       // 1. Finalize Appointment Status & Notes
       const completionData = {
         doctor_notes: completeNotes,
-        prescription: completePrescription // Fallback/Alternative notes
+        prescription: completePrescription
       };
       await appointmentAPI.doctorComplete(appointment._id || appointment.id, completionData);
 
-      // 2. Authorize Structured Medications
-      if (prescribedMeds.length > 0) {
-        await pharmacyAPI.createPrescription({
-          patient_id: pId,
-          appointment_id: appointment._id || appointment.id,
-          medications: prescribedMeds,
-          notes: completePrescription
-        });
-      }
-
-      // 3. Authorize Lab Investigations
-      if (pendingLabTests.length > 0) {
-        await labAPI.createRequest({
-          patient_id: pId,
-          clinical_notes: completeNotes,
-          requested_by_name: user?.name,
-          tests: pendingLabTests.map(t => ({
-            test_name: t.test_name || t.name,
-            test_price: t.test_price || t.price || 0,
-            unit_id: t.unit_id
-          }))
-        });
-      }
-
-      // 4. Authorize Radiology Scans (Sequential or Batch)
-      if (pendingImaging.length > 0) {
-        await Promise.all(pendingImaging.map(img => 
-           radiologyAPI.createRequest({
-             patient_id: pId,
-             test_name: img.name,
-             clinical_notes: completeNotes,
-             requested_by_name: user?.name
-           })
-        ));
-      }
+      // 2. Authorize Clinical Orders
+      await processClinicalOrders(pId);
 
       toast.success('Clinical Session Authorized & Finalized');
       onRefresh();
@@ -162,6 +126,64 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
       toast.error(err.response?.data?.message || 'Failed to authorize clinical set');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleUpdateClinicalOrders = async () => {
+    setIsSubmitting(true);
+    try {
+      let pId = patientUUID || appointment.patient_id || appointment.patientId;
+      if (!pId) throw new Error('Patient Identity Lost');
+
+      await processClinicalOrders(pId);
+      
+      toast.success('Clinical Orders Dispatched');
+      setPrescribedMeds([]);
+      setPendingLabTests([]);
+      setPendingImaging([]);
+      onRefresh();
+    } catch (err: any) {
+      toast.error('Failed to update orders');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const processClinicalOrders = async (pId: string) => {
+    // A. Medications
+    if (prescribedMeds.length > 0) {
+      await pharmacyAPI.createPrescription({
+        patient_id: pId,
+        appointment_id: appointment._id || appointment.id,
+        medications: prescribedMeds,
+        notes: completePrescription
+      });
+    }
+
+    // B. Lab Investigations
+    if (pendingLabTests.length > 0) {
+      await labAPI.createRequest({
+        patient_id: pId,
+        clinical_notes: completeNotes || 'Post-Encounter Request',
+        requested_by_name: user?.name,
+        tests: pendingLabTests.map(t => ({
+          test_name: t.test_name || t.name,
+          test_price: t.test_price || t.price || 0,
+          unit_id: t.unit_id
+        }))
+      });
+    }
+
+    // C. Radiology Scans
+    if (pendingImaging.length > 0) {
+      await Promise.all(pendingImaging.map(img => 
+         radiologyAPI.createRequest({
+           patient_id: pId,
+           test_name: img.name,
+           clinical_notes: completeNotes || 'Post-Encounter Request',
+           requested_by_name: user?.name
+         })
+      ));
     }
   };
 
@@ -318,6 +340,15 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
                          <span className="text-xs font-bold text-gray-400 group-hover:text-indigo-600 italic">Request Laboratory Analysis...</span>
                          <Plus className="w-4 h-4 text-gray-300 group-hover:text-indigo-600" />
                        </button>
+
+                       <button 
+                         type="button"
+                         onClick={() => setShowRadiologyModal(true)}
+                         className="w-full h-[54px] bg-white border border-gray-100 rounded-2xl flex items-center justify-between px-6 hover:border-blue-200 hover:bg-blue-50 transition-all group"
+                       >
+                         <span className="text-xs font-bold text-gray-400 group-hover:text-blue-600 italic">Request Radiology / Scans...</span>
+                         <Plus className="w-4 h-4 text-gray-300 group-hover:text-blue-600" />
+                       </button>
                     </div>
                   </div>
 
@@ -446,6 +477,77 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
                           </p>
                         </div>
                       </section>
+
+                      {/* Post-Encounter Clinical Suite */}
+                      {(user?.role === 'Admin' || user?.role === 'Doctor') && (
+                        <div className="md:col-span-2 space-y-6 pt-8 border-t border-gray-100 mt-4 animate-in fade-in slide-in-from-bottom-4">
+                           <div className="flex items-center justify-between">
+                              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Post-Encounter Clinical Suite</h4>
+                              <div className="h-[1px] flex-1 mx-4 bg-slate-100"></div>
+                           </div>
+
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="space-y-4">
+                                 <label className="text-[10px] font-bold text-gray-400 uppercase">Issue Additional Medications</label>
+                                 <MedicationSearch 
+                                    onSelect={(med) => {
+                                      const newMed = {
+                                        item_id: med.id,
+                                        item_name: med.item_name,
+                                        dosage: '1 Tab',
+                                        frequency: 'Daily',
+                                        duration: '5 Days'
+                                      };
+                                      setPrescribedMeds([...prescribedMeds, newMed]);
+                                    }}
+                                    placeholder="Add medication..."
+                                 />
+                                 
+                                 {prescribedMeds.length > 0 && (
+                                   <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                                      {prescribedMeds.map((med, idx) => (
+                                        <div key={idx} className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-xl">
+                                          <span className="text-xs font-bold text-slate-700">{med.item_name}</span>
+                                          <button onClick={() => setPrescribedMeds(prescribedMeds.filter((_, i) => i !== idx))} className="text-rose-400 hover:text-rose-600"><X className="w-4 h-4" /></button>
+                                        </div>
+                                      ))}
+                                   </div>
+                                 )}
+                              </div>
+
+                              <div className="space-y-4">
+                                 <label className="text-[10px] font-bold text-gray-400 uppercase">Additional Investigations</label>
+                                 <div className="flex flex-col gap-2">
+                                    <button 
+                                      onClick={() => setShowLabModal(true)}
+                                      className="flex items-center justify-between p-3 bg-indigo-50/50 border border-indigo-100 rounded-xl text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors"
+                                    >
+                                      <span>Request New Lab Test</span>
+                                      <Plus className="w-4 h-4 text-indigo-400" />
+                                    </button>
+                                    <button 
+                                      onClick={() => setShowRadiologyModal(true)}
+                                      className="flex items-center justify-between p-3 bg-blue-50/50 border border-blue-100 rounded-xl text-xs font-bold text-blue-700 hover:bg-blue-100 transition-colors"
+                                    >
+                                      <span>Request New Scan</span>
+                                      <Plus className="w-4 h-4 text-blue-400" />
+                                    </button>
+                                 </div>
+                              </div>
+                           </div>
+
+                           {(prescribedMeds.length > 0 || pendingLabTests.length > 0 || pendingImaging.length > 0) && (
+                             <button 
+                               onClick={handleUpdateClinicalOrders}
+                               disabled={isSubmitting}
+                               className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-black transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-2"
+                             >
+                               {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin text-white/40" /> : <Save className="w-4 h-4 text-indigo-400" />}
+                               Dispatch Supplemental Orders
+                             </button>
+                           )}
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <section className="md:col-span-2 space-y-4">
