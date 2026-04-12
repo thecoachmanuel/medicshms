@@ -10,6 +10,7 @@ import { toast } from 'react-hot-toast';
 import { appointmentsAPI, departmentsAPI, doctorsAPI } from '@/lib/api';
 import { DOBInput } from '@/components/common/DOBInput';
 import { calculateAge, cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 
 const STEPS_NEW = [
   { key: 'personal', label: 'Patient Info', icon: User },
@@ -31,6 +32,7 @@ interface Props {
 }
 
 export default function BookAppointmentModal({ onClose, onSuccess }: Props) {
+  const { user } = useAuth();
   const [phase, setPhase] = useState<'select' | 'lookup' | 'form'>('select');
   const [visitType, setVisitType] = useState<'New Patient' | 'Follow-up'>('New Patient');
   const [currentStep, setCurrentStep] = useState(0);
@@ -153,13 +155,14 @@ export default function BookAppointmentModal({ onClose, onSuccess }: Props) {
         formData.appointmentDate, 
         formData.department, 
         formData.doctorAssigned || undefined,
-        deptId
+        deptId,
+        user?.hospital_id
       )
         .then((res: any) => setTimeSlots(res.timeSlots || []))
         .catch(console.error)
         .finally(() => setSlotsLoading(false));
     }
-  }, [formData.appointmentDate, formData.department, formData.doctorAssigned, departments]);
+  }, [formData.appointmentDate, formData.department, formData.doctorAssigned, departments, user?.hospital_id]);
 
   const filteredDoctors = doctors.filter(d => 
     !formData.department || d.department?.name === formData.department

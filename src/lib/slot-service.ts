@@ -66,12 +66,20 @@ export const SlotService = {
       if (daySessions.length === 0) return [];
 
       // 5. Fetch Existing Bookings for Range Capacity
-      const { data: bookings } = await client
+      let bookingQuery = client
         .from('public_appointments')
         .select('appointment_time')
         .eq('hospital_id', hospitalId)
         .eq('appointment_date', date)
         .not('appointment_status', 'eq', 'Cancelled');
+
+      if (doctorId) {
+        bookingQuery = bookingQuery.eq('doctor_assigned_id', doctorId);
+      } else if (departmentId) {
+        bookingQuery = bookingQuery.eq('department_id', departmentId);
+      }
+
+      const { data: bookings } = await bookingQuery;
 
       const bookingCounts = (bookings || []).reduce((acc: any, b) => {
         acc[b.appointment_time] = (acc[b.appointment_time] || 0) + 1;
@@ -81,7 +89,8 @@ export const SlotService = {
       // Filter sessions by capacity
       return daySessions
         .filter((s: any) => {
-          const bookedCount = bookingCounts[s.name] || 0;
+          const sessionLabel = `${s.name} (${s.startTime} - ${s.endTime})`;
+          const bookedCount = bookingCounts[sessionLabel] || 0;
           return bookedCount < (s.capacity || 50);
         })
         .map((s: any) => `${s.name} (${s.startTime} - ${s.endTime})`);
@@ -99,12 +108,20 @@ export const SlotService = {
     end.setHours(endH, endM, 0, 0);
 
     // 5. Fetch Existing Bookings to prevent double-booking
-    const { data: bookings } = await client
+    let bookedTimesQuery = client
       .from('public_appointments')
       .select('appointment_time')
       .eq('hospital_id', hospitalId)
       .eq('appointment_date', date)
       .not('appointment_status', 'eq', 'Cancelled');
+
+    if (doctorId) {
+      bookedTimesQuery = bookedTimesQuery.eq('doctor_assigned_id', doctorId);
+    } else if (departmentId) {
+      bookedTimesQuery = bookedTimesQuery.eq('department_id', departmentId);
+    }
+
+    const { data: bookings } = await bookedTimesQuery;
 
     const bookedTimes = new Set((bookings || []).map(b => b.appointment_time));
 

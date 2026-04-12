@@ -7,14 +7,19 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const isPublic = searchParams.get('isPublic') === 'true';
 
+  let resolvedHospitalId = searchParams.get('hospitalId');
+
   if (!isPublic) {
-    const { error: authError } = await withAuth(request, ['Admin', 'Receptionist', 'Doctor']);
+    const { error: authError, profile } = await withAuth(request, ['Admin', 'Receptionist', 'Doctor']) as any;
     if (authError) return authError;
+    if (!resolvedHospitalId && profile?.hospital_id) {
+      resolvedHospitalId = profile.hospital_id;
+    }
   }
 
   try {
     const date = searchParams.get('date');
-    const hospitalId = searchParams.get('hospitalId');
+    const hospitalId = resolvedHospitalId;
     const doctorId = searchParams.get('doctorId') || undefined;
     const departmentId = searchParams.get('departmentId') || undefined;
 
