@@ -17,9 +17,14 @@ export async function POST(request: Request) {
       userId: profile.id,
       hospitalId: profile.hospital_id,
       role: profile.role
-    });
+    }, true);
 
-    return NextResponse.json({ success: true, ...response });
+    return new Response(response.body, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Transfer-Encoding': 'chunked'
+      }
+    });
   } catch (error: any) {
     console.error('AI Route Error:', error);
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });

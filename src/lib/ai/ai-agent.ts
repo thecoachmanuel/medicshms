@@ -14,7 +14,7 @@ const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
 const DEFAULT_MODEL = 'qwen2:1.5b'; // Lightweight and fast for tools
 
 export const AIAgent = {
-  async chat(prompt: string, context: { userId: string; hospitalId: string; role: string }): Promise<AIResponse> {
+  async chat(prompt: string, context: { userId: string; hospitalId: string; role: string }, stream = false): Promise<any> {
     const systemPrompt = `
       You are Medics AI, a professional and proactive hospital assistant for a Hospital Management System.
       You help staff manage their workflow efficiently.
@@ -43,12 +43,14 @@ export const AIAgent = {
         body: JSON.stringify({
           model: DEFAULT_MODEL,
           prompt: `${systemPrompt}\nUser: ${prompt}\nAssistant:`,
-          stream: false,
+          stream: stream,
           format: 'json'
         }),
       });
 
       if (!response.ok) throw new Error('Ollama connection failed. Ensure Ollama is running.');
+
+      if (stream) return response;
 
       const data = await response.json();
       const content = data.response;
@@ -62,9 +64,7 @@ export const AIAgent = {
         try {
           const toolData = JSON.parse(toolMatch[1]);
           tools.push(toolData);
-          
-          // Execute tools and append result to prompt for a second pass or just return
-          const toolResult = await this.executeTool(toolData, context);
+          await this.executeTool(toolData, context);
           text += `\n\n[Action Performed: ${toolData.name}]`;
         } catch (e) {
           console.error('Tool parsing error:', e);
