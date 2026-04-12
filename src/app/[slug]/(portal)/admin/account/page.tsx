@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation';
 import { 
   CreditCard, ShieldCheck, Zap, Download, FileText, 
   ChevronRight, Calendar, AlertTriangle, CheckCircle2,
-  Lock, DollarSign, Clock, LineChart, Eye
+  Lock, Clock, LineChart, Eye
 } from 'lucide-react';
+import NairaSign from '@/components/common/NairaSign';
 import { cn } from '@/lib/utils';
 import { toast } from 'react-hot-toast';
 import ViewInvoiceModal from '@/components/billing/ViewInvoiceModal';
@@ -88,7 +89,7 @@ export default function AccountManagementPage({ params }: { params: Promise<{ sl
                         <p className="text-xl font-black text-gray-900">₦ {revenueStats.totalRevenue?.toLocaleString()}</p>
                      </div>
                      <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-                        <DollarSign className="w-5 h-5 text-emerald-500" />
+                        <NairaSign className="w-5 h-5 text-emerald-500" />
                      </div>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-2xl flex items-center justify-between">

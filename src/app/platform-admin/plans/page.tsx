@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { subscriptionPlansAPI } from '@/lib/api';
 import { 
   Package, Plus, Edit2, Trash2, CheckCircle2, 
-  Settings2, Activity, DollarSign, List,
+  Settings2, Activity, List,
   MoreVertical, Check, X, Loader2, Heart
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';

@@ -5,8 +5,9 @@ import { useAuth } from '@/context/AuthContext';
 import { patientAPI } from '@/lib/api';
 import { 
   Heart, Calendar, FileText, Activity, Clock, 
-  ChevronRight, AlertCircle, CheckCircle2, DollarSign
+  ChevronRight, AlertCircle, CheckCircle2
 } from 'lucide-react';
+import NairaSign from '@/components/common/NairaSign';
 import { cn } from '@/lib/utils';
 import { toast } from 'react-hot-toast';
 
@@ -89,7 +90,7 @@ export default function PatientDashboard({ params }: { params: Promise<{ slug: s
          </div>
          <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col items-center text-center">
             <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center mb-4">
-              <DollarSign className="w-6 h-6" />
+              <NairaSign className="w-6 h-6" />
             </div>
             <p className="text-3xl font-black text-gray-900 tracking-tighter leading-none mb-2">{pendingBills.length}</p>
             <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Pending Bills</p>

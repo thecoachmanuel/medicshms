@@ -4,10 +4,11 @@ import React, { use, useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { patientAPI } from '@/lib/api';
 import { 
-  DollarSign, Download, Filter, Search, 
+   Download, Filter, Search, 
   CheckCircle2, Clock, AlertCircle, FileText,
   Activity, CreditCard
 } from 'lucide-react';
+import NairaSign from '@/components/common/NairaSign';
 import { cn } from '@/lib/utils';
 import { toast } from 'react-hot-toast';
 
@@ -51,7 +52,7 @@ export default function PatientInvoicesPage({ params }: { params: Promise<{ slug
         <div className="flex items-center gap-4">
            <div className="p-4 bg-gray-900 rounded-[1.5rem] text-white flex items-center gap-4">
               <div className="w-8 h-8 bg-indigo-500 rounded-xl flex items-center justify-center">
-                 <DollarSign className="w-4 h-4 text-white" />
+                 <NairaSign className="w-4 h-4 text-white" />
               </div>
               <div>
                 <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Outstanding</p>
@@ -121,7 +122,7 @@ export default function PatientInvoicesPage({ params }: { params: Promise<{ slug
         )) : (
           <div className="bg-white rounded-[2.5rem] border border-gray-100 p-20 text-center">
             <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-gray-200">
-               <DollarSign className="w-10 h-10" />
+               <NairaSign className="w-10 h-10" />
             </div>
             <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">No transaction history found</p>
           </div>

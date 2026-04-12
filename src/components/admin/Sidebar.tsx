@@ -9,7 +9,6 @@ import {
   Users,
   Calendar,
   FileText,
-  DollarSign,
   Settings,
   Stethoscope,
   Building2,
@@ -39,6 +38,7 @@ import {
   ImageIcon,
   FlaskConical
 } from 'lucide-react';
+import NairaSign from '@/components/common/NairaSign';
 import { isPlatformAdmin } from '@/lib/auth-helpers';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -80,7 +80,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
         { icon: LayoutDashboard, label: 'Super Admin', path: '/platform-admin/dashboard', id: 'nav-dashboard' },
         { icon: Building2, label: 'Hospitals', path: '/platform-admin/dashboard', id: 'nav-hospitals' },
         { icon: Calendar, label: 'Demo Requests', path: '/platform-admin/demo-requests', id: 'nav-demos' },
-        { icon: DollarSign, label: 'Subscription Plans', path: '/platform-admin/plans', id: 'nav-plans' },
+        { icon: NairaSign, label: 'Subscription Plans', path: '/platform-admin/plans', id: 'nav-plans' },
         { icon: Globe, label: 'Site Editor', path: '/platform-admin/site-editor', id: 'nav-site-editor' },
         { icon: Bell, label: 'Site Updates', path: '/platform-admin/site-updates', id: 'nav-updates' },
         { icon: Headphones, label: 'Support', path: '/platform-admin/support', id: 'nav-support' },
@@ -93,7 +93,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
         { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/admin/dashboard`, id: 'nav-dashboard' },
         { icon: Calendar, label: 'Appointments', path: `${base}/admin/appointments`, id: 'nav-appointments' },
         { icon: FileText, label: 'Patients', path: `${base}/admin/patients`, id: 'nav-patients' },
-        { icon: DollarSign, label: 'Billing', path: `${base}/admin/billing`, id: 'nav-billing' },
+        { icon: NairaSign, label: 'Billing', path: `${base}/admin/billing`, id: 'nav-billing' },
         { icon: ShieldCheck, label: 'Admin', path: `${base}/admin/users`, id: 'nav-admin' },
         { icon: Stethoscope, label: 'Doctors', path: `${base}/admin/doctors`, id: 'nav-doctors' },
         { icon: Users, label: 'Hospital Staff', path: `${base}/admin/staff`, id: 'nav-staff' },
@@ -119,7 +119,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
         { icon: FileText, label: 'Patients', path: `${base}/receptionist/patients`, id: 'nav-patients' },
         { icon: TestTubes, label: 'Lab Services', path: `${base}/receptionist/lab-requests`, id: 'nav-lab' },
         { icon: Scan, label: 'Radiology Intake', path: `${base}/receptionist/radiology-requests`, id: 'nav-radiology' },
-        { icon: DollarSign, label: 'Billing', path: `${base}/receptionist/billing`, id: 'nav-billing' },
+        { icon: NairaSign, label: 'Billing', path: `${base}/receptionist/billing`, id: 'nav-billing' },
         { icon: CalendarClock, label: 'Slot Management', path: `${base}/receptionist/slot-management`, id: 'nav-slots' },
         { icon: User, label: 'My Profile', path: `${base}/receptionist/profile`, id: 'nav-profile' },
       ];
@@ -136,7 +136,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
         { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/patient/dashboard`, id: 'nav-dashboard' },
         { icon: ClipboardList, label: 'Medical Records', path: `${base}/patient/records`, id: 'nav-records' },
         { icon: Pill, label: 'Prescriptions', path: `${base}/patient/prescriptions`, id: 'nav-prescriptions' },
-        { icon: DollarSign, label: 'My Invoices', path: `${base}/patient/invoices`, id: 'nav-billing' },
+        { icon: NairaSign, label: 'My Invoices', path: `${base}/patient/invoices`, id: 'nav-billing' },
         { icon: Calendar, label: 'Appointments', path: `${base}/patient/appointments`, id: 'nav-appointments' },
         { icon: User, label: 'My Profile', path: `${base}/patient/profile`, id: 'nav-profile' },
       ];
