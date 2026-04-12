@@ -124,7 +124,7 @@ export const appointmentsAPI = {
     api.patch<APIResponse<Appointment>>(`/admin-appointments/${id}/doctor-remove`, { reason }),
   getStats: () => api.get<APIResponse<any>>('/admin-appointments/stats'),
   download: (params?: any) => api.get<APIResponse<any>>('/admin-appointments/download', { params }),
-  call: (id: string, data?: { station?: string }) => api.post<APIResponse<any>>(`/admin-appointments/${id}/call`, data),
+  call: (id: string, data?: { station?: string; isTest?: boolean }) => api.post<APIResponse<any>>(`/admin-appointments/${id}/call`, data),
 };
 
 
