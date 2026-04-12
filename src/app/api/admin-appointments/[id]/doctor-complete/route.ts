@@ -12,7 +12,13 @@ export async function PATCH(
   if (authError) return authError;
 
   try {
-    const { doctor_notes, prescription } = await request.json();
+    let body = {};
+    try {
+      body = await request.json();
+    } catch {
+      // Handle empty body gracefully
+    }
+    const { doctor_notes, prescription } = body as any;
     const { data: doctor } = await (supabaseAdmin || supabase)
       .from('doctors')
       .select('id')
