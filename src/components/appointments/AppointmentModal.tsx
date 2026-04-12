@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { 
   X, User, Mail, Phone, Calendar, Clock, Stethoscope, 
   CheckCircle2, AlertCircle, Printer, Save, Loader2, UserPlus, XCircle,
-  Eye, Edit2, Building2, FileText, Plus
+  Eye, Edit2, Building2, FileText, Plus, Pill, DollarSign
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { appointmentAPI, pharmacyAPI, labAPI, radiologyAPI } from '@/lib/api';
