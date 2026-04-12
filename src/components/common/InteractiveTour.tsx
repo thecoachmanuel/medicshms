@@ -17,7 +17,7 @@ interface TourStep {
 const DEFAULT_STEPS: TourStep[] = [
   {
     targetId: 'nav-dashboard',
-    title: 'Your Command Center',
+    title: 'YOUR DASHBOARD',
     content: 'Get a holistic view of your hospital operations, revenue, and patient flow here.',
     position: 'right'
   },

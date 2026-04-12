@@ -561,23 +561,36 @@ export default function PatientTimeline({ patientId }: { patientId: string }) {
                       </div>
                    </div>
 
-                   <div className="space-y-5">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2">Resource Actions</p>
-                      <div className="flex flex-col gap-3">
-                         <button className="flex items-center justify-between p-5 bg-white border border-gray-100 rounded-3xl hover:border-indigo-200 transition-all hover:bg-indigo-50 group">
-                            <div className="flex items-center gap-4">
-                               <div className="p-2.5 bg-indigo-50 rounded-xl text-indigo-600 group-hover:bg-white transition-colors"><FileText className="w-5 h-5" /></div>
-                               <span className="text-[10px] font-black text-gray-900 uppercase">Export Report PDF</span>
-                            </div>
-                            <Download className="w-4 h-4 text-gray-300" />
-                         </button>
-                         <button className="flex items-center justify-between p-5 bg-white border border-gray-100 rounded-3xl hover:border-violet-200 transition-all hover:bg-violet-50 group">
-                            <div className="flex items-center gap-4">
-                               <div className="p-2.5 bg-violet-50 rounded-xl text-violet-600 group-hover:bg-white transition-colors"><ImageIcon className="w-5 h-5" /></div>
-                               <span className="text-[10px] font-black text-gray-900 uppercase">View Specialized Attachments</span>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-gray-300" />
-                         </button>
+                    <div className="space-y-5">
+                       <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2">Resource Actions</p>
+                       <div className="flex flex-col gap-3">
+                          <button 
+                            onClick={() => window.print()}
+                            className="flex items-center justify-between p-5 bg-white border border-gray-100 rounded-3xl hover:border-indigo-200 transition-all hover:bg-indigo-50 group shadow-sm"
+                          >
+                             <div className="flex items-center gap-4">
+                                <div className="p-2.5 bg-indigo-50 rounded-xl text-indigo-600 group-hover:bg-white transition-colors"><FileText className="w-5 h-5" /></div>
+                                <span className="text-[10px] font-black text-gray-900 uppercase">Export Report PDF</span>
+                             </div>
+                             <Download className="w-4 h-4 text-gray-300" />
+                          </button>
+                          <button 
+                            onClick={() => {
+                              const url = selectedEvent.details.file_url || selectedEvent.details.dicom_url;
+                              if (url) {
+                                window.open(url, '_blank');
+                              } else {
+                                toast.error('No specialized attachments found for this artifact.');
+                              }
+                            }}
+                            className="flex items-center justify-between p-5 bg-white border border-gray-100 rounded-3xl hover:border-violet-200 transition-all hover:bg-violet-50 group shadow-sm"
+                          >
+                             <div className="flex items-center gap-4">
+                                <div className="p-2.5 bg-violet-50 rounded-xl text-violet-600 group-hover:bg-white transition-colors"><ImageIcon className="w-5 h-5" /></div>
+                                <span className="text-[10px] font-black text-gray-900 uppercase">View Specialized Attachments</span>
+                             </div>
+                             <ChevronRight className="w-4 h-4 text-gray-300" />
+                          </button>
                          <div className="p-5 bg-gray-50 rounded-3xl border border-gray-100">
                             <div className="flex gap-4 items-start">
                                <Info className="w-5 h-5 text-gray-300 mt-1" />
