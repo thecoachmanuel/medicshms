@@ -45,9 +45,17 @@ export function DashboardCard({
 
   const colors = (colorMap as any)[color] || colorMap.primary;
 
+  // Determine font size based on value length
+  const valueStr = String(value);
+  const getFontSize = () => {
+    if (valueStr.length > 15) return 'text-xl';
+    if (valueStr.length > 12) return 'text-2xl';
+    return 'text-3xl';
+  };
+
   return (
     <div className={cn(
-      "group relative overflow-hidden bg-white rounded-[2rem] p-8 border border-slate-100 transition-all duration-500 hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1",
+      "group relative overflow-hidden bg-white rounded-[2rem] p-6 sm:p-8 border border-slate-100 transition-all duration-500 hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 min-h-[160px] flex flex-col",
       className
     )}>
       {/* Background Glow */}
@@ -56,18 +64,18 @@ export function DashboardCard({
         colors.glow
       )} />
 
-      <div className="relative flex flex-col h-full space-y-4">
-        <div className="flex items-center justify-between">
+      <div className="relative flex flex-col justify-between h-full space-y-4">
+        <div className="flex items-center justify-between gap-2">
           <div className={cn(
-            "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 bg-slate-50 text-slate-400",
+            "w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 bg-slate-50 text-slate-400 shrink-0",
             colors.icon
           )}>
-            <Icon className="w-7 h-7" />
+            <Icon className="w-6 h-6 sm:w-7 sm:h-7" />
           </div>
           
           {trend && (
             <div className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black tracking-tight uppercase shadow-sm",
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] sm:text-xs font-black tracking-tight uppercase shadow-sm shrink-0",
               trend.isPositive ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
             )}>
               {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%
@@ -75,15 +83,18 @@ export function DashboardCard({
           )}
         </div>
 
-        <div>
-          <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1 group-hover:text-slate-500 transition-colors">
+        <div className="min-w-0">
+          <p className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest mb-1 group-hover:text-slate-500 transition-colors truncate whitespace-normal">
             {label}
           </p>
-          <h3 className="text-3xl font-black text-slate-900 tracking-tight group-hover:scale-[1.02] origin-left transition-transform duration-500">
+          <h3 className={cn(
+            "font-black text-slate-900 tracking-tight group-hover:scale-[1.02] origin-left transition-all duration-500 break-words leading-tight",
+            getFontSize()
+          )}>
             {value}
           </h3>
           {description && (
-            <p className="text-xs font-medium text-slate-400 mt-2 line-clamp-1 italic">
+            <p className="text-[10px] sm:text-xs font-medium text-slate-400 mt-2 italic break-words line-clamp-2">
               {description}
             </p>
           )}

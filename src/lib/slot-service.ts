@@ -36,13 +36,16 @@ export const SlotService = {
     const defaults = globalDefaults.data;
     const config = doctorConfig.data || sharedConfig.data;
 
-    if (!defaults) return [];
+    // Determine Booking Mode early for consistent return structure
+    const bookingMode = config?.booking_mode || defaults?.default_booking_mode || 'Slot';
+
+    if (!defaults) return { slots: [], bookingMode };
 
     // 2. Determine Day Availability
     const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     const workingDay = (config?.working_days || [])?.find((d: WorkingDay) => d.day === dayName);
     
-    if (workingDay && !workingDay.enabled) return [];
+    if (workingDay && !workingDay.enabled) return { slots: [], bookingMode };
 
     // Fallback logic for timing
     const startTime = workingDay?.startTime || defaults.default_working_hours_start || '09:00';
@@ -54,16 +57,16 @@ export const SlotService = {
     // 3. (Optional) Check Holidays/Overrides
     const dateOverrides = config?.date_overrides || [];
     const isHoliday = dateOverrides.find((o: any) => o.date === date && o.isClosed);
-    if (isHoliday) return [];
+    if (isHoliday) return { slots: [], bookingMode };
 
-    // 4. Determine Mode (Slot vs Range)
-    const bookingMode = config?.booking_mode || defaults.default_booking_mode || 'Slot';
+    // 4. Determine Mode (Slot vs Range) - Already handled above
+    // const bookingMode = config?.booking_mode || defaults.default_booking_mode || 'Slot';
 
     if (bookingMode === 'Range') {
       const sessions = config?.sessions || defaults.default_sessions || [];
       const daySessions = sessions.filter((s: any) => s.day === dayName && s.enabled !== false);
       
-      if (daySessions.length === 0) return [];
+      if (daySessions.length === 0) return { slots: [], bookingMode };
 
       // 5. Fetch Existing Bookings for Range Capacity
       let bookingQuery = client
