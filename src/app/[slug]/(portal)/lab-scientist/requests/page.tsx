@@ -39,6 +39,7 @@ export default function LabRequestsPage() {
   const [isCritical, setIsCritical] = useState(false);
   const [fileUrl, setFileUrl] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [callingId, setCallingId] = useState<string | null>(null);
 
   // New Request State
   const [showNewModal, setShowNewModal] = useState(false);
@@ -427,17 +428,25 @@ export default function LabRequestsPage() {
                               <button 
                                 onClick={async () => {
                                   try {
+                                    setCallingId(req.appointment_id || req.id);
                                     const { appointmentsAPI } = await import('@/lib/api');
                                     await appointmentsAPI.call(req.appointment_id || req.id, { station: user?.role || 'Lab' });
                                     toast.success('Patient called to phlebotomy');
                                   } catch (e) {
                                     toast.error('Failed to call patient');
+                                  } finally {
+                                    setCallingId(null);
                                   }
                                 }}
-                                className="w-10 h-10 flex items-center justify-center bg-amber-50 border border-amber-100/50 rounded-xl text-amber-600 hover:bg-amber-600 hover:text-white transition-all shadow-sm"
+                                disabled={callingId === (req.appointment_id || req.id)}
+                                className="w-10 h-10 flex items-center justify-center bg-amber-50 border border-amber-100/50 rounded-xl text-amber-600 hover:bg-amber-600 hover:text-white transition-all shadow-sm disabled:opacity-50"
                                 title="Call Patient to Phlebotomy"
                               >
-                                <Megaphone className="w-5 h-5" />
+                                {callingId === (req.appointment_id || req.id) ? (
+                                  <RefreshCw className="w-5 h-5 animate-spin" />
+                                ) : (
+                                  <Megaphone className="w-5 h-5" />
+                                )}
                               </button>
                               <button 
                                 onClick={() => handleMarkCollected(req.id)}

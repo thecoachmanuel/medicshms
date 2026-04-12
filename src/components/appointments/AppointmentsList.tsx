@@ -31,6 +31,7 @@ export default function AppointmentsList({ role }: Props) {
 
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [callingId, setCallingId] = useState<string | null>(null);
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
@@ -110,10 +111,13 @@ export default function AppointmentsList({ role }: Props) {
 
   const handleCall = async (id: string) => {
     try {
+      setCallingId(id);
       await appointmentAPI.call(id);
       toast.success('Patient called to queue');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Call failed');
+    } finally {
+      setCallingId(null);
     }
   };
 
@@ -381,10 +385,15 @@ export default function AppointmentsList({ role }: Props) {
                       {['Admin', 'Receptionist', 'Doctor', 'Nurse', 'Lab Scientist', 'Radiologist', 'Pharmacist'].includes(role) && apt.appointmentStatus !== 'Cancelled' && apt.appointmentStatus !== 'Completed' && (
                         <button 
                           onClick={() => handleCall(apt._id)}
-                          className="p-2.5 bg-amber-50 border border-amber-100/50 rounded-xl shadow-sm text-amber-600 hover:bg-amber-600 hover:text-white transition-all group/call"
+                          disabled={callingId === apt._id}
+                          className="p-2.5 bg-amber-50 border border-amber-100/50 rounded-xl shadow-sm text-amber-600 hover:bg-amber-600 hover:text-white transition-all group/call disabled:opacity-50"
                           title="Call Patient to Queue"
                         >
-                          <Megaphone className="w-4.5 h-4.5 group-hover:animate-bounce" />
+                          {callingId === apt._id ? (
+                            <RefreshCw className="w-4.5 h-4.5 animate-spin" />
+                          ) : (
+                            <Megaphone className="w-4.5 h-4.5 group-hover:animate-bounce" />
+                          )}
                         </button>
                       )}
                       {isAdminOrReceptionist && apt.appointmentStatus !== 'Cancelled' && apt.appointmentStatus !== 'Completed' && (

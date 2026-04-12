@@ -21,6 +21,7 @@ export default function DepartmentQueueDisplay({ params }: { params: Promise<{ s
   const [nowCalling, setNowCalling] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [voiceActive, setVoiceActive] = useState(false);
+  const [realtimeStatus, setRealtimeStatus] = useState<'connecting' | 'online' | 'offline'>('connecting');
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // Use refs to keep state accessible in the realtime listener
@@ -100,6 +101,11 @@ export default function DepartmentQueueDisplay({ params }: { params: Promise<{ s
     const channel = supabase
       .channel('queue_updates')
       .on(
+        'system',
+        { event: 'subscribe' },
+        () => setRealtimeStatus('online')
+      )
+      .on(
         'postgres_changes',
         {
           event: '*', // Listen for INSERT, UPDATE, DELETE
@@ -108,12 +114,13 @@ export default function DepartmentQueueDisplay({ params }: { params: Promise<{ s
         },
         (payload) => {
           console.log('Realtime Queue Packet Received:', payload);
-          // Immediately re-fetch to ensure data consistency
-          // This avoids complex local state reconciliation and is extremely fast
           fetchQueue();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') setRealtimeStatus('online');
+        if (status === 'CLOSED') setRealtimeStatus('offline');
+      });
 
     // 2. Polling Fallback (Resilience)
     const fallback = setInterval(fetchQueue, 60000); // 60s fallback
@@ -135,6 +142,15 @@ export default function DepartmentQueueDisplay({ params }: { params: Promise<{ s
       window.speechSynthesis.speak(unlock);
     }
     setVoiceActive(!voiceActive);
+  };
+
+  const testAudio = () => {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const test = new SpeechSynthesisUtterance("Audio system diagnostic successful. Speakers are operational.");
+    test.rate = 0.9;
+    window.speechSynthesis.speak(test);
+    toast.success('Audio diagnostic triggered');
   };
 
   if (loading) {
@@ -169,15 +185,24 @@ export default function DepartmentQueueDisplay({ params }: { params: Promise<{ s
           </div>
         </div>
 
-        <div className="flex items-center gap-12">
-          <div className="text-right">
-            <p className="text-4xl font-black tabular-nums tracking-tighter">
-              {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
-            </p>
-            <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mt-1">
-              {currentTime.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
-            </p>
+          <div className="flex items-center gap-4 px-6 py-4 bg-white/5 rounded-2xl border border-white/10">
+             <div className={cn(
+                "w-2 h-2 rounded-full",
+                realtimeStatus === 'online' ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" :
+                realtimeStatus === 'connecting' ? "bg-amber-500 animate-pulse" : "bg-rose-500"
+             )} />
+             <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">
+                Connection: {realtimeStatus}
+             </span>
           </div>
+
+          <button 
+            onClick={testAudio}
+            className="p-4 bg-white/5 rounded-2xl border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all active:scale-95"
+            title="Test Audio Output"
+          >
+            <Bell className="w-6 h-6" />
+          </button>
           
           <button 
             onClick={toggleVoice}
@@ -269,20 +294,34 @@ export default function DepartmentQueueDisplay({ params }: { params: Promise<{ s
                   key={apt.id} 
                   className={cn(
                     "p-8 bg-white/[0.03] border border-white/5 rounded-[2rem] flex items-center justify-between group hover:bg-white/[0.05] transition-all duration-500 animate-in slide-in-from-right",
-                    i === 0 && "bg-white/[0.06] border-white/10"
+                    i === 0 && "bg-white/[0.06] border-amber-500/30 shadow-[0_0_50px_rgba(245,158,11,0.05)] ring-1 ring-amber-500/20"
                   )}
                   style={{ animationDelay: `${i * 100}ms` }}
                 >
                   <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center font-black text-2xl group-hover:bg-emerald-500 group-hover:text-black transition-all duration-500">
+                    <div className={cn(
+                      "w-16 h-16 rounded-2xl flex items-center justify-center font-black text-2xl transition-all duration-500",
+                      i === 0 ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "bg-white/5 border border-white/10 group-hover:bg-emerald-500 group-hover:text-black"
+                    )}>
                       {i + 1}
                     </div>
                     <div>
-                      <p className="text-xl font-bold tracking-tight uppercase group-hover:translate-x-1 transition-transform">{apt.fullName}</p>
+                      <div className="flex items-center gap-3">
+                        <p className={cn(
+                          "text-xl font-bold tracking-tight uppercase group-hover:translate-x-1 transition-transform",
+                          i === 0 ? "text-amber-400" : "text-white"
+                        )}>{apt.fullName}</p>
+                        {i === 0 && (
+                          <span className="px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[8px] font-black uppercase tracking-[0.2em] rounded border border-amber-500/20">Next</span>
+                        )}
+                      </div>
                       <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] mt-1">Ref: {apt.appointmentId}</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-6 h-6 text-white/10 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
+                  <ChevronRight className={cn(
+                    "w-6 h-6 transition-all",
+                    i === 0 ? "text-amber-500" : "text-white/10 group-hover:text-emerald-500 group-hover:translate-x-1"
+                  )} />
                 </div>
               ))}
 

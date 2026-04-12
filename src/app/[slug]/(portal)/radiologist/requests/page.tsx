@@ -43,6 +43,7 @@ export default function RadiologyRequestsPage() {
   const [dicomUrl, setDicomUrl] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [callingId, setCallingId] = useState<string | null>(null);
 
   const filteredRequests = (requests || []).filter(req => {
     const searchLow = globalSearch.toLowerCase();
@@ -400,17 +401,25 @@ export default function RadiologyRequestsPage() {
                             <button 
                               onClick={async () => {
                                 try {
+                                  setCallingId(req.appointment_id || req.id);
                                   const { appointmentsAPI } = await import('@/lib/api');
                                   await appointmentsAPI.call(req.appointment_id || req.id, { station: 'Radiology Suite' });
                                   toast.success('Patient called to radiology');
                                 } catch (e) {
                                   toast.error('Failed to call patient');
+                                } finally {
+                                  setCallingId(null);
                                 }
                               }}
-                              className="w-10 h-10 flex items-center justify-center bg-amber-50 border border-amber-100/50 rounded-xl text-amber-600 hover:bg-amber-600 hover:text-white transition-all shadow-sm"
+                              disabled={callingId === (req.appointment_id || req.id)}
+                              className="w-10 h-10 flex items-center justify-center bg-amber-50 border border-amber-100/50 rounded-xl text-amber-600 hover:bg-amber-600 hover:text-white transition-all shadow-sm disabled:opacity-50"
                               title="Call Patient to Radiology"
                             >
-                              <Megaphone className="w-5 h-5" />
+                              {callingId === (req.appointment_id || req.id) ? (
+                                <RefreshCw className="w-5 h-5 animate-spin" />
+                              ) : (
+                                <Megaphone className="w-5 h-5" />
+                              )}
                             </button>
                             <button 
                               onClick={() => handleOpenUpdate(req)}

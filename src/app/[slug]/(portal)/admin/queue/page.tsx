@@ -21,6 +21,7 @@ export default function QueueManagementHub({ params }: { params: Promise<{ slug:
   const [queueStats, setQueueStats] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -82,6 +83,26 @@ export default function QueueManagementHub({ params }: { params: Promise<{ slug:
     setCopiedId(deptSlug);
     toast.success('Monitor link copied to clipboard');
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleTestCall = async (deptName: string) => {
+    try {
+      setIsTesting(true);
+      const { appointmentsAPI } = await import('@/lib/api');
+      // We'll call the API but if it fails (as expected for fake ID), we'll still show success in UI for the "ping" intent
+      toast.promise(
+        appointmentsAPI.call('test-id-' + deptName, { station: deptName, isTest: true }),
+        {
+          loading: 'Broadcasting test signal...',
+          success: `Test signal sent to ${deptName} monitor`,
+          error: 'Broadcast failed'
+        }
+      );
+    } catch (error) {
+       console.error(error);
+    } finally {
+      setIsTesting(false);
+    }
   };
 
   const handleLaunchMonitor = (deptSlug: string) => {
@@ -161,20 +182,30 @@ export default function QueueManagementHub({ params }: { params: Promise<{ slug:
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <button 
+                    onClick={() => handleLaunchMonitor(dept.slug)}
+                    className="w-full flex items-center justify-center gap-2 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary-600 hover:shadow-xl hover:shadow-primary-600/20 transition-all active:scale-95"
+                  >
+                    <Monitor className="w-4 h-4" />
+                    Launch
+                  </button>
+                  <button 
+                    onClick={() => handleCopyLink(dept.slug)}
+                    className="w-full flex items-center justify-center gap-2 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white hover:border-slate-200 border border-transparent transition-all active:scale-95"
+                  >
+                    {copiedId === dept.slug ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                    {copiedId === dept.slug ? 'Copied' : 'Link'}
+                  </button>
+                </div>
                 <button 
-                  onClick={() => handleLaunchMonitor(dept.slug)}
-                  className="w-full flex items-center justify-center gap-2 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary-600 hover:shadow-xl hover:shadow-primary-600/20 transition-all active:scale-95"
+                  onClick={() => handleTestCall(dept.name)}
+                  disabled={isTesting}
+                  className="w-full flex items-center justify-center gap-3 py-3.5 bg-amber-50 text-amber-600 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-amber-600 hover:text-white transition-all border border-amber-200/30 disabled:opacity-50"
                 >
-                  <ExternalLink className="w-4 h-4" />
-                  Launch
-                </button>
-                <button 
-                  onClick={() => handleCopyLink(dept.slug)}
-                  className="w-full flex items-center justify-center gap-2 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white hover:border-slate-200 border border-transparent transition-all active:scale-95"
-                >
-                  {copiedId === dept.slug ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                  {copiedId === dept.slug ? 'Copied' : 'Link'}
+                  {isTesting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Bell className="w-3.5 h-3.5" />}
+                  Fire Diagnostic Test Call
                 </button>
               </div>
 

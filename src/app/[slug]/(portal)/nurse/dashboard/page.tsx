@@ -29,6 +29,7 @@ export default function NurseDashboard({ params }: { params: Promise<{ slug: str
   const [loading, setLoading] = useState(true);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [callingId, setCallingId] = useState<string | null>(null);
   const [stats, setStats] = useState({ arrived: 0, triaged: 0, total: 0 });
 
   const fetchAll = useCallback(async () => {
@@ -58,10 +59,13 @@ export default function NurseDashboard({ params }: { params: Promise<{ slug: str
     e.preventDefault();
     e.stopPropagation();
     try {
+      setCallingId(id);
       await appointmentsAPI.call(id, { station: 'Triage Room' });
       toast.success('Patient called to triage');
     } catch (error) {
       toast.error('Failed to call patient');
+    } finally {
+      setCallingId(null);
     }
   };
 
@@ -145,10 +149,15 @@ export default function NurseDashboard({ params }: { params: Promise<{ slug: str
                   <div className="flex gap-2">
                     <button
                       onClick={(e) => handleCall(e, apt._id)}
-                      className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center hover:bg-amber-600 hover:text-white transition-colors"
+                      disabled={callingId === apt._id}
+                      className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center hover:bg-amber-600 hover:text-white transition-colors disabled:opacity-50"
                       title="Call to Triage"
                     >
-                      <Megaphone className="w-4 h-4" />
+                      {callingId === apt._id ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Megaphone className="w-4 h-4" />
+                      )}
                     </button>
                     <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                       <Thermometer className="w-4 h-4 animate-bounce" />
