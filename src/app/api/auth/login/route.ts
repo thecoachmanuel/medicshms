@@ -25,30 +25,7 @@ export async function POST(request: Request) {
     const client = supabaseAdmin || supabase;
     console.log(`[Login API] Admin client available: ${!!supabaseAdmin} | Normalized: ${normalized} | Alt: ${phoneAlt}`);
 
-    // NEW PRE-CHECK: Patient ID resolution
-    if (normalized.startsWith('pat-')) {
-      const { data: pRecord } = await client
-        .from('patients')
-        .select('user_id')
-        .eq('patient_id', normalized.toUpperCase())
-        .maybeSingle();
-      
-      if (pRecord?.user_id) {
-        const { data: linkedProfile } = await client
-          .from('profiles')
-          .select('email, phone')
-          .eq('id', pRecord.user_id)
-          .maybeSingle();
-        
-        if (linkedProfile) {
-          loginIdentifier = linkedProfile.email || linkedProfile.phone || loginIdentifier;
-          isEmail = loginIdentifier.includes('@');
-          console.log(`[Login API] Resolved Patient ID ${normalized} to identifier: ${loginIdentifier}`);
-        }
-      }
-    }
-
-    // Standard Pre-check: Does user exist in profiles? Use ilike for case-insensitive email matching
+    // Pre-check: Does user exist in profiles? Use ilike for case-insensitive email matching
     const { data: preCheckProfile } = await client
       .from('profiles')
       .select('id, email, role, hospital_id, phone')
@@ -105,43 +82,11 @@ export async function POST(request: Request) {
     console.log(`[Login API] Auth successful for UUID: ${user.id}`);
 
     // 3. Fetch profile using Admin client to bypass RLS
-    let { data: profile, error: profileError } = await client
+    const { data: profile, error: profileError } = await client
       .from('profiles')
       .select('*')
       .eq('id', user.id)
-      .maybeSingle();
-
-    // DEEP SYNC: If profile is missing but user exists in auth, attempt to find their patient record and auto-provision the profile
-    if (!profile) {
-       console.log(`[Login API] Missing profile for authenticated user ${user.id}. Attempting deep sync...`);
-       const { data: patientRecord } = await client
-          .from('patients')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle();
-       
-       if (patientRecord) {
-          const { data: newProfile, error: createError } = await client
-            .from('profiles')
-            .upsert({
-                id: user.id,
-                name: patientRecord.full_name,
-                email: user.email || patientRecord.email_address || null,
-                phone: user.phone || patientRecord.mobile_number || null,
-                role: 'Patient',
-                hospital_id: patientRecord.hospital_id,
-                is_active: true
-            })
-            .select()
-            .single();
-          
-          if (!createError) {
-             profile = newProfile;
-             profileError = null;
-             console.log(`[Login API] Successfully auto-provisioned missing profile for patient ${patientRecord.patient_id}`);
-          }
-       }
-    }
+      .single();
 
     if (profileError || !profile) {
       console.error(`[Login API] Profile fetch error for UUID ${user.id}:`, profileError?.message);
