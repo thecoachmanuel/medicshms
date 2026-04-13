@@ -162,6 +162,18 @@ export default function AppointmentsList({ role }: Props) {
     return styles[status] || 'bg-gray-50 text-gray-600 border-gray-100 shadow-sm';
   };
 
+  const calculateWaitingTime = (arrivalDate: string | null) => {
+    if (!arrivalDate) return null;
+    const arrival = new Date(arrivalDate).getTime();
+    const now = new Date().getTime();
+    const diffMinutes = Math.floor((now - arrival) / 60000);
+    
+    if (diffMinutes < 60) return `${diffMinutes}m`;
+    const hours = Math.floor(diffMinutes / 60);
+    const mins = diffMinutes % 60;
+    return `${hours}h ${mins}m`;
+  };
+
   const handleDownloadCSV = async () => {
     try {
       toast.loading('Preparing download...');
@@ -364,12 +376,20 @@ export default function AppointmentsList({ role }: Props) {
                     </td>
                   )}
                   <td className="px-6 py-4">
-                    <span className={cn(
-                      "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider",
-                      getStatusStyle(apt.appointmentStatus)
-                    )}>
-                      {apt.appointmentStatus}
-                    </span>
+                    <div className="flex flex-col gap-1.5">
+                      <span className={cn(
+                        "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider w-fit",
+                        getStatusStyle(apt.appointmentStatus)
+                      )}>
+                        {apt.appointmentStatus}
+                      </span>
+                      {(apt.appointmentStatus === 'Arrived' || apt.appointmentStatus === 'Triaged') && (
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-50 rounded-lg text-amber-600 text-[9px] font-black uppercase tracking-widest w-fit border border-amber-100/50">
+                          <Clock className="w-2.5 h-2.5" />
+                          Waiting: {calculateWaitingTime(apt.arrived_at || apt.triaged_at)}
+                        </div>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-5 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">

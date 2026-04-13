@@ -17,6 +17,12 @@ export async function PATCH(
       is_calling: false,
       called_at: null
     };
+
+    if (status === 'Arrived') {
+      updateData.arrived_at = new Date();
+    } else if (status === 'Triaged') {
+      updateData.triaged_at = new Date();
+    }
     if (status === 'Cancelled' && reason) {
       updateData.cancel_reason = reason;
     }

@@ -26,11 +26,11 @@ export default function DoctorInvestigationsPage({ params }: { params: Promise<{
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchRequests = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.doctorProfileId) return;
     try {
       const results = await Promise.allSettled([
-        labAPI.getRequests({ doctorId: user.id }),
-        radiologyAPI.getRequests({ doctorId: user.id })
+        labAPI.getRequests({ doctorId: user.doctorProfileId }),
+        radiologyAPI.getRequests({ doctorId: user.doctorProfileId })
       ]);
 
       const [labRes, radRes] = results;

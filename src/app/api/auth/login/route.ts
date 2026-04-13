@@ -84,7 +84,7 @@ export async function POST(request: Request) {
     // 3. Fetch profile using Admin client to bypass RLS
     const { data: profile, error: profileError } = await client
       .from('profiles')
-      .select('*')
+      .select('*, doctor_record:doctors(id)')
       .eq('id', user.id)
       .single();
 
@@ -135,7 +135,8 @@ export async function POST(request: Request) {
           user_metadata: { 
             ...user.user_metadata,
             role: profile.role,
-            hospital_id: profile.hospital_id 
+            hospital_id: profile.hospital_id,
+            doctor_profile_id: (profile as any).doctor_record?.id
           }
         })
       ]).catch(err => console.error('[Login API] Metadata sync background error:', err));
@@ -159,7 +160,7 @@ export async function POST(request: Request) {
           subscription_status: subscriptionStatus,
           trial_end_date: trialEndDate,
           profilePhoto: profile.profile_photo,
-          doctorProfileId: profile.doctor_profile_id
+          doctorProfileId: (profile as any).doctor_record?.id
         }
       }
     });

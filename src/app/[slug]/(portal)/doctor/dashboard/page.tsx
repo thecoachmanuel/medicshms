@@ -12,6 +12,8 @@ import {
   ArrowRight, Beaker, Camera
 } from 'lucide-react';
 import { DashboardCard } from '@/components/admin/DashboardCard';
+import QueueMonitor from '@/components/appointments/QueueMonitor';
+import QueueAssistant from '@/components/ai/QueueAssistant';
 import { toast } from 'react-hot-toast';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -54,8 +56,8 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
         doctorDashboardAPI.getStats(),
         doctorDashboardAPI.getTodayAppointments(),
         doctorDashboardAPI.getActivity(),
-        labAPI.getRequests({ doctorId: user?.id, limit: 10 }),
-        radiologyAPI.getRequests({ doctorId: user?.id, limit: 10 }),
+        labAPI.getRequests({ doctorId: user?.doctorProfileId, limit: 10 }),
+        radiologyAPI.getRequests({ doctorId: user?.doctorProfileId, limit: 10 }),
         doctorDashboardAPI.getChartData('monthly-trend'),
       ]);
 
@@ -158,28 +160,36 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 card p-6">
-          <h3 className="font-bold text-gray-900 mb-6">Patient Consultation Trend</h3>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={monthlyTrend}>
-                <defs>
-                  <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
-                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
-                <Area type="monotone" dataKey="total" stroke="#6366f1" fillOpacity={1} fill="url(#colorTotal)" strokeWidth={3} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+        {/* Main Queue Feed */}
+        <div className="lg:col-span-2 space-y-6">
+           <div className="card p-6 min-h-[600px] flex flex-col bg-white relative overflow-hidden">
+              <div 
+                className="flex items-center justify-between mb-8 relative z-10 cursor-pointer group/header"
+                onClick={() => router.push(`/${slug}/doctor/appointments`)}
+              >
+                <div>
+                  <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2 group-hover/header:text-indigo-600 transition-colors">
+                    <Users className="w-4 h-4 text-indigo-600" />
+                    Live Patient Queue
+                  </h3>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Real-time Arrival Monitoring</p>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full text-emerald-600 text-[9px] font-black uppercase tracking-widest animate-pulse">
+                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                   Live Feed
+                </div>
+              </div>
+
+              <div className="flex-1">
+                 <QueueMonitor doctorId={user?.doctorProfileId} />
+              </div>
+           </div>
         </div>
 
         <div className="lg:col-span-1 flex flex-col gap-6">
+           {/* AI Intelligence Engine */}
+           <QueueAssistant queueData={todayAppointments.filter(pt => ['Arrived', 'Triaged'].includes(pt.appointmentStatus))} />
+
            <div className="card p-6 flex flex-col h-full bg-white relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full blur-3xl -mr-16 -mt-16 opacity-50" />
               <div 
