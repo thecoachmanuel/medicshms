@@ -92,6 +92,17 @@ export async function POST(request: Request) {
       if (patientError) console.error('Error creating patient record:', patientError);
     }
 
+    // Resolve Department ID if possible for dynamic billing
+    let resolvedDeptId = null;
+    if (appointmentData.department) {
+      const { data: dept } = await (supabaseAdmin || supabase)
+        .from('departments')
+        .select('id')
+        .eq('name', appointmentData.department)
+        .maybeSingle();
+      resolvedDeptId = dept?.id;
+    }
+
     // 4. Create appointment in Supabase
     const { data: appointment, error: createError } = await (supabaseAdmin || supabase)
       .from('public_appointments')
@@ -106,6 +117,7 @@ export async function POST(request: Request) {
         appointment_date: appointmentData.appointmentDate,
         appointment_time: appointmentData.appointmentTime,
         department: appointmentData.department,
+        department_id: resolvedDeptId,
         doctor_assigned_id: appointmentData.doctorAssigned || null,
         visit_type: appointmentData.visitType,
         reason_for_visit: appointmentData.reasonForVisit,
@@ -148,13 +160,7 @@ export async function POST(request: Request) {
         sourceType: 'Appointment',
         sourceId: appointment.id,
         userProfile,
-        services: [{
-          id: 'consultation',
-          name: 'General Consultation',
-          price: 5000,
-          quantity: 1,
-          total: 5000
-        }],
+        services: [], // Omit to trigger dynamic fee lookup
         doctorId: appointment.doctor_assigned_id
       });
     } catch (billingError) {

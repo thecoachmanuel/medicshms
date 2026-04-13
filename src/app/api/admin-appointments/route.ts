@@ -127,6 +127,17 @@ export async function POST(request: Request) {
       
     const appointmentId = `HM-${dateStr}-${String((count || 0) + 1).padStart(4, '0')}`;
 
+    // Resolve Department ID if possible for dynamic billing
+    let resolvedDeptId = null;
+    if (department) {
+      const { data: dept } = await (supabaseAdmin || supabase)
+        .from('departments')
+        .select('id')
+        .eq('name', department)
+        .maybeSingle();
+      resolvedDeptId = dept?.id;
+    }
+
     const { data: appointment, error } = await (supabaseAdmin || supabase)
       .from('public_appointments')
       .insert([{
@@ -142,6 +153,7 @@ export async function POST(request: Request) {
         primary_concern: primaryConcern,
         existing_conditions: existingConditions,
         department,
+        department_id: resolvedDeptId,
         doctor_assigned_id: doctorAssigned || null,
         appointment_date: appointmentDate,
         appointment_time: appointmentTime,
@@ -161,7 +173,7 @@ export async function POST(request: Request) {
     if (error) throw error;
 
     // AUTOMATED BILLING Integration
-    // For manual admin/receptionist creation, we create a default consultation invoice
+    // For manual admin/receptionist creation, we use dynamic BillingService fee resolution
     try {
       await BillingService.generateAutoInvoice({
         hospitalId: userProfile?.hospital_id,
@@ -169,13 +181,7 @@ export async function POST(request: Request) {
         sourceType: 'Appointment',
         sourceId: appointment.id,
         userProfile,
-        services: [{
-          id: 'consultation',
-          name: 'Medical Consultation',
-          price: 5000, // Default fee, can be made dynamic based on department
-          quantity: 1,
-          total: 5000
-        }],
+        services: [], // Omit services to trigger dynamic fee lookup (Doctor fee -> Dept fee -> Fallback)
         doctorId: doctorAssigned
       });
     } catch (billingError) {
