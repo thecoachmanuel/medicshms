@@ -21,10 +21,19 @@ export async function getAuthUser(request: Request) {
     return null;
   }
 
-  // Fetch profile with hospital slug
+  // Fetch profile with hospital slug and clinical unit associations
   const { data: profile, error: profileError } = await (supabaseAdmin || supabase)
     .from('profiles')
-    .select('*, hospital:hospitals(slug)')
+    .select(`
+      *,
+      hospital:hospitals(slug),
+      doctor_record:doctors(id, department_id),
+      receptionist_record:receptionists(id, department_id),
+      nurse_record:nurses(id, department_id),
+      lab_record:lab_scientists(id, department_id),
+      radiologist_record:radiologists(id, department_id),
+      pharmacist_record:pharmacists(id, department_id)
+    `)
     .eq('id', user.id)
     .single();
 
@@ -32,6 +41,13 @@ export async function getAuthUser(request: Request) {
     console.log('[Auth] Profile lookup failed:', profileError?.message);
     return null;
   }
+
+  // Resolve department_id
+  const staffRecs = [
+    profile.doctor_record, profile.receptionist_record, profile.nurse_record,
+    profile.lab_record, profile.radiologist_record, profile.pharmacist_record
+  ];
+  profile.department_id = staffRecs.find(rec => rec && (rec as any).department_id)?.department_id;
 
   if (!profile.is_active) {
     console.log('[Auth] User account inactive');

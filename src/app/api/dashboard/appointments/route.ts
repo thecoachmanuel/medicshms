@@ -9,10 +9,17 @@ export async function GET(request: Request) {
   if (authError) return authError;
 
   try {
-    const { data: appointments, error } = await supabase
+    let query = supabase
       .from('public_appointments')
       .select('*, doctors:doctor_assigned_id(*, profiles(name))')
-      .eq('hospital_id', userProfile?.hospital_id)
+      .eq('hospital_id', userProfile?.hospital_id);
+
+    // RESTRICT: Non-admins are limited to their own department
+    if (userProfile?.role !== 'Admin' && (userProfile as any).department_id) {
+       query = query.eq('department_id', (userProfile as any).department_id);
+    }
+
+    const { data: appointments, error } = await query
       .order('created_at', { ascending: false })
       .limit(10);
 

@@ -19,18 +19,39 @@ export async function GET(request: Request) {
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59).toISOString();
     const startOfSixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString();
 
+    const isRestricted = userProfile?.role !== 'Admin' && (userProfile as any).department_id;
+    const deptId = (userProfile as any).department_id;
+
+    // Build base queries
+    const todayQuery = client.from('public_appointments')
+      .select('appointment_status, created_at, appointment_id, department_id')
+      .eq('hospital_id', userProfile?.hospital_id)
+      .gte('created_at', startOfToday)
+      .lte('created_at', endOfToday);
+
+    const monthQuery = client.from('public_appointments')
+      .select('appointment_status, created_at, visit_type, department_id')
+      .eq('hospital_id', userProfile?.hospital_id)
+      .gte('created_at', startOfLastMonth);
+
+    // Apply restriction if needed
+    if (isRestricted) {
+      todayQuery.eq('department_id', deptId);
+      monthQuery.eq('department_id', deptId);
+    }
+
     const results = await Promise.all([
       client.from('patients').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id),
       client.from('doctors').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id).eq('is_active', true),
       client.from('departments').select('*', { count: 'exact', head: true }).eq('hospital_id', userProfile?.hospital_id).eq('is_active', true),
-      client.from('public_appointments').select('appointment_status, created_at, appointment_id').eq('hospital_id', userProfile?.hospital_id).gte('created_at', startOfToday).lte('created_at', endOfToday),
-      client.from('public_appointments').select('appointment_status, created_at, visit_type').eq('hospital_id', userProfile?.hospital_id).gte('created_at', startOfLastMonth),
+      todayQuery,
+      monthQuery,
       client.from('bills')
         .select(`
           total_amount, 
           paid_amount, 
           created_at,
-          appointment:public_appointments!public_appointment_id(department)
+          appointment:public_appointments!public_appointment_id(department, department_id)
         `)
         .eq('hospital_id', userProfile?.hospital_id)
         .gte('created_at', startOfSixMonthsAgo)
@@ -103,13 +124,26 @@ export async function GET(request: Request) {
       });
     }
 
-    const revenueByDept: Record<string, number> = {};
-    bills.forEach((b: any) => {
+    const isRestricted = userProfile?.role !== 'Admin' && (userProfile as any).department_id;
+    const userDeptId = (userProfile as any).department_id;
+
+    const filteredBills = isRestricted 
+      ? bills.filter(b => b.appointment?.department_id === userDeptId)
+      : bills;
+
+    filteredBills.forEach((b: any) => {
       if (b.created_at >= startOfMonth) {
         const dept = b.appointment?.department || 'General';
         revenueByDept[dept] = (revenueByDept[dept] || 0) + Number(b.total_amount || 0);
       }
     });
+
+    // Update summarized values using filtered data
+    const monthRevenueVal = filteredBills.filter(b => b.created_at >= startOfMonth).reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
+    const monthPaidVal = filteredBills.filter(b => b.created_at >= startOfMonth).reduce((sum, b) => sum + Number(b.paid_amount || 0), 0);
+    const lastMonthRevenueVal = filteredBills.filter(b => b.created_at >= startOfLastMonth && b.created_at <= endOfLastMonth)
+                                            .reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
+    const totalRevenueVal = filteredBills.reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
 
     const calcChange = (current: number | null, previous: number | null) => {
       const cur = current || 0;

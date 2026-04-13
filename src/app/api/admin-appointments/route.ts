@@ -22,8 +22,13 @@ export async function GET(request: Request) {
 
     let query = (supabaseAdmin || supabase)
       .from('public_appointments')
-      .select('id, appointment_id, full_name, mobile_number, email_address, appointment_date, appointment_time, department, appointment_status, age, gender, date_of_birth, primary_concern, doctor_notes, prescription, known_allergies, allergies_details, patient_id, is_calling, called_at, calling_station, doctors!doctor_assigned_id(id, profiles!user_id(name))', { count: 'exact' })
+      .select('id, appointment_id, full_name, mobile_number, email_address, appointment_date, appointment_time, department, department_id, appointment_status, age, gender, date_of_birth, primary_concern, doctor_notes, prescription, known_allergies, allergies_details, patient_id, is_calling, called_at, calling_station, doctors!doctor_assigned_id(id, profiles!user_id(name))', { count: 'exact' })
       .eq('hospital_id', userProfile?.hospital_id);
+
+    // RESTRICT: Non-admins are limited to their own department
+    if (userProfile?.role !== 'Admin' && (userProfile as any).department_id) {
+       query = query.eq('department_id', (userProfile as any).department_id);
+    }
 
     if (patientId) {
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(patientId);

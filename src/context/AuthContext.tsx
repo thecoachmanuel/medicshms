@@ -44,6 +44,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             role: userProfile.role,
             isActive: userProfile.isActive ?? true,
             hospital_id: userProfile.hospital_id,
+            department_id: userProfile.department_id,
+            departmentId: userProfile.department_id,
             hospital_slug: userProfile.hospital_slug,
             subscription_status: userProfile.subscription_status,
             trial_end_date: userProfile.trial_end_date,

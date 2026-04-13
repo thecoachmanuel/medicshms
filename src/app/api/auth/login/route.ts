@@ -81,10 +81,18 @@ export async function POST(request: Request) {
     const user = data.user;
     console.log(`[Login API] Auth successful for UUID: ${user.id}`);
 
-    // 3. Fetch profile using Admin client to bypass RLS
+    // 3. Fetch profile with all possible clinical unit associations
     const { data: profile, error: profileError } = await client
       .from('profiles')
-      .select('*, doctor_record:doctors(id)')
+      .select(`
+        *,
+        doctor_record:doctors(id, department_id),
+        receptionist_record:receptionists(id, department_id),
+        nurse_record:nurses(id, department_id),
+        lab_record:lab_scientists(id, department_id),
+        radiologist_record:radiologists(id, department_id),
+        pharmacist_record:pharmacists(id, department_id)
+      `)
       .eq('id', user.id)
       .single();
 
@@ -125,9 +133,16 @@ export async function POST(request: Request) {
       console.log(`[Login API] Resolved hospital context: Slug: "${hospitalSlug}", Status: ${subscriptionStatus}`);
     }
 
-    // 5. Track last login and sync metadata to JWT
+    // 5. Resolve primary department_id for staff
+    const staffRecs = [
+      profile.doctor_record, profile.receptionist_record, profile.nurse_record,
+      profile.lab_record, profile.radiologist_record, profile.pharmacist_record
+    ];
+    const resolvedDeptId = staffRecs.find(rec => rec && (rec as any).department_id)?.department_id;
+
+    // 6. Track last login and sync metadata to JWT
     if (supabaseAdmin) {
-      console.log(`[Login API] Syncing metadata for ${user.id} (Hospital: ${profile.hospital_id})`);
+      console.log(`[Login API] Syncing metadata for ${user.id} (Hospital: ${profile.hospital_id}, Dept: ${resolvedDeptId})`);
       // We don't await this to keep response fast, but catch errors
       Promise.all([
         supabaseAdmin.from('profiles').update({ last_login: new Date() }).eq('id', user.id),
@@ -136,6 +151,7 @@ export async function POST(request: Request) {
             ...user.user_metadata,
             role: profile.role,
             hospital_id: profile.hospital_id,
+            department_id: resolvedDeptId,
             doctor_profile_id: (profile as any).doctor_record?.id
           }
         })
@@ -156,6 +172,7 @@ export async function POST(request: Request) {
           role: profile.role === 'platform_admin' ? 'Platform Admin' : profile.role,
           isActive: profile.is_active ?? true,
           hospital_id: profile.hospital_id,
+          department_id: resolvedDeptId,
           hospital_slug: hospitalSlug,
           subscription_status: subscriptionStatus,
           trial_end_date: trialEndDate,
