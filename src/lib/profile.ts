@@ -23,6 +23,8 @@ export async function buildProfileResponse(userId: string) {
     role: profile.role,
     hospital_id: profile.hospital_id,
     isActive: profile.is_active,
+    profilePhoto: profile.profile_photo || '',
+    clinical_preferences: profile.clinical_preferences || {},
     lastLogin: profile.last_login,
     createdAt: profile.created_at,
     updatedAt: profile.updated_at
