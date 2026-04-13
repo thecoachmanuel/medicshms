@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59).toISOString();
     const startOfSixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString();
 
-    const isRestricted = userProfile?.role !== 'Admin' && (userProfile as any).department_id;
+    let isRestricted = userProfile?.role !== 'Admin' && (userProfile as any).department_id;
     const deptId = (userProfile as any).department_id;
 
     // Build base queries
@@ -92,17 +92,24 @@ export async function GET(request: Request) {
     const newPatientsThisMonth = apts.filter(a => a.visit_type === 'New Patient' && a.created_at >= startOfMonth).length;
     const newPatientsLastMonth = apts.filter(a => a.visit_type === 'New Patient' && a.created_at >= startOfLastMonth && a.created_at <= endOfLastMonth).length;
 
-    // Process Financial Intelligence
-    const bills = revenueData || [];
-    const totalRevenueVal = bills.reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
-    
-    // Monthly Aggregates
-    const monthRevenueData = bills.filter(b => b.created_at >= startOfMonth);
-    const monthRevenueVal = monthRevenueData.reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
-    const monthPaidVal = monthRevenueData.reduce((sum, b) => sum + Number(b.paid_amount || 0), 0);
-    
-    const lastMonthRevenueVal = bills.filter(b => b.created_at >= startOfLastMonth && b.created_at <= endOfLastMonth)
-                                     .reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
+    const revenueByDept: Record<string, number> = {};
+    const filteredBills = isRestricted 
+      ? bills.filter(b => b.appointment?.department_id === deptId)
+      : bills;
+
+    filteredBills.forEach((b: any) => {
+      if (b.created_at >= startOfMonth) {
+        const dept = b.appointment?.department || 'General';
+        revenueByDept[dept] = (revenueByDept[dept] || 0) + Number(b.total_amount || 0);
+      }
+    });
+
+    // Calculate final metrics from filtered data
+    const monthRevenueVal = filteredBills.filter(b => b.created_at >= startOfMonth).reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
+    const monthPaidVal = filteredBills.filter(b => b.created_at >= startOfMonth).reduce((sum, b) => sum + Number(b.paid_amount || 0), 0);
+    const lastMonthRevenueVal = filteredBills.filter(b => b.created_at >= startOfLastMonth && b.created_at <= endOfLastMonth)
+                                            .reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
+    const totalRevenueVal = filteredBills.reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
 
     // Velocity Projection
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
@@ -116,34 +123,13 @@ export async function GET(request: Request) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const mStart = d.toISOString();
       const mEnd = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59).toISOString();
-      const monthBills = bills.filter(b => b.created_at >= mStart && b.created_at <= mEnd);
+      const monthBills = filteredBills.filter(b => b.created_at >= mStart && b.created_at <= mEnd);
       revenueTrend.push({
         month: monthNames[d.getMonth()],
         revenue: monthBills.reduce((sum, b) => sum + Number(b.total_amount || 0), 0),
         paid: monthBills.reduce((sum, b) => sum + Number(b.paid_amount || 0), 0),
       });
     }
-
-    const isRestricted = userProfile?.role !== 'Admin' && (userProfile as any).department_id;
-    const userDeptId = (userProfile as any).department_id;
-
-    const filteredBills = isRestricted 
-      ? bills.filter(b => b.appointment?.department_id === userDeptId)
-      : bills;
-
-    filteredBills.forEach((b: any) => {
-      if (b.created_at >= startOfMonth) {
-        const dept = b.appointment?.department || 'General';
-        revenueByDept[dept] = (revenueByDept[dept] || 0) + Number(b.total_amount || 0);
-      }
-    });
-
-    // Update summarized values using filtered data
-    const monthRevenueVal = filteredBills.filter(b => b.created_at >= startOfMonth).reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
-    const monthPaidVal = filteredBills.filter(b => b.created_at >= startOfMonth).reduce((sum, b) => sum + Number(b.paid_amount || 0), 0);
-    const lastMonthRevenueVal = filteredBills.filter(b => b.created_at >= startOfLastMonth && b.created_at <= endOfLastMonth)
-                                            .reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
-    const totalRevenueVal = filteredBills.reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
 
     const calcChange = (current: number | null, previous: number | null) => {
       const cur = current || 0;
