@@ -94,10 +94,11 @@ export async function POST(request: Request) {
 
     // Resolve Department ID if possible for dynamic billing
     let resolvedDeptId = null;
-    if (appointmentData.department) {
+    if (appointmentData.department && userProfile.hospital_id) {
       const { data: dept } = await (supabaseAdmin || supabase)
         .from('departments')
         .select('id')
+        .eq('hospital_id', userProfile.hospital_id)
         .eq('name', appointmentData.department)
         .maybeSingle();
       resolvedDeptId = dept?.id;
