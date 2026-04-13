@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Sparkles, Brain, Zap, Clock, TrendingDown, 
-  MessageSquare, ChevronRight, Activity, AlertTriangle
+  MessageSquare, ChevronRight, Activity, AlertTriangle,
+  AlertCircle, Users, TrendingUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
