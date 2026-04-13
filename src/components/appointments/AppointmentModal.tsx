@@ -660,7 +660,7 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
   Print Ticket
 </button>
 )}
-                {['Confirmed', 'Arrived', 'Triaged'].includes(appointment.appointmentStatus) && (user?.role === 'Admin' || (user?.role === 'Doctor' && (appointment.doctorAssigned?._id === user?.doctorProfileId || appointment.doctorAssigned?.id === user?.doctorProfileId || appointment.doctor_assigned_id === user?.doctorProfileId))) && (
+                {['Confirmed', 'Arrived', 'Triaged'].includes(appointment.appointmentStatus) && (user?.role === 'Admin' || (user?.role === 'Doctor' && (appointment.doctorAssigned?._id === user?.doctorProfileId || appointment.doctorAssigned?.id === user?.doctorProfileId || appointment.doctor_assigned_id === user?.doctorProfileId || !appointment.doctor_assigned_id))) && (
                   showCompleteForm ? (
                     <div className="flex items-center gap-2">
                       <button onClick={() => setShowCompleteForm(false)} className="btn-secondary">Cancel</button>

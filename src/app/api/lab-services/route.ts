@@ -10,6 +10,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const patientId = searchParams.get('patientId');
   const status = searchParams.get('status');
+  const doctorId = searchParams.get('doctorId');
 
   try {
     let query = supabaseClient
@@ -55,6 +56,7 @@ export async function GET(request: Request) {
       query = query.eq('patient_id', pRecord?.id);
     }
     if (status) query = query.eq('status', status);
+    if (doctorId) query = query.eq('doctor_id', doctorId);
 
     const { data, error } = await query;
     

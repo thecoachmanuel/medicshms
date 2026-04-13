@@ -10,20 +10,32 @@ export async function POST(request: Request) {
     let loginIdentifier = identifier;
     let isEmail = identifier.includes('@');
 
+    // NORMALIZE IDENTIFIER: Strip spaces and handle common phone formatting variations
+    const trimmed = identifier.trim();
+    const normalized = trimmed.toLowerCase().replace(/\s+/g, '');
+    
+    // Better Phone Normalization for Nigeria (+234)
+    let phoneAlt = normalized;
+    if (normalized.startsWith('0') && normalized.length === 11) {
+      phoneAlt = '+234' + normalized.substring(1);
+    } else if (normalized.startsWith('+2340')) {
+      phoneAlt = '+234' + normalized.substring(5);
+    }
+    
     const client = supabaseAdmin || supabase;
-    console.log(`[Login API] Admin client available: ${!!supabaseAdmin}`);
+    console.log(`[Login API] Admin client available: ${!!supabaseAdmin} | Normalized: ${normalized} | Alt: ${phoneAlt}`);
 
-    // Pre-check: Does user exist in profiles?
+    // Pre-check: Does user exist in profiles? Use ilike for case-insensitive email matching
     const { data: preCheckProfile } = await client
       .from('profiles')
       .select('id, email, role, hospital_id, phone')
-      .or(`email.eq.${identifier},phone.eq.${identifier}`)
+      .or(`email.ilike.${normalized},phone.eq.${normalized},phone.eq.${phoneAlt},phone.eq.${identifier}`)
       .maybeSingle();
 
     if (preCheckProfile) {
       console.log(`[Login API] Pre-check found profile: ${preCheckProfile.id} | Role: ${preCheckProfile.role} | Email: ${preCheckProfile.email}`);
       
-      // Smart Identifier Selection: Use email if available, otherwise stay with phone
+      // Smart Identifier Selection: Use email if available, otherwise use standardized phone
       if (preCheckProfile.email) {
         loginIdentifier = preCheckProfile.email;
         isEmail = true;
@@ -31,18 +43,8 @@ export async function POST(request: Request) {
         loginIdentifier = preCheckProfile.phone;
         isEmail = false;
       }
-
-      // Deep Check: Does user exist in auth.users?
-      if (supabaseAdmin) {
-        const { data: authUser, error: authCheckError } = await supabaseAdmin.auth.admin.getUserById(preCheckProfile.id);
-        if (authCheckError || !authUser?.user) {
-          console.error(`[Login API] CRITICAL: Profile exists for ${loginIdentifier} but auth.users record is missing!`);
-        } else {
-          console.log(`[Login API] Auth record verified for ${loginIdentifier}. Proceeding to password check.`);
-        }
-      }
     } else {
-      console.warn(`[Login API] Pre-check: No profile found for identifier "${identifier}"`);
+      console.warn(`[Login API] Pre-check: No profile found for identifier "${identifier}" (Normalized: "${normalized}")`);
     }
 
     // Force email to lowercase for auth

@@ -205,38 +205,48 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
                     <p className="text-[10px] font-black uppercase tracking-widest leading-relaxed">No active orders<br/>found in clinical feed</p>
                   </div>
                 ) : investigations.map((inv) => (
-                  <div key={inv.id} className="p-4 bg-slate-50/50 hover:bg-white border border-transparent hover:border-indigo-100 rounded-2xl transition-all duration-300 group/inv flex items-center justify-between gap-4">
-                    <div className="flex items-start gap-3 min-w-0">
-                      <div className={cn(
-                        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
-                        inv.origin === 'Laboratory' ? "bg-emerald-50 text-emerald-600" : "bg-indigo-50 text-indigo-600"
-                      )}>
-                        {inv.origin === 'Laboratory' ? <Beaker className="w-5 h-5" /> : <Camera className="w-5 h-5" />}
-                      </div>
-                      <div className="min-w-0">
-                        <h4 className="text-[11px] font-black text-slate-900 truncate uppercase tracking-tight">{inv.test_name}</h4>
-                        <div className="flex items-center gap-2 mt-0.5">
-                           <p className="text-[9px] text-slate-500 font-bold uppercase truncate max-w-[100px]">{inv.patient?.full_name}</p>
-                           <span className="w-1 h-1 rounded-full bg-slate-300" />
-                           <p className="text-[9px] text-slate-400 font-bold uppercase">{inv.origin}</p>
+                    <div key={inv.id} className="p-4 bg-slate-50/50 hover:bg-white border border-transparent hover:border-indigo-100 rounded-2xl transition-all duration-300 group/inv flex items-center justify-between gap-4">
+                      <div className="flex items-start gap-4 min-w-0">
+                        <div className={cn(
+                          "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border border-transparent transition-all duration-500",
+                          inv.origin === 'Laboratory' ? "bg-emerald-50 text-emerald-600 group-hover/inv:border-emerald-100" : "bg-indigo-50 text-indigo-600 group-hover/inv:border-indigo-100"
+                        )}>
+                          {inv.origin === 'Laboratory' ? <Beaker className="w-5 h-5" /> : <Camera className="w-5 h-5" />}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="text-[12px] font-black text-slate-900 truncate uppercase tracking-tight">{inv.test_name}</h4>
+                            {inv.priority === 'Urgent' || inv.priority === 'Stat' ? (
+                               <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-pulse shrink-0" title={inv.priority} />
+                            ) : null}
+                          </div>
+                          <div className="flex items-center gap-2">
+                             <p className="text-[9px] text-slate-500 font-bold uppercase truncate max-w-[100px]">{inv.patient?.full_name}</p>
+                             <span className="w-1 h-1 rounded-full bg-slate-300" />
+                             <p className="text-[9px] text-slate-400 font-bold uppercase">{inv.origin}</p>
+                          </div>
+                          <p className="text-[8px] text-slate-300 font-black uppercase tracking-widest mt-1">{inv.requested_at ? timeAgo(inv.requested_at) : 'recently'}</p>
                         </div>
                       </div>
+                      
+                      <div className="shrink-0 flex flex-col items-end gap-1.5">
+                         <span className={cn(
+                           "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ring-1 ring-inset transition-all",
+                           inv.status === 'Pending' ? "bg-amber-50 text-amber-700 ring-amber-500/10" :
+                           inv.status === 'Completed' || inv.status === 'Authorized' ? "bg-emerald-50 text-emerald-700 ring-emerald-500/10 shadow-sm shadow-emerald-500/5" :
+                           inv.status === 'Processing' || inv.status === 'Sample Collected' ? "bg-blue-50 text-blue-700 ring-blue-500/10" :
+                           "bg-slate-100 text-slate-700 ring-slate-500/10"
+                         )}>
+                           {inv.status}
+                         </span>
+                         {(inv.status === 'Completed' || inv.status === 'Authorized') && (
+                           <div className="flex items-center gap-1 text-emerald-500">
+                             <CheckCircle className="w-3.5 h-3.5" />
+                             <span className="text-[8px] font-black uppercase tracking-tighter">Result Ready</span>
+                           </div>
+                         )}
+                      </div>
                     </div>
-                    
-                    <div className="shrink-0 flex flex-col items-end gap-1">
-                       <span className={cn(
-                         "px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest",
-                         inv.status === 'Pending' ? "bg-amber-100 text-amber-700" :
-                         inv.status === 'Completed' ? "bg-emerald-100 text-emerald-700" :
-                         "bg-indigo-100 text-indigo-700"
-                       )}>
-                         {inv.status}
-                       </span>
-                       {inv.status === 'Completed' && (
-                         <CheckCircle className="w-3 h-3 text-emerald-500 animate-in fade-in zoom-in" />
-                       )}
-                    </div>
-                  </div>
                 ))}
               </div>
            </div>
