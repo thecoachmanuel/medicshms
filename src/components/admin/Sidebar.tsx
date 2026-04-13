@@ -129,6 +129,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
     } else if (role === 'Doctor') {
       return [
         { icon: LayoutDashboard, label: 'Dashboard', path: `${base}/doctor/dashboard`, id: 'nav-dashboard' },
+        { icon: ClipboardList, label: 'Investigation Tracker', path: `${base}/doctor/investigations`, id: 'nav-investigations' },
         { icon: Calendar, label: 'Appointments', path: `${base}/doctor/appointments`, id: 'nav-appointments' },
         { icon: CalendarClock, label: 'Availability', path: `${base}/doctor/availability`, id: 'nav-slots' },
         { icon: FileText, label: 'Patients', path: `${base}/doctor/patients`, id: 'nav-patients' },

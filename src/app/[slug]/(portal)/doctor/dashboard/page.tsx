@@ -182,16 +182,18 @@ export default function DoctorDashboard({ params }: { params: Promise<{ slug: st
         <div className="lg:col-span-1 flex flex-col gap-6">
            <div className="card p-6 flex flex-col h-full bg-white relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full blur-3xl -mr-16 -mt-16 opacity-50" />
-              <div className="flex items-center justify-between mb-8 relative z-10">
+              <div 
+                className="flex items-center justify-between mb-8 relative z-10 cursor-pointer group/header"
+                onClick={() => router.push(`/${slug}/doctor/investigations`)}
+              >
                 <div>
-                  <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                  <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2 group-hover/header:text-indigo-600 transition-colors">
                     <ClipboardList className="w-4 h-4 text-indigo-600" />
                     Investigation Tracker
                   </h3>
                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Real-time Clinical Sync</p>
                 </div>
                 <button 
-                  onClick={() => router.push(`/${slug}/doctor/investigations`)}
                   className="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-all group/btn"
                 >
                   <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
