@@ -199,6 +199,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
   const [showLibrary, setShowLibrary] = useState(true);
   const [catalog, setCatalog] = useState<any[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<any | null>(null);
+  const [testName, setTestName] = useState(request.test_name || '');
   const [fields, setFields] = useState<any[]>([]);
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [clinicalNotes, setClinicalNotes] = useState('');
@@ -230,13 +231,9 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
           const data = JSON.parse(parts[1]);
           
           if (Array.isArray(data)) {
-            // New format: Array of metric objects
+            // New format: Array of metric objects { label, value, ... }
             const values: Record<string, string> = {};
-            // We'll need to match by label since IDs are transient per session
-            // This is a bit tricky, but usually the fields will be initialized from a template first
-            // or the existing field logic will handle it if we populate fieldValues correctly.
             data.forEach((m: any) => {
-              // We'll store by label for the component to pick up if it can
               values[m.label] = m.value;
             });
             setFieldValues(values);
@@ -276,10 +273,12 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
     }));
     setFields(initialFields);
 
+    // Populate default values from template schema, preserving any existing inputs mapped by label
     const newValues: Record<string, string> = { ...fieldValues };
-    initialFields.forEach((f: any) => {
-      if (!newValues[f.id]) {
-        newValues[f.id] = f.defaultValue || '';
+    schema.fields.forEach((f: any) => {
+      // Use label as the key for persistence and UI binding
+      if (newValues[f.label] === undefined || newValues[f.label] === '') {
+        newValues[f.label] = f.defaultValue || '';
       }
     });
     setFieldValues(newValues);
@@ -303,19 +302,29 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
       label: `${field.label} (Copy)`
     };
     setFields([...fields, newField]);
-    if (fieldValues[field.id]) {
-      setFieldValues({ ...fieldValues, [newField.id]: fieldValues[field.id] });
+    if (fieldValues[field.label]) {
+      setFieldValues({ ...fieldValues, [newField.label]: fieldValues[field.label] });
     }
   };
 
-  const handleRemoveField = (id: string) => {
-    setFields(fields.filter(f => f.id !== id));
+  const handleRemoveField = (field: any) => {
+    setFields(fields.filter(f => f.id !== field.id));
     const newValues = { ...fieldValues };
-    delete newValues[id];
+    delete newValues[field.label];
     setFieldValues(newValues);
   };
 
   const handleUpdateFieldMeta = (id: string, updates: any) => {
+    // If the label is changing, migrate the value in fieldValues
+    if (updates.label !== undefined) {
+      const field = fields.find(f => f.id === id);
+      if (field && field.label !== updates.label) {
+        const newValues = { ...fieldValues };
+        newValues[updates.label] = newValues[field.label] || '';
+        // Note: we might want to delete the old one, but keeping it is safer for history
+        setFieldValues(newValues);
+      }
+    }
     setFields(fields.map(f => f.id === id ? { ...f, ...updates } : f));
   };
 
@@ -327,12 +336,12 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
     try {
       const { labAPI } = await import('@/lib/api');
       await labAPI.upsertCatalogItem({
-        test_name: request.test_name,
+        test_name: testName || request.test_name,
         template_schema: { fields },
         hospital_id: selectedTemplate?.hospital_id,
         unit_id: request.unit_id || selectedTemplate?.unit_id
       });
-      toast.success(`Protocol for "${request.test_name}" synchronized with Global Catalog`);
+      toast.success(`Protocol for "${testName || request.test_name}" synchronized with Global Catalog`);
       fetchCatalog();
     } catch (e) {
       toast.error('Failed to update master template');
@@ -377,7 +386,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
       // Capture structured metrics including metadata for the report
       const structuredResults = fields.map(f => ({
         label: f.label,
-        value: fieldValues[f.id] || '',
+        value: fieldValues[f.label] || '',
         unit: f.unit || '',
         referenceRange: f.referenceRange || ''
       }));
@@ -387,7 +396,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
       await labAPI.updateResult({
         request_id: request.id || request._id,
         status: status,
-        test_name: request.test_name, // Capture refined protocol name
+        test_name: testName || request.test_name, // Capture refined protocol name
         results: finalResults,
         is_critical: isCritical,
         file_url: fileUrl || undefined,
@@ -545,10 +554,8 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                     <input 
                       type="text"
                       className="font-black text-indigo-600 text-lg leading-none bg-transparent border-b border-dashed border-indigo-200 hover:border-indigo-400 focus:border-indigo-600 outline-none w-full pb-1 transition-all"
-                      value={request.test_name}
-                      onChange={(e) => {
-                        request.test_name = e.target.value;
-                      }}
+                      value={testName}
+                      onChange={(e) => setTestName(e.target.value)}
                     />
                     <p className="text-[10px] text-gray-500 font-medium mt-2 italic flex items-center gap-2">
                       <Clock className="w-3 h-3" /> Scheduled: {new Date(request.requested_at).toLocaleString()}
@@ -623,15 +630,15 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                           {field.type === 'textarea' ? (
                             <textarea 
                               className="w-full h-24 bg-white border border-gray-200 rounded-2xl px-4 py-3 text-sm font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm"
-                              value={fieldValues[field.id] || ''}
-                              onChange={e => setFieldValues({...fieldValues, [field.id]: e.target.value})}
+                              value={fieldValues[field.label] || ''}
+                              onChange={e => setFieldValues({...fieldValues, [field.label]: e.target.value})}
                               placeholder="Record finding..."
                             />
                           ) : field.type === 'select' ? (
                             <select 
                               className="w-full h-[48px] bg-white border border-gray-200 rounded-2xl px-4 text-sm font-black outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm appearance-none"
-                              value={fieldValues[field.id] || ''}
-                              onChange={e => setFieldValues({...fieldValues, [field.id]: e.target.value})}
+                              value={fieldValues[field.label] || ''}
+                              onChange={e => setFieldValues({...fieldValues, [field.label]: e.target.value})}
                             >
                               <option value="">Select...</option>
                               {field.options?.map((opt: any) => <option key={opt} value={opt}>{opt}</option>)}
@@ -640,8 +647,8 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                             <input 
                               type={field.type || 'text'}
                               className="w-full h-[48px] bg-white border border-gray-200 rounded-2xl px-4 text-sm font-black outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm"
-                              value={fieldValues[field.id] || ''}
-                              onChange={e => setFieldValues({...fieldValues, [field.id]: e.target.value})}
+                              value={fieldValues[field.label] || ''}
+                              onChange={e => setFieldValues({...fieldValues, [field.label]: e.target.value})}
                               placeholder="Value..."
                             />
                           )}
@@ -678,7 +685,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                             <Copy className="w-4 h-4" />
                           </button>
                           <button 
-                            onClick={() => handleRemoveField(field.id)}
+                            onClick={() => handleRemoveField(field)}
                             className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all cursor-pointer"
                             title="Delete Entry"
                           >
