@@ -11,6 +11,8 @@ import {
   Wallet, ListChecks, UserCog
 } from 'lucide-react';
 import { DashboardCard } from '@/components/admin/DashboardCard';
+import QueueMonitor from '@/components/appointments/QueueMonitor';
+import QueueAssistant from '@/components/ai/QueueAssistant';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
@@ -104,93 +106,51 @@ export default function ReceptionistDashboard({ params }: { params: Promise<{ sl
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="card p-6">
-          <h3 className="font-bold text-gray-900 mb-6">Daily Appointments Trend</h3>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dailyAppointments}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
-                <Tooltip cursor={{ fill: '#f9fafb' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
-                <Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+           {/* Live Queue Feed */}
+           <div className="card p-6 min-h-[500px] flex flex-col bg-white relative overflow-hidden">
+              <div className="flex items-center justify-between mb-8 relative z-10">
+                <div>
+                  <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                    <ListChecks className="w-4 h-4 text-indigo-600" />
+                    Live Patient Queue
+                  </h3>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Universal Arrival Monitoring</p>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full text-emerald-600 text-[9px] font-black uppercase tracking-widest animate-pulse">
+                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                   Active Tracking
+                </div>
+              </div>
+
+              <div className="flex-1">
+                 <QueueMonitor />
+              </div>
+           </div>
         </div>
 
-        <div className="card overflow-hidden">
-          <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-            <h3 className="font-bold text-gray-900">Recent Appointments</h3>
-            <button className="text-xs font-bold text-primary-600 hover:text-primary-700">View Queue</button>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Patient</th>
-                  <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Doctor</th>
-                  <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {recentAppointments.slice(0, 6).map((apt, i) => (
-                  <tr key={i} className="group hover:bg-gray-50/80 transition-all duration-300">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center font-bold text-gray-500 text-xs">
-                          {apt.patientName?.[0]}
-                        </div>
-                        <div>
-                          <p className="text-sm font-black text-gray-900 leading-none mb-1 group-hover:text-primary-600 transition-colors">{apt.patientName}</p>
-                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">#{apt.patientId}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                       <div className="flex items-center gap-2">
-                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                         <span className="text-xs font-bold text-gray-600">Dr. {apt.doctorName?.split(' ').pop()}</span>
-                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-3">
-                        <span className={cn(
-                          "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
-                          apt.status === 'Confirmed' ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : 
-                          apt.status === 'Arrived' ? "bg-blue-50 text-blue-600 border border-blue-100" :
-                          "bg-amber-50 text-amber-600 border border-amber-100"
-                        )}>
-                          {apt.status}
-                        </span>
-                        {apt.status !== 'Arrived' && apt.status !== 'Completed' && (
-                          <button 
-                            onClick={async () => {
-                              try {
-                                const { appointmentsAPI } = await import('@/lib/api');
-                                await appointmentsAPI.update(apt.id, { status: 'Arrived' });
-                                const { toast } = await import('react-hot-toast');
-                                toast.success(`${apt.patientName} Checked In`);
-                                fetchAll();
-                              } catch(e) { 
-                                const { toast } = await import('react-hot-toast');
-                                toast.error('Check-in failed'); 
-                              }
-                            }}
-                            className="p-2 bg-gray-900 text-white rounded-lg hover:bg-primary-600 transition-all shadow-lg shadow-gray-200 active:scale-90"
-                            title="Check-in Patient"
-                          >
-                            <ListChecks className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="lg:col-span-1 space-y-6">
+           {/* AI Hub for Reception */}
+           <QueueAssistant 
+              queueData={recentAppointments.filter(pt => pt.status === 'Arrived' || pt.status === 'Triaged')} 
+              role="Receptionist"
+           />
+
+           <div className="card p-6">
+             <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-6">Daily Volume Trend</h3>
+             <div className="h-48">
+               <ResponsiveContainer width="100%" height="100%">
+                 <BarChart data={dailyAppointments}>
+                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9ca3af' }} />
+                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9ca3af' }} />
+                   <Tooltip cursor={{ fill: '#f9fafb' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                   <Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                 </BarChart>
+               </ResponsiveContainer>
+             </div>
+           </div>
         </div>
       </div>
     </div>

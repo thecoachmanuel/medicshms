@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export default function QueueAssistant({ queueData }: { queueData: any[] }) {
+export default function QueueAssistant({ queueData, role = 'Doctor' }: { queueData: any[]; role?: string }) {
   const [insight, setInsight] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -19,6 +19,7 @@ export default function QueueAssistant({ queueData }: { queueData: any[] }) {
         const totalPatients = queueData.length;
         const triagedCount = queueData.filter(p => p.appointmentStatus === 'Triaged').length;
         const urgentCount = queueData.filter(p => p.priority === 'Urgent' || p.priority === 'Stat').length;
+        const isReceptionist = role === 'Receptionist';
         
         let avgWait = 0;
         if (totalPatients > 0) {
@@ -29,33 +30,56 @@ export default function QueueAssistant({ queueData }: { queueData: any[] }) {
         }
 
         const recommendations = [];
-        if (urgentCount > 0) {
-           recommendations.push({
-             type: 'priority',
-             text: `Priority override recommended for ${urgentCount} patient(s) in the queue.`,
-             icon: Zap
-           });
-        }
         
-        if (avgWait > 30) {
+        if (isReceptionist) {
+          // Front-Desk Specific Intelligence
+          if (totalPatients > 8) {
+             recommendations.push({
+               type: 'capacity',
+               text: 'Waiting room capacity reaching 80%. Notify security for additional seating if needed.',
+               icon: AlertTriangle
+             });
+          }
+          if (avgWait > 20) {
+             recommendations.push({
+               type: 'efficiency',
+               text: 'Check-in delays detected. Consider opening a secondary registration terminal.',
+               icon: Zap
+             });
+          }
            recommendations.push({
-             type: 'warning',
-             text: 'Queue length is exceeding standards. Consider expedited triage for routine cases.',
-             icon: Clock
-           });
-        }
-
-        if (triagedCount / totalPatients < 0.3 && totalPatients > 5) {
-           recommendations.push({
-             type: 'bottleneck',
-             text: 'Primary bottleneck detected at Triage. Nurse assistance may be required.',
+             type: 'trend',
+             text: 'Arrival volume peaking. Predictive surge expected in the next 30 minutes.',
              icon: Activity
            });
+        } else {
+          // Clinical Specific Intelligence
+          if (urgentCount > 0) {
+             recommendations.push({
+               type: 'priority',
+               text: `Priority override recommended for ${urgentCount} patient(s) in the queue.`,
+               icon: Zap
+             });
+          }
+          if (avgWait > 30) {
+             recommendations.push({
+               type: 'warning',
+               text: 'Queue length is exceeding standards. Consider expedited triage for routine cases.',
+               icon: Clock
+             });
+          }
+          if (triagedCount / totalPatients < 0.3 && totalPatients > 5) {
+             recommendations.push({
+               type: 'bottleneck',
+               text: 'Primary bottleneck detected at Triage. Nurse assistance may be required.',
+               icon: Activity
+             });
+          }
         }
 
         setInsight({
           sentiment: avgWait < 20 ? 'Efficient' : 'Congested',
-          prediction: `Next intake estimated in ${Math.max(2, 10 - triagedCount)} mins`,
+          prediction: isReceptionist ? `${totalPatients} Active Arrivals` : `Next intake estimated in ${Math.max(2, 10 - triagedCount)} mins`,
           recommendations: recommendations.length > 0 ? recommendations : [{ type: 'info', text: 'Queue is flowing optimally. Maintain current consultation pace.', icon: TrendingDown }]
         });
         setLoading(false);
@@ -63,7 +87,7 @@ export default function QueueAssistant({ queueData }: { queueData: any[] }) {
     };
 
     generateInsights();
-  }, [queueData]);
+  }, [queueData, role]);
 
   return (
     <div className="bg-slate-900 rounded-[2.5rem] p-6 text-white shadow-2xl shadow-slate-900/20 relative overflow-hidden group">
