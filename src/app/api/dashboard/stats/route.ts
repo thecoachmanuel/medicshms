@@ -92,6 +92,7 @@ export async function GET(request: Request) {
     const newPatientsThisMonth = apts.filter(a => a.visit_type === 'New Patient' && a.created_at >= startOfMonth).length;
     const newPatientsLastMonth = apts.filter(a => a.visit_type === 'New Patient' && a.created_at >= startOfLastMonth && a.created_at <= endOfLastMonth).length;
 
+    const bills = (revenueData || []) as any[];
     const revenueByDept: Record<string, number> = {};
     const filteredBills = isRestricted 
       ? bills.filter(b => b.appointment?.department_id === deptId)
