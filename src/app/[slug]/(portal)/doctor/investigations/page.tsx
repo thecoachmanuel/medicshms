@@ -7,7 +7,7 @@ import {
   Beaker, Camera, Search, Filter, ArrowLeft, 
   ChevronRight, CheckCircle2, Clock, 
   AlertCircle, RefreshCw, FileText, User as UserIcon,
-  Activity, Zap, ClipboardSearch
+  Activity, Zap
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
@@ -86,7 +86,7 @@ export default function DoctorInvestigationsPage({ params }: { params: Promise<{
     return (
       <div className="min-h-screen flex flex-col items-center justify-center space-y-4 opacity-50 animate-pulse">
         <div className="w-16 h-16 rounded-[2rem] bg-indigo-100 flex items-center justify-center">
-            <ClipboardSearch className="w-8 h-8 text-indigo-600 animate-spin" />
+            <Search className="w-8 h-8 text-indigo-600 animate-spin" />
         </div>
         <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Synchronizing Clinical Feed...</p>
       </div>
@@ -181,7 +181,7 @@ export default function DoctorInvestigationsPage({ params }: { params: Promise<{
       <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6">
         {filteredRequests.length === 0 ? (
           <div className="col-span-full py-40 flex flex-col items-center justify-center text-center opacity-40">
-            <ClipboardSearch className="w-20 h-20 text-slate-200 mb-6" />
+            <Search className="w-20 h-20 text-slate-200 mb-6" />
             <h3 className="text-xl font-black uppercase tracking-[0.2em] text-slate-900">Archive Empty</h3>
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-2">No investigations match your active clinical filters</p>
           </div>
