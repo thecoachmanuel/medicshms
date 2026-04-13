@@ -197,31 +197,54 @@ export default function BillingList() {
             Export Ledger
           </button>
           {user?.role === 'Admin' && (
+            <>
             <button 
               onClick={async () => {
-                if (window.confirm('This will update all PENDING consultation fees for legacy records. Proceed?')) {
+                if (window.confirm('CRITICAL: This will auto-provision missing login accounts for ALL patients in this hospital. Proceed?')) {
                   try {
-                    toast.loading('Repairing records...');
-                    const res = await fetch('/api/admin/repair-billing', { method: 'POST' });
-                    const result = await res.json();
+                    toast.loading('Provisioning accounts...');
+                    const res = await fetch('/api/admin/repair-patients', { method: 'POST' });
+                    const data = await res.json();
                     toast.dismiss();
-                    if (result.success) {
-                      toast.success(`Success! Updated ${result.report.billsUpdated} bills and linked ${result.report.appointmentsLinked} appointments.`);
-                      fetchData();
+                    if (data.success) {
+                      toast.success(`Repair Complete: ${data.report.accountsCreated} accounts created, ${data.report.profilesLinked} linked.`);
                     } else {
-                      toast.error(result.message || 'Repair failed');
+                      toast.error(data.message || 'Repair failed');
                     }
                   } catch (err) {
                     toast.dismiss();
-                    toast.error('Network error during repair');
+                    toast.error('Network failure during repair');
                   }
                 }
               }}
-              className="px-6 py-2.5 bg-rose-50 text-rose-600 border border-rose-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all shadow-sm flex items-center gap-2"
+              className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all border border-emerald-100/50"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
-              Repair Legacy Data
+              Repair Patient Accounts
             </button>
+            <button 
+              onClick={async () => {
+                if (window.confirm('WARNING: This will force update legacy billing prices to current department rates. Proceed?')) {
+                  try {
+                    toast.loading('Repairing legacy bills...');
+                    const res = await fetch('/api/admin/repair-billing', { method: 'POST' });
+                    const data = await res.json();
+                    toast.dismiss();
+                    if (data.success) {
+                      toast.success(`Billing Sync Complete: ${data.report.billsUpdated} records updated.`);
+                    } else {
+                      toast.error(data.message || 'Repair failed');
+                    }
+                  } catch (err) {
+                    toast.dismiss();
+                    toast.error('Network failure during repair');
+                  }
+                }
+              }}
+              className="px-4 py-2 bg-amber-50 text-amber-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 hover:text-white transition-all border border-amber-100/50"
+            >
+              Repair Legacy Billing
+            </button>
+            </>
           )}
         </div>
       </div>
