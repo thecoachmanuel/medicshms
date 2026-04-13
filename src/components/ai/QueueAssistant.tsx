@@ -31,7 +31,28 @@ export default function QueueAssistant({ queueData, role = 'Doctor' }: { queueDa
 
         const recommendations = [];
         
-        if (isReceptionist) {
+        if (role === 'Admin') {
+          // Organizational Management Intelligence
+          if (totalPatients > 15) {
+             recommendations.push({
+               type: 'capacity',
+               text: 'Hospital-wide arrival volume is high. Consider activating peak-flow protocols.',
+               icon: AlertCircle
+             });
+          }
+          if (triagedCount / totalPatients < 0.4) {
+             recommendations.push({
+               type: 'resource',
+               text: 'System-wide Triage rate is low. Review nursing allocation across units.',
+               icon: Users
+             });
+          }
+           recommendations.push({
+             type: 'throughput',
+             text: `Current system throughput: ${Math.round((triagedCount / totalPatients) * 100)}%. Flow is optimal for current staffing.`,
+             icon: TrendingUp
+           });
+        } else if (isReceptionist) {
           // Front-Desk Specific Intelligence
           if (totalPatients > 8) {
              recommendations.push({
@@ -79,8 +100,8 @@ export default function QueueAssistant({ queueData, role = 'Doctor' }: { queueDa
 
         setInsight({
           sentiment: avgWait < 20 ? 'Efficient' : 'Congested',
-          prediction: isReceptionist ? `${totalPatients} Active Arrivals` : `Next intake estimated in ${Math.max(2, 10 - triagedCount)} mins`,
-          recommendations: recommendations.length > 0 ? recommendations : [{ type: 'info', text: 'Queue is flowing optimally. Maintain current consultation pace.', icon: TrendingDown }]
+          prediction: role === 'Admin' ? `${totalPatients} Active Cases` : isReceptionist ? `${totalPatients} Active Arrivals` : `Next intake estimated in ${Math.max(2, 10 - triagedCount)} mins`,
+          recommendations: recommendations.length > 0 ? recommendations : [{ type: 'info', text: 'System-wide flow is optimally maintained. No intervention required.', icon: TrendingDown }]
         });
         setLoading(false);
       }, 1500);

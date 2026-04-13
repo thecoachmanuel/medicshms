@@ -12,6 +12,8 @@ import {
   Stethoscope, BarChart3, PieChart as PieChartIcon, TrendingUp
 } from 'lucide-react';
 import { DashboardCard } from '@/components/admin/DashboardCard';
+import QueueMonitor from '@/components/appointments/QueueMonitor';
+import QueueAssistant from '@/components/ai/QueueAssistant';
 import {
   BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -376,109 +378,76 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 card overflow-hidden border-white shadow-xl shadow-slate-200/50">
-          <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white/50 backdrop-blur-md">
-            <div>
-              <h3 className="font-black text-gray-900 uppercase tracking-tight text-sm">Case Velocity</h3>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">Clinical appointment queue analytics</p>
-            </div>
-            <Link href={`/${slug}/admin/appointments`} className="text-[10px] font-black text-primary-600 hover:text-primary-700 uppercase tracking-[0.2em] bg-primary-50 px-3 py-1.5 rounded-xl no-underline">View All Records</Link>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-gray-50/50 border-b border-gray-100">
-                  <th className="px-6 py-4 text-[10px] font-black text-gray-500 uppercase tracking-widest">Patient Details</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-gray-500 uppercase tracking-widest">Department</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-gray-500 uppercase tracking-widest">Clinical State</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-gray-500 uppercase tracking-widest text-right">Schedule</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {recentAppointments.slice(0, 5).map((apt, i) => (
-                  <tr key={i} className="hover:bg-indigo-50/30 transition-colors group">
-                    <td className="px-6 py-4">
-                      <p className="text-sm font-black text-gray-900 group-hover:text-primary-600 transition-colors">{apt.patientName}{apt.age ? ` (${apt.age}y)` : ''}</p>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{apt.appointmentId}</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-[11px] font-black text-gray-600 uppercase tracking-tight px-3 py-1.5 bg-gray-100 rounded-xl">{apt.department}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={cn(
-                        "px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider shadow-sm",
-                        apt.status === 'Confirmed' ? "bg-emerald-500 text-white" : 
-                        apt.status === 'Completed' ? "bg-indigo-500 text-white" :
-                        apt.status === 'Cancelled' ? "bg-rose-500 text-white" :
-                        "bg-amber-500 text-white"
-                      )}>
-                        {apt.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex flex-col items-end">
-                        <p className="text-sm text-gray-900 font-black">{apt.appointmentTime}</p>
-                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">{formatDate(apt.appointmentDate)}</p>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {recentAppointments.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="px-6 py-12 text-center">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">No clinical records captured today</p>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+        <div className="lg:col-span-2 card p-8 min-h-[500px] flex flex-col bg-white border-white shadow-2xl shadow-indigo-100/30 overflow-hidden relative">
+           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full blur-3xl -mr-16 -mt-16 opacity-50" />
+           <div className="flex items-center justify-between mb-8 relative z-10">
+              <div>
+                <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-indigo-600" />
+                  Live System Queue
+                </h3>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Hospital-Wide Arrival Monitoring</p>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full text-emerald-600 text-[9px] font-black uppercase tracking-widest animate-pulse">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                Strategic Oversight
+              </div>
+           </div>
+
+           <div className="flex-1">
+              <QueueMonitor />
+           </div>
         </div>
 
-        <div className="lg:col-span-1 card p-8 bg-white/95 backdrop-blur-xl border-white shadow-2xl shadow-indigo-100/30">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h3 className="font-black text-gray-900 text-sm uppercase tracking-tight">Pulse Feed</h3>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">Real-time hospital signals</p>
-            </div>
-            <Activity className="w-4 h-4 text-indigo-500 animate-pulse" />
-          </div>
+        <div className="lg:col-span-1 space-y-6">
+           {/* Admin Intelligence Hub */}
+           <QueueAssistant 
+              queueData={recentAppointments.filter(pt => ['Arrived', 'Triaged'].includes(pt.status))} 
+              role="Admin" 
+           />
 
-          <div className="space-y-6">
-            {activityFeed.slice(0, 5).map((activity, i) => (
-              <div key={i} className="flex gap-4 group cursor-default">
-                <div className="mt-1 shrink-0 relative">
-                  <div className={cn(
-                    "w-10 h-10 rounded-[1rem] flex items-center justify-center shadow-lg transition-transform group-hover:scale-110",
-                    activity.type === 'appointment' ? "bg-indigo-50 text-indigo-500 shadow-indigo-100" :
-                    activity.type === 'bill' ? "bg-emerald-50 text-emerald-500 shadow-emerald-100" :
-                    activity.type === 'support' ? "bg-rose-50 text-rose-500 shadow-rose-100" :
-                    "bg-amber-50 text-amber-500 shadow-amber-100"
-                  )}>
-                    {activity.type === 'appointment' ? <Calendar className="w-4 h-4" /> :
-                     activity.type === 'bill' ? <Wallet className="w-4 h-4" /> :
-                     activity.type === 'support' ? <AlertCircle className="w-4 h-4" /> :
-                     <Activity className="w-4 h-4" />}
-                  </div>
-                  {i < activityFeed.slice(0, 5).length - 1 && (
-                    <div className="absolute top-10 left-1/2 -translate-x-1/2 w-0.5 h-6 bg-slate-100" />
-                  )}
+           <div className="card p-8 bg-white/95 backdrop-blur-xl border-white shadow-2xl shadow-indigo-100/30">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h3 className="font-black text-gray-900 text-sm uppercase tracking-tight">System Pulse Feed</h3>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">Real-time hospital signals</p>
                 </div>
-                <div className="pb-4 flex-1">
-                  <div className="flex items-center justify-between mb-0.5">
-                    <p className="text-sm font-black text-gray-900 group-hover:text-indigo-600 transition-colors">{activity.title}</p>
-                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter whitespace-nowrap">{timeAgo(activity.time)}</span>
+                <Activity className="w-4 h-4 text-indigo-500 animate-pulse" />
+              </div>
+
+              <div className="space-y-6">
+                {activityFeed.slice(0, 4).map((activity, i) => (
+                  <div key={i} className="flex gap-4 group cursor-default">
+                    <div className="mt-1 shrink-0 relative">
+                      <div className={cn(
+                        "w-10 h-10 rounded-[1rem] flex items-center justify-center shadow-lg transition-transform group-hover:scale-110",
+                        activity.type === 'appointment' ? "bg-indigo-50 text-indigo-500 shadow-indigo-100" :
+                        activity.type === 'bill' ? "bg-emerald-50 text-emerald-500 shadow-emerald-100" :
+                        activity.type === 'support' ? "bg-rose-50 text-rose-500 shadow-rose-100" :
+                        "bg-amber-50 text-amber-500 shadow-amber-100"
+                      )}>
+                        {activity.type === 'appointment' ? <Calendar className="w-4 h-4" /> :
+                         activity.type === 'bill' ? <Wallet className="w-4 h-4" /> :
+                         activity.type === 'support' ? <AlertCircle className="w-4 h-4" /> :
+                         <Activity className="w-4 h-4" />}
+                      </div>
+                      {i < activityFeed.slice(0, 4).length - 1 && (
+                        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-0.5 h-6 bg-slate-100" />
+                      )}
+                    </div>
+                    <div className="pb-4 flex-1">
+                      <div className="flex items-center justify-between mb-0.5">
+                        <p className="text-sm font-black text-gray-900 group-hover:text-indigo-600 transition-colors">{activity.title}</p>
+                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter whitespace-nowrap">{timeAgo(activity.time)}</span>
+                      </div>
+                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider leading-relaxed">{activity.description}</p>
+                    </div>
                   </div>
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider leading-relaxed">{activity.description}</p>
-                </div>
+                ))}
               </div>
-            ))}
-            {activityFeed.length === 0 && (
-              <div className="py-12 text-center">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Silence. Listening for signals...</p>
-              </div>
-            )}
-          </div>
+           </div>
+        </div>
+      </div>
 
           {stats?.appointmentStatus && (
             <div className="mt-12 pt-12 border-t border-slate-100">
