@@ -410,8 +410,10 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
       toast.success(status === 'Completed' ? 'Diagnostic Report Authorized & Released' : 'Progress Saved as Draft');
       onSuccess();
       onClose();
-    } catch (error) {
-      toast.error('Failed to update clinical record');
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.details || error.response?.data?.message || error.message || 'Unknown database error';
+      console.error('❌ [Lab Result Authorization Failed]:', { error, errorMsg });
+      toast.error(`Failed to update clinical record: ${errorMsg}`);
     } finally {
       setLoading(false);
     }

@@ -296,14 +296,27 @@ export async function PUT(request: Request) {
     
     if (status === 'Completed') updateData.completed_at = new Date().toISOString();
 
-    const { data, error } = await supabaseClient
+    const { data: updatedRecord, error: updateError } = await supabaseClient
       .from('clinical_requests')
       .update(updateData)
       .eq('id', request_id)
       .select()
-      .single();
+      .maybeSingle();
 
-    if (error) throw error;
+    if (updateError) {
+      console.error('❌ [Lab Update Error]:', updateError);
+      return NextResponse.json({ 
+        message: 'Failed to update clinical record', 
+        details: updateError.message 
+      }, { status: 500 });
+    }
+
+    if (!updatedRecord) {
+      console.error('❌ [Lab Update Failed]: No record found or RLS mismatch', { request_id });
+      return NextResponse.json({ message: 'Clinical record not found or access denied' }, { status: 404 });
+    }
+
+    const data = updatedRecord;
 
     // 2. Proactive Auto-Billing on Completion
     if (status === 'Completed' && !data.bill_id) {

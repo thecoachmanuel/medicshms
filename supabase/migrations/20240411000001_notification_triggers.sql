@@ -86,7 +86,21 @@ BEGIN
     IF (OLD.status != 'Completed' AND NEW.status = 'Completed') THEN
         -- Notify Patient
         IF NEW.patient_id IS NOT NULL THEN
-            PERFORM public.notify_target(NEW.hospital_id, NEW.patient_id, 'Patient', v_module_name || ' Result Ready', 'Your ' || v_module_name || ' test result is now available.', 'success', '/patient/records');
+            -- We must resolve the user_id (auth.users) from the patients table 
+            -- because notifications.user_id references auth.users(id), not patients(id)
+            SELECT user_id INTO v_doctor_user_id FROM public.patients WHERE id = NEW.patient_id;
+            
+            IF v_doctor_user_id IS NOT NULL THEN
+                PERFORM public.notify_target(
+                    NEW.hospital_id, 
+                    v_doctor_user_id, 
+                    'Patient', 
+                    v_module_name || ' Result Ready', 
+                    'Your ' || v_module_name || ' test result is now available.', 
+                    'success', 
+                    '/patient/records'
+                );
+            END IF;
         END IF;
     END IF;
 
