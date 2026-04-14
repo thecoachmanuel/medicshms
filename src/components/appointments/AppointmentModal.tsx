@@ -195,31 +195,31 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 line-height-normal">
       <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose}></div>
-      <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="relative bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
         
-        <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <div className="px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
           <div className="flex items-center gap-3">
             <div className={cn(
-              "w-10 h-10 rounded-xl flex items-center justify-center shadow-sm",
+              "w-10 h-10 rounded-xl flex items-center justify-center shadow-sm shrink-0",
               type === 'view' ? "bg-white" : type === 'edit' ? "bg-primary-50" : "bg-emerald-50"
             )}>
               {type === 'view' ? <Eye className="w-5 h-5 text-gray-500" /> : type === 'edit' ? <Edit2 className="w-5 h-5 text-primary-600" /> : <UserPlus className="w-5 h-5 text-emerald-600" />}
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">
+            <div className="min-w-0">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
                 {type === 'view' || type === 'complete' ? (showCompleteForm ? 'Complete Consultation' : 'Appointment Ticket') : type === 'edit' ? 'Reschedule Appointment' : 'Assign Specialist'}
               </h2>
-              <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">{appointment.appointmentId}</p>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest truncate">{appointment.appointmentId}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white rounded-xl transition-colors shadow-sm">
+          <button onClick={onClose} className="p-2 hover:bg-white rounded-xl transition-colors shadow-sm shrink-0 ml-2">
             <X className="w-6 h-6 text-gray-400" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-8 py-8">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 sm:py-8 custom-scrollbar overscroll-behavior-contain">
           {type === 'view' ? (
             showCompleteForm ? (
               <div className="space-y-6">
@@ -376,9 +376,9 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
                   </div>
 
                   {/* Summary Footer */}
-                  <div className="p-4 bg-gray-900 rounded-[2rem] text-white flex items-center justify-between shadow-xl shadow-indigo-900/10">
+                  <div className="p-4 bg-gray-900 rounded-2xl sm:rounded-[2rem] text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl shadow-indigo-900/10">
                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shrink-0">
                            <NairaSign className="w-5 h-5 text-indigo-300" />
                         </div>
                         <div>
@@ -386,23 +386,23 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
                            <p className="text-sm font-black tracking-tight leading-none">Consultation + {prescribedMeds.length} Orders</p>
                         </div>
                      </div>
-                     <CheckCircle2 className="w-6 h-6 text-indigo-400 animate-pulse" />
+                     <CheckCircle2 className="w-6 h-6 text-indigo-400 animate-pulse sm:block hidden" />
                   </div>
                 </div>
                 </div>
               </div>
             ) : (
               <div className="space-y-8">
-                <div className="flex items-center justify-between p-6 bg-primary-900 rounded-2xl text-white shadow-lg overflow-hidden relative">
-                  <div className="relative z-10">
+                <div className="flex flex-col sm:flex-row items-center justify-between p-4 sm:p-6 bg-primary-900 rounded-2xl text-white shadow-lg overflow-hidden relative gap-4">
+                  <div className="relative z-10 w-full sm:w-auto">
                     <p className="text-primary-200 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Current Status</p>
                     <h3 className="text-2xl font-bold">{appointment.appointmentStatus}</h3>
                   </div>
-                  <div className="relative z-10 text-right">
+                  <div className="relative z-10 w-full sm:w-auto sm:text-right">
                     <p className="text-primary-200 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Queue Number</p>
                     <p className="text-3xl font-black">#{(appointment.queueNumber || 'N/A')}</p>
                   </div>
-                  <Stethoscope className="absolute -right-4 -bottom-4 w-32 h-32 text-primary-800/40 rotate-12" />
+                  <Stethoscope className="absolute -right-4 -bottom-4 w-24 sm:w-32 h-24 sm:h-32 text-primary-800/40 rotate-12" />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -599,30 +599,24 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
                         {(selectedDoctor === doc._id || selectedDoctor === doc.id) && <CheckCircle2 className="w-5 h-5 text-primary-500 ml-auto" />}
                       </button>
                     ))}
-                    {doctors.filter(d => (d.department?.name === appointment.department) || (d.department === appointment.department)).length === 0 && (
-                      <div className="text-center py-8 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                        <UserPlus className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                        <p className="text-sm text-gray-500">No doctors found in {appointment.department}</p>
-                      </div>
-                    )}
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Patient Name</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Patient Name</label>
                     <input type="text" className="input w-full" value={editData.fullName} onChange={e => setEditData({...editData, fullName: e.target.value})} />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Reschedule Date</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Reschedule Date</label>
                     <input type="date" className="input w-full" value={editData.appointmentDate} onChange={e => setEditData({...editData, appointmentDate: e.target.value})} />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Slot Time</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Slot Time</label>
                     <input type="text" className="input w-full" value={editData.appointmentTime} onChange={e => setEditData({...editData, appointmentTime: e.target.value})} />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Update Status</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Update Status</label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       {Object.keys(statusColors).map(s => (
                         <button
@@ -630,7 +624,7 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
                           type="button"
                           onClick={() => setEditData({...editData, appointmentStatus: s})}
                           className={cn(
-                            "px-3 py-2 rounded-xl text-xs font-bold border-2 transition-all",
+                            "px-3 py-2 rounded-xl text-[10px] sm:text-xs font-bold border-2 transition-all",
                             editData.appointmentStatus === s 
                               ? "bg-primary-900 text-white border-primary-900 shadow-lg" 
                               : "bg-white text-gray-500 border-gray-100 hover:border-gray-200"
@@ -647,27 +641,27 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
           )}
         </div>
 
-        <div className="px-8 py-6 border-t border-gray-100 flex items-center justify-between bg-gray-50/30">
+        <div className="px-4 sm:px-8 py-4 sm:py-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/30 shrink-0">
           {type === 'view' || type === 'complete' ? (
             <>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                   {!showCompleteForm && (
 <button 
   onClick={() => window.print()}
-  className="btn-secondary"
+  className="btn-secondary w-full sm:w-auto"
 >
   <Printer className="w-4 h-4" />
   Print Ticket
 </button>
 )}
-                {['Confirmed', 'Arrived', 'Triaged'].includes(appointment.appointmentStatus) && (user?.role === 'Admin' || (user?.role === 'Doctor' && (appointment.doctorAssigned?._id === user?.doctorProfileId || appointment.doctorAssigned?.id === user?.doctorProfileId || appointment.doctor_assigned_id === user?.doctorProfileId || !appointment.doctor_assigned_id))) && (
+                {['Confirmed', 'Arrived', 'Triaged', 'Awaiting Check-in'].includes(appointment.appointmentStatus) && (user?.role === 'Admin' || (user?.role === 'Doctor' && (appointment.doctorAssigned?._id === user?.doctorProfileId || appointment.doctorAssigned?.id === user?.doctorProfileId || appointment.doctor_assigned_id === user?.doctorProfileId || !appointment.doctor_assigned_id))) && (
                   showCompleteForm ? (
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => setShowCompleteForm(false)} className="btn-secondary">Cancel</button>
+                    <div className="flex items-center gap-2 w-full">
+                      <button onClick={() => setShowCompleteForm(false)} className="btn-secondary flex-1 sm:flex-none">Cancel</button>
                       <button 
                         onClick={handleComplete}
                         disabled={isSubmitting}
-                        className="btn-primary bg-emerald-600 hover:bg-emerald-700 border-emerald-600 shadow-xl shadow-emerald-500/20"
+                        className="btn-primary flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 border-emerald-600 shadow-xl shadow-emerald-500/20"
                       >
                         {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                         Finalize & Close
@@ -676,23 +670,23 @@ export default function AppointmentModal({ appointment, type, doctors, departmen
                   ) : (
                     <button 
                       onClick={() => setShowCompleteForm(true)}
-                      className="btn-primary bg-emerald-600 hover:bg-emerald-700 border-emerald-600"
+                      className="btn-primary w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 border-emerald-600"
                     >
                       <CheckCircle2 className="w-4 h-4" />
-                      Complete consultation
+                      Complete Consultation
                     </button>
                   )
                 )}
               </div>
-              {!showCompleteForm && <button onClick={onClose} className="btn-primary min-w-[120px]">Done</button>}
+              {!showCompleteForm && <button onClick={onClose} className="btn-primary w-full sm:w-auto min-w-[120px]">Done</button>}
             </>
           ) : (
             <>
-              <button onClick={onClose} className="btn-secondary">Cancel</button>
+              <button onClick={onClose} className="btn-secondary w-full sm:w-auto">Cancel</button>
               <button 
                 disabled={isSubmitting || (type === 'assign' && !selectedDoctor)} 
                 onClick={handleUpdate}
-                className="btn-primary min-w-[140px]"
+                className="btn-primary w-full sm:w-auto min-w-[140px]"
               >
                 {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                   <>

@@ -175,372 +175,340 @@ export default function BookAppointmentModal({ onClose, onSuccess }: Props) {
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm shadow-xl" onClick={onClose}></div>
-      <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4">
+      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md cursor-pointer" onClick={onClose}></div>
+      <div className="relative bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-[3rem] max-w-2xl w-full shadow-[0_32px_128px_rgba(30,41,59,0.15)] border border-white/40 flex flex-col max-h-[96vh] sm:max-h-[90vh] animate-in fade-in zoom-in-95 duration-300">
         
-        <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-primary-600" />
+        <div className="px-5 sm:px-10 py-5 sm:py-8 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-4 sm:gap-5 min-w-0">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-[1.5rem] bg-indigo-600 flex items-center justify-center shadow-xl shadow-indigo-200 shrink-0">
+              <Calendar className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">New Appointment</h2>
-              <p className="text-xs text-gray-500 font-medium">Step {currentStep + 1} of {steps.length}: {steps[currentStep].label}</p>
+            <div className="min-w-0">
+              <h2 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight truncate">Book Appointment</h2>
+              <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.3em] mt-0.5 truncate">Step {currentStep + 1} of {steps.length}: {steps[currentStep].label}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
-            <X className="w-6 h-6 text-gray-400" />
+          <button onClick={onClose} className="p-2 sm:p-4 hover:bg-white rounded-2xl text-gray-400 hover:text-rose-500 transition-all duration-300 shrink-0 ml-2">
+            <X className="w-6 h-6" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-8 py-6">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-10 no-scrollbar custom-scrollbar overscroll-behavior-contain">
           {phase === 'select' && (
-            <div className="py-8 space-y-6">
-              <div className="text-center space-y-2">
-                <h3 className="text-lg font-bold text-gray-900">Choose Patient Type</h3>
-                <p className="text-sm text-gray-500">Pick how you want to register this appointment.</p>
+            <div className="py-8 space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-500">
+              <div className="text-center space-y-4">
+                <h3 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">Initiate Appointment</h3>
+                <p className="text-[11px] text-gray-400 font-black uppercase tracking-[0.3em]">Protocol Selection</p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <button 
                   onClick={() => { setVisitType('New Patient'); setPhase('form'); }}
-                  className="p-6 rounded-2xl border-2 border-gray-100 hover:border-primary-500 hover:bg-primary-50 transition-all text-left group"
+                  className="p-8 rounded-[2.5rem] border-2 border-gray-100 hover:border-indigo-500 hover:bg-indigo-50/30 transition-all text-left group relative overflow-hidden"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <UserPlus className="w-6 h-6 text-primary-600" />
+                  <div className="w-16 h-16 rounded-2xl bg-indigo-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg shadow-indigo-100">
+                    <UserPlus className="w-8 h-8 text-indigo-600" />
                   </div>
-                  <h4 className="font-bold text-gray-900">New Patient</h4>
-                  <p className="text-xs text-gray-500 mt-1">Register a patient for the first time.</p>
+                  <h4 className="font-black text-xl text-gray-900 mb-2">New Subject</h4>
+                  <p className="text-xs text-gray-500 font-medium leading-relaxed">Establish a new clinical identity in the lifetime registry.</p>
+                  <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ArrowRight className="w-6 h-6 text-indigo-400" />
+                  </div>
                 </button>
                 <button 
                   onClick={() => { setVisitType('Follow-up'); setPhase('lookup'); }}
-                  className="p-6 rounded-2xl border-2 border-gray-100 hover:border-emerald-500 hover:bg-emerald-50 transition-all text-left group"
+                  className="p-8 rounded-[2.5rem] border-2 border-gray-100 hover:border-emerald-500 hover:bg-emerald-50/30 transition-all text-left group relative overflow-hidden"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <RotateCcw className="w-6 h-6 text-emerald-600" />
+                  <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg shadow-emerald-100">
+                    <RotateCcw className="w-8 h-8 text-emerald-600" />
                   </div>
-                  <h4 className="font-bold text-gray-900">Follow-up</h4>
-                  <p className="text-xs text-gray-500 mt-1">Book for an existing returning patient.</p>
+                  <h4 className="font-black text-xl text-gray-900 mb-2">Returning Subject</h4>
+                  <p className="text-xs text-gray-500 font-medium leading-relaxed">Synchronize with an existing medical record for subsequent care.</p>
+                  <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ArrowRight className="w-6 h-6 text-emerald-400" />
+                  </div>
                 </button>
               </div>
             </div>
           )}
 
           {phase === 'lookup' && (
-            <div className="py-2 space-y-6 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-center space-y-1">
-                <h3 className="text-xl font-bold text-gray-900">Find Records</h3>
-                <p className="text-xs text-gray-500 font-medium uppercase tracking-widest">Identify Patient to continue</p>
+            <div className="py-4 space-y-10 animate-in fade-in slide-in-from-right-8 duration-500">
+              <div className="text-center space-y-4">
+                <h3 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">Identity Discovery</h3>
+                <p className="text-[11px] text-gray-400 font-black uppercase tracking-[0.3em]">Record Retrieval</p>
               </div>
 
-              <div className="space-y-6">
-                <div className="space-y-3">
-                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Search by Name or ID</label>
+              <div className="space-y-8">
+                <div className="space-y-4">
+                   <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Search Identifier</label>
                    <div className="relative group">
-                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
+                     <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                      <input 
-                       type="text" autoFocus placeholder="e.g. John Doe or PAT-1234"
-                       className="w-full pl-12 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-bold text-gray-900 shadow-sm"
+                       type="text" autoFocus placeholder="Name, ID, or Phone..."
+                       className="w-full pl-14 pr-6 py-5 bg-gray-50/50 border border-gray-100 rounded-2xl sm:rounded-[1.75rem] focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-bold text-gray-900 shadow-sm"
                        value={lookupName}
                        onChange={(e) => handleSearch(e.target.value)}
                      />
                    </div>
                 </div>
 
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"></div></div>
-                  <div className="relative flex justify-center text-[10px]"><span className="px-3 bg-white text-gray-400 font-black uppercase tracking-widest">OR USE PHONE</span></div>
-                </div>
-
-                <div className="flex gap-3">
-                  <div className="relative flex-1">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input 
-                      type="tel" placeholder="10-digit mobile" 
-                      className="w-full pl-12 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-bold text-gray-900"
-                      value={lookupMobile}
-                      onChange={(e) => setLookupMobile(e.target.value)}
-                    />
-                  </div>
-                  <button onClick={handleLookup} disabled={lookupLoading} className="px-8 bg-gray-900 text-white rounded-2xl font-bold hover:bg-gray-800 transition-colors">
-                    {lookupLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Lookup'}
-                  </button>
-                </div>
-
                 {searchResults.length > 0 && (
-                  <div className="space-y-2 max-h-60 overflow-y-auto pr-2 no-scrollbar">
+                  <div className="space-y-3 max-h-72 overflow-y-auto pr-2 no-scrollbar">
                     {searchResults.map(p => (
                       <button 
                         key={p.patientId || p.id}
                         onClick={() => selectPatient(p)}
-                        className="w-full flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl hover:border-emerald-200 hover:bg-emerald-50/50 transition-all group text-left"
+                        className="w-full flex items-center justify-between p-5 bg-white border border-gray-100 rounded-[2rem] hover:border-indigo-200 hover:bg-indigo-50/30 transition-all group text-left shadow-sm hover:shadow-md"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 font-bold text-emerald-600">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 font-black text-indigo-600 shadow-sm">
                             {p.fullName?.[0]}
                           </div>
                           <div>
-                            <p className="font-bold text-gray-900 leading-none mb-1">{p.fullName}</p>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">#{p.patientId} • {p.mobileNumber}</p>
+                            <p className="font-black text-gray-900 leading-none mb-1.5">{p.fullName}</p>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none">#{p.patientId} • {p.mobileNumber}</p>
                           </div>
                         </div>
-                        <ArrowRight className="w-5 h-5 text-gray-200 group-hover:text-emerald-500 transition-colors" />
+                        <CheckCircle className="w-6 h-6 text-indigo-100 group-hover:text-indigo-500 transition-colors" />
                       </button>
                     ))}
                   </div>
                 )}
                 
-                <button onClick={() => setPhase('select')} className="w-full py-4 text-xs font-black text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-colors">Cancel</button>
+                <button onClick={() => setPhase('select')} className="w-full py-4 text-[10px] font-black text-gray-400 uppercase tracking-[.25em] hover:text-rose-500 transition-colors">Discard Search</button>
               </div>
             </div>
           )}
 
           {phase === 'form' && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-4 mb-8">
+            <div className="space-y-8">
+              <div className="flex items-center gap-2 mb-10 overflow-x-auto no-scrollbar pb-4 -mx-2 px-2">
                 {steps.map((s, i) => (
                   <React.Fragment key={s.key}>
                     <div className={cn(
-                      "flex items-center gap-2",
-                      i === currentStep ? "text-primary-600" : i < currentStep ? "text-emerald-500" : "text-gray-300"
+                      "flex items-center gap-3 shrink-0 transition-all duration-500",
+                      i === currentStep ? "opacity-100 scale-105" : i < currentStep ? "opacity-100" : "opacity-40"
                     )}>
                       <div className={cn(
-                        "w-8 h-8 rounded-full border-2 flex items-center justify-center shrink-0",
-                        i === currentStep ? "border-primary-600 bg-primary-50" : i < currentStep ? "border-emerald-500 bg-emerald-50" : "border-gray-200"
+                        "w-10 h-10 sm:w-12 sm:h-12 rounded-2xl border-2 flex items-center justify-center shrink-0 shadow-lg transition-all",
+                        i === currentStep ? "border-indigo-600 bg-indigo-50 shadow-indigo-100" : i < currentStep ? "border-emerald-500 bg-emerald-50 shadow-emerald-100" : "border-gray-200 bg-white"
                       )}>
-                        {i < currentStep ? <CheckCircle className="w-5 h-5" /> : <s.icon className="w-4 h-4" />}
+                        {i < currentStep ? <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" /> : <s.icon className={cn("w-5 h-5 sm:w-6 sm:h-6", i === currentStep ? "text-indigo-600" : "text-gray-400")} />}
                       </div>
-                      <span className="hidden md:block text-xs font-bold uppercase tracking-wider">{s.label}</span>
+                      <div className="hidden sm:block">
+                        <p className={cn("text-[9px] font-black uppercase tracking-widest leading-none mb-1", i === currentStep ? "text-indigo-600" : i < currentStep ? "text-emerald-500" : "text-gray-400")}>Step 0{i+1}</p>
+                        <span className={cn("text-[11px] font-black uppercase tracking-wider", i === currentStep ? "text-gray-900" : "text-gray-400")}>{s.label}</span>
+                      </div>
                     </div>
-                    {i < steps.length - 1 && <div className="h-0.5 flex-1 bg-gray-100"></div>}
+                    {i < steps.length - 1 && <div className={cn("h-px w-6 sm:w-12 mx-2 shrink-0 transition-colors duration-500", i < currentStep ? "bg-emerald-200" : "bg-gray-100")}></div>}
                   </React.Fragment>
                 ))}
               </div>
 
-              {steps[currentStep].key === 'personal' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Patient Full Name</label>
-                    <input type="text" className="input w-full" value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})} />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Gender</label>
-                    <select className="input w-full" value={formData.gender} onChange={e => setFormData({...formData, gender: e.target.value})}>
-                      <option value="">Select</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                    </select>
-                  </div>
-                  <div>
-                    <DOBInput
-                      label="Date of Birth"
-                      required
-                      value={formData.dateOfBirth}
-                      onChange={val => setFormData({...formData, dateOfBirth: val})}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Phone Number</label>
-                    <input type="tel" className="input w-full" value={formData.mobileNumber} onChange={e => setFormData({...formData, mobileNumber: e.target.value})} />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Email Address</label>
-                    <input type="email" className="input w-full" value={formData.emailAddress} onChange={e => setFormData({...formData, emailAddress: e.target.value})} />
-                  </div>
-                </div>
-              )}
-
-              {steps[currentStep].key === 'medical' && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Known Allergies</label>
-                    <select className="input w-full" value={formData.knownAllergies} onChange={e => setFormData({...formData, knownAllergies: e.target.value})}>
-                      <option value="No">No</option>
-                      <option value="Yes">Yes</option>
-                    </select>
-                  </div>
-                  {formData.knownAllergies === 'Yes' && (
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">Allergy Details</label>
-                      <textarea className="input w-full" rows={2} value={formData.allergiesDetails} onChange={e => setFormData({...formData, allergiesDetails: e.target.value})}></textarea>
+              <div className="animate-in fade-in slide-in-from-right-8 duration-500">
+                {steps[currentStep].key === 'personal' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <div className="md:col-span-2 space-y-2">
+                      <label className="text-[11px] font-black uppercase text-gray-400 tracking-widest ml-1">Full Legal Name</label>
+                      <input type="text" className="w-full px-6 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl font-bold text-gray-900 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all" value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})} />
                     </div>
-                  )}
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Primary Health Concern</label>
-                    <textarea className="input w-full" rows={3} value={formData.primaryConcern} onChange={e => setFormData({...formData, primaryConcern: e.target.value})} placeholder="Describe symptoms or reason for visit..."></textarea>
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-black uppercase text-gray-400 tracking-widest ml-1">Biological Sex</label>
+                      <select className="w-full px-6 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl font-bold text-gray-900 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all appearance-none cursor-pointer" value={formData.gender} onChange={e => setFormData({...formData, gender: e.target.value})}>
+                        <option value="">Select</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <DOBInput
+                        label="Date of Birth"
+                        required
+                        value={formData.dateOfBirth}
+                        onChange={val => setFormData({...formData, dateOfBirth: val})}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-black uppercase text-gray-400 tracking-widest ml-1">Contact Number</label>
+                      <input type="tel" className="w-full px-6 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl font-bold text-gray-900 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all" value={formData.mobileNumber} onChange={e => setFormData({...formData, mobileNumber: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-black uppercase text-gray-400 tracking-widest ml-1">Email (Optional)</label>
+                      <input type="email" className="w-full px-6 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl font-bold text-gray-900 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all" value={formData.emailAddress} onChange={e => setFormData({...formData, emailAddress: e.target.value})} />
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {steps[currentStep].key === 'appointment' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Department</label>
-                    <select className="input w-full" value={formData.department} onChange={e => setFormData({...formData, department: e.target.value, doctorAssigned: ''})}>
-                      <option value="">Select Dept</option>
-                      {departments.map(d => <option key={d._id} value={d.name}>{d.name}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Preferred Doctor</label>
-                    <select className="input w-full" value={formData.doctorAssigned} onChange={e => setFormData({...formData, doctorAssigned: e.target.value})}>
-                      <option value="">Select Doctor (Optional)</option>
-                      {filteredDoctors.map(d => <option key={d._id} value={d._id}>{d.user?.name || d.name}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Appointment Date</label>
-                    <input type="date" className="input w-full" value={formData.appointmentDate} onChange={e => setFormData({...formData, appointmentDate: e.target.value, appointmentTime: ''})} min={new Date().toISOString().split('T')[0]} />
-                  </div>
-                  <div className="md:col-span-2 space-y-3">
-                    <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Available Appointments</label>
-                    {!formData.appointmentDate || !formData.department ? (
-                       <div className="p-8 rounded-[2rem] bg-gray-50 border border-dashed border-gray-200 text-center text-gray-400 font-bold text-xs uppercase tracking-widest">
-                         Select date & department to view slots
-                       </div>
-                    ) : slotsLoading ? (
-                      <div className="flex items-center justify-center p-8">
-                        <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+                {steps[currentStep].key === 'medical' && (
+                  <div className="space-y-8">
+                    <div className="space-y-3">
+                      <label className="text-[11px] font-black uppercase text-gray-400 tracking-widest ml-1">Allergy Protocol</label>
+                      <div className="flex p-1 bg-gray-100/50 rounded-2xl border border-gray-100">
+                        {['No', 'Yes'].map(opt => (
+                          <button 
+                            key={opt}
+                            onClick={() => setFormData({...formData, knownAllergies: opt as any})}
+                            className={cn(
+                              "flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all",
+                              formData.knownAllergies === opt ? "bg-indigo-600 text-white shadow-lg" : "text-gray-400"
+                            )}
+                          >
+                            {opt === 'No' ? 'Clear History' : 'Report Allergies'}
+                          </button>
+                        ))}
                       </div>
-                    ) : timeSlots.length === 0 ? (
-                      <div className="p-8 rounded-[2rem] bg-red-50 border border-red-100 text-center text-red-500 font-bold text-xs uppercase tracking-widest">
-                        No availability found
+                    </div>
+                    {formData.knownAllergies === 'Yes' && (
+                      <div className="space-y-2 animate-in slide-in-from-top-4 duration-300">
+                        <label className="text-[11px] font-black uppercase text-gray-400 tracking-widest ml-1">Allergy Specifications</label>
+                        <textarea className="w-full px-6 py-4 bg-gray-50/50 border border-gray-100 rounded-[2rem] font-medium text-gray-700 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all resize-none" rows={3} value={formData.allergiesDetails} onChange={e => setFormData({...formData, allergiesDetails: e.target.value})} placeholder="Specify drugs, foods, or environmental triggers..."></textarea>
                       </div>
-                    ) : bookingMode === 'Range' ? (
-                      <div className="grid grid-cols-1 gap-4">
-                        {timeSlots.map(slot => {
-                          const isMorning = slot.toLowerCase().includes('morning') || slot.includes('09:') || slot.includes('10:') || slot.includes('11:');
-                          const isEvening = slot.toLowerCase().includes('evening') || slot.includes('18:') || slot.includes('19:') || slot.includes('20:');
-                          const isAfternoon = !isMorning && !isEvening;
+                    )}
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-black uppercase text-gray-400 tracking-widest ml-1">Primary Medical Indication</label>
+                      <textarea className="w-full px-6 py-4 bg-gray-50/50 border border-gray-100 rounded-[2rem] font-medium text-gray-700 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all resize-none" rows={4} value={formData.primaryConcern} onChange={e => setFormData({...formData, primaryConcern: e.target.value})} placeholder="Describe symptoms or reason for clinical visit..."></textarea>
+                    </div>
+                  </div>
+                )}
 
-                          return (
+                {steps[currentStep].key === 'appointment' && (
+                  <div className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-[11px] font-black uppercase text-gray-400 tracking-widest ml-1">Clinical Unit</label>
+                        <select className="w-full px-6 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl font-bold text-gray-900 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all appearance-none cursor-pointer" value={formData.department} onChange={e => setFormData({...formData, department: e.target.value, doctorAssigned: ''})}>
+                          <option value="">Choose Department</option>
+                          {departments.map(d => <option key={d._id} value={d.name}>{d.name}</option>)}
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[11px] font-black uppercase text-gray-400 tracking-widest ml-1">Requested Consultant</label>
+                        <select className="w-full px-6 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl font-bold text-gray-900 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all appearance-none cursor-pointer" value={formData.doctorAssigned} onChange={e => setFormData({...formData, doctorAssigned: e.target.value})}>
+                          <option value="">Any Available Specialist</option>
+                          {filteredDoctors.map(d => <option key={d._id} value={d._id}>{d.user?.name || d.name}</option>)}
+                        </select>
+                      </div>
+                      <div className="md:col-span-2 space-y-2">
+                        <label className="text-[11px] font-black uppercase text-gray-400 tracking-widest ml-1">Preferred Date</label>
+                        <input type="date" className="w-full px-6 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl font-bold text-gray-900 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all" value={formData.appointmentDate} onChange={e => setFormData({...formData, appointmentDate: e.target.value, appointmentTime: ''})} min={new Date().toISOString().split('T')[0]} />
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <label className="text-[11px] font-black uppercase text-gray-400 tracking-widest ml-1">Temporal Windows</label>
+                      {!formData.appointmentDate || !formData.department ? (
+                         <div className="py-20 rounded-[3rem] bg-gray-50 border-2 border-dashed border-gray-100 text-center flex flex-col items-center">
+                           <Calendar className="w-12 h-12 text-gray-200 mb-4" />
+                           <p className="text-gray-400 font-black uppercase tracking-[.25em] text-[10px]">Select constraints to view slots</p>
+                         </div>
+                      ) : slotsLoading ? (
+                        <div className="flex flex-col items-center justify-center py-20 gap-4">
+                          <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
+                          <p className="text-indigo-600 font-bold text-[10px] uppercase tracking-widest">Fetching Availability...</p>
+                        </div>
+                      ) : timeSlots.length === 0 ? (
+                        <div className="py-20 rounded-[3rem] bg-rose-50/50 border-2 border-dashed border-rose-100 text-center flex flex-col items-center">
+                          <AlertCircle className="w-12 h-12 text-rose-200 mb-4" />
+                          <p className="text-rose-500 font-black uppercase tracking-[.25em] text-[10px]">No Availability for Selected Params</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {timeSlots.map(slot => (
                             <button 
                               key={slot}
                               onClick={() => setFormData({...formData, appointmentTime: slot})}
                               className={cn(
-                                "relative p-6 rounded-3xl border-2 transition-all text-left flex items-center gap-6 overflow-hidden group",
+                                "group p-6 rounded-[2rem] border-2 transition-all text-left flex items-center justify-between relative overflow-hidden",
                                 formData.appointmentTime === slot 
-                                  ? "border-primary-600 bg-primary-50 shadow-xl shadow-primary-600/5 ring-1 ring-primary-600" 
-                                  : "border-gray-100 bg-white hover:border-primary-200 hover:bg-gray-50/50"
+                                  ? "border-indigo-600 bg-indigo-50/50 shadow-2xl shadow-indigo-100" 
+                                  : "border-gray-100 bg-white hover:border-indigo-200 hover:bg-gray-50/50 shadow-sm"
                               )}
                             >
-                              <div className={cn(
-                                "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
-                                formData.appointmentTime === slot ? "bg-primary-600 text-white" : "bg-gray-100 text-gray-400"
-                              )}>
-                                {isMorning ? <Sunrise className="w-7 h-7" /> : isAfternoon ? <Sun className="w-7 h-7" /> : <Moon className="w-7 h-7" />}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <h4 className={cn(
-                                  "font-bold text-lg leading-none mb-1 truncate",
-                                  formData.appointmentTime === slot ? "text-primary-900" : "text-gray-900"
+                              <div className="flex items-center gap-4">
+                                <div className={cn(
+                                  "w-12 h-12 rounded-xl flex items-center justify-center transition-all",
+                                  formData.appointmentTime === slot ? "bg-indigo-600 text-white" : "bg-gray-50 text-gray-400"
                                 )}>
-                                  {slot.split(' (')[0]}
-                                </h4>
-                                <p className={cn(
-                                  "text-sm font-bold opacity-60 uppercase tracking-widest",
-                                  formData.appointmentTime === slot ? "text-primary-600" : "text-gray-400"
-                                )}>
-                                  {slot.includes('(') ? slot.match(/\(([^)]+)\)/)?.[1] : 'Full Window'}
-                                </p>
+                                  <Clock className="w-6 h-6" />
+                                </div>
+                                <div>
+                                  <p className={cn("font-black text-lg leading-none mb-1", formData.appointmentTime === slot ? "text-indigo-900" : "text-gray-900")}>{slot.split(' (')[0]}</p>
+                                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Admission Window</p>
+                                </div>
                               </div>
                               <div className={cn(
                                 "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
-                                formData.appointmentTime === slot ? "border-primary-600 bg-primary-600" : "border-gray-200"
+                                formData.appointmentTime === slot ? "border-indigo-600 bg-indigo-600" : "border-gray-200"
                               )}>
-                                {formData.appointmentTime === slot && <div className="w-2 h-2 rounded-full bg-white" />}
+                                {formData.appointmentTime === slot && <div className="w-2 h-2 rounded-full bg-white animate-pulse" />}
                               </div>
                             </button>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {timeSlots.map(slot => (
-                          <button 
-                            key={slot}
-                            onClick={() => setFormData({...formData, appointmentTime: slot})}
-                            className={cn(
-                                "px-4 py-4 rounded-2xl text-[10px] font-black transition-all border text-left flex items-center justify-between group",
-                                formData.appointmentTime === slot 
-                                  ? "bg-primary-600 text-white border-primary-600 shadow-xl shadow-primary-600/20 active:scale-95" 
-                                  : "bg-white text-gray-600 border-gray-100 hover:border-primary-200 hover:bg-gray-50"
-                            )}
-                          >
-                            <span className="truncate">{slot}</span>
-                            <div className={cn(
-                              "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
-                              formData.appointmentTime === slot ? "border-white bg-white/20" : "border-gray-200"
-                            )}>
-                              {formData.appointmentTime === slot && <div className="w-2 h-2 rounded-full bg-white" />}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {steps[currentStep].key === 'verify' && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-                  <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                    <div className="flex items-center gap-3 mb-4">
-                      <CheckCircle className="w-5 h-5 text-emerald-500" />
-                      <h4 className="font-bold text-gray-900">Summary Review</h4>
-                    </div>
-                    <div className="grid grid-cols-2 gap-y-4 gap-x-8">
-                      <div>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Patient</p>
-                        <p className="text-sm font-bold text-gray-700">{formData.fullName}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Visit Type</p>
-                        <p className="text-sm font-bold text-primary-600">{visitType}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">DateTime</p>
-                        <p className="text-sm font-bold text-gray-700">{formData.appointmentDate} at {formData.appointmentTime}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Department</p>
-                        <p className="text-sm font-bold text-gray-700">{formData.department}</p>
-                      </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="p-4 bg-amber-50 rounded-xl border border-amber-100 flex gap-3">
-                    <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
-                    <p className="text-xs text-amber-700">Please ensure all details are correct. Confirmation will be sent via email to patient.</p>
-                  </div>
-                </div>
-              )}
+                )}
 
-              <div className="pt-8 flex items-center justify-between border-t border-gray-100">
-                <button 
-                  type="button" 
-                  onClick={() => currentStep === 0 ? setPhase('select') : setCurrentStep(c => c - 1)}
-                  className="btn-secondary"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  {currentStep === 0 ? 'Back to Type' : 'Previous Step'}
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => currentStep === steps.length - 1 ? handleSubmit() : setCurrentStep(c => c + 1)}
-                  disabled={isSubmitting}
-                  className={cn("btn-primary min-w-[140px]", currentStep === steps.length - 1 && "bg-primary-600 hover:bg-primary-700")}
-                >
-                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                    <>
-                      {currentStep === steps.length - 1 ? 'Confirm & Book' : 'Continue'}
-                      {currentStep < steps.length - 1 && <ArrowRight className="w-4 h-4 ml-2" />}
-                    </>
-                  )}
-                </button>
+                {steps[currentStep].key === 'verify' && (
+                  <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
+                    <div className="p-8 rounded-[3rem] bg-indigo-50/30 border border-indigo-100 space-y-8">
+                       <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+                        <div className="space-y-1">
+                          <p className="text-[10px] text-indigo-400 font-black uppercase tracking-widest">Patient Name</p>
+                          <p className="text-lg font-black text-gray-900 leading-tight">{formData.fullName}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[10px] text-indigo-400 font-black uppercase tracking-widest">Protocol Type</p>
+                          <p className="text-lg font-black text-indigo-600 leading-tight">{visitType}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[10px] text-indigo-400 font-black uppercase tracking-widest">Clinical Unit</p>
+                          <p className="text-lg font-black text-gray-900 leading-tight">{formData.department}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[10px] text-indigo-400 font-black uppercase tracking-widest">Schedule</p>
+                          <p className="text-lg font-black text-gray-900 leading-tight">{formData.appointmentDate} • {formData.appointmentTime.split(' (')[0]}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-6 bg-amber-50 rounded-2xl border border-amber-100 flex gap-4 items-center">
+                      <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0"><AlertCircle className="w-5 h-5 text-amber-600" /></div>
+                      <p className="text-[11px] text-amber-700 font-medium leading-relaxed uppercase tracking-tight">Confirming this slot will authorize clinical resources and alert the consultant. Ensure protocol accuracy.</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
         </div>
+
+        {phase === 'form' && (
+          <div className="px-5 sm:px-10 py-5 sm:py-8 border-t border-gray-100 bg-gray-50/50 flex flex-col-reverse sm:flex-row items-center justify-between gap-4 shrink-0">
+            <button 
+              type="button" 
+              onClick={() => currentStep === 0 ? setPhase('select') : setCurrentStep(c => c - 1)}
+              className="w-full sm:w-auto px-8 py-4 text-[10px] font-black uppercase text-gray-400 hover:text-gray-600 transition-colors tracking-widest flex items-center justify-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              {currentStep === 0 ? 'Abort Selection' : 'Previous Protocol'}
+            </button>
+            <button 
+              type="button" 
+              onClick={() => currentStep === steps.length - 1 ? handleSubmit() : setCurrentStep(c => c + 1)}
+              disabled={isSubmitting}
+              className="w-full sm:w-auto px-12 py-4 sm:py-5 bg-indigo-600 hover:bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-indigo-100 hover:shadow-emerald-100 transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
+            >
+              {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                <>
+                  {currentStep === steps.length - 1 ? 'Authorize & Book' : 'Proceed'}
+                  {currentStep < steps.length - 1 && <ArrowRight className="w-4 h-4" />}
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -168,25 +168,26 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-[2.5rem] w-full max-w-[210mm] max-h-[95vh] flex flex-col shadow-2xl overflow-hidden border border-gray-100">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900/60 backdrop-blur-md p-2 sm:p-4 animate-in fade-in duration-300">
+      <div className="absolute inset-0 bg-transparent cursor-pointer" onClick={onClose}></div>
+      <div className="relative bg-white rounded-2xl sm:rounded-[2.5rem] w-full max-w-[210mm] max-h-[96vh] sm:max-h-[95vh] flex flex-col shadow-2xl overflow-hidden border border-white/60">
         
-        <div className="flex justify-between items-center px-10 py-6 border-b border-gray-100 shrink-0 bg-white">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100">
+        <div className="flex flex-col sm:flex-row justify-between items-center px-4 sm:px-10 py-4 sm:py-6 border-b border-gray-100 shrink-0 bg-white gap-4">
+          <div className="flex items-center gap-4 w-full sm:w-auto">
+            <div className="w-10 h-10 rounded-xl sm:rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100 shrink-0">
               <FileText className="w-5 h-5 text-indigo-600" />
             </div>
-            <div>
-              <h2 className="text-xl font-black text-gray-900 tracking-tight">Report Intelligence</h2>
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">A4 Clinical Preview • {requests.length} Test(s)</p>
+            <div className="min-w-0">
+              <h2 className="text-lg sm:text-xl font-black text-gray-900 tracking-tight truncate">Report Intelligence</h2>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest truncate">A4 Clinical Preview • {requests.length} Test(s)</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
             <button 
               onClick={handlePrint}
               disabled={loading}
               className={cn(
-                "flex items-center gap-2 px-6 py-3 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-gray-200 cursor-pointer",
+                "flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 text-white rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-gray-200 cursor-pointer",
                 loading ? "bg-gray-400 cursor-not-allowed opacity-50" : "bg-gray-900 hover:bg-gray-800"
               )}
               style={!loading && settings.primary_color ? { backgroundColor: settings.primary_color } : {}}
@@ -196,14 +197,14 @@ export default function LabReportPreviewModal({ requests, slug, onClose }: LabRe
             </button>
             <button 
               onClick={onClose} 
-              className="p-3 hover:bg-rose-50 rounded-xl text-gray-400 hover:text-rose-600 transition-all cursor-pointer"
+              className="p-2.5 sm:p-3 hover:bg-rose-50 rounded-xl text-gray-400 hover:text-rose-600 transition-all cursor-pointer bg-gray-50/50"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-12 bg-gray-50/50 relative">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-12 bg-gray-50/50 relative custom-scrollbar overscroll-behavior-contain">
           {loading && (
             <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-md">
               <div className="flex flex-col items-center gap-4">

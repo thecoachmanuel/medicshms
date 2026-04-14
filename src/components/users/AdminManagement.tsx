@@ -257,10 +257,15 @@ export default function AdminManagement() {
       </div>
 
        {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={handleCloseModal}></div>
-          <div className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">{editingAdmin ? 'Edit Admin' : 'Add New Admin'}</h2>
+          <div className="relative bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8 max-h-[96vh] sm:max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900">{editingAdmin ? 'Edit Admin' : 'Add New Admin'}</h2>
+              <button onClick={handleCloseModal} className="p-2 hover:bg-gray-50 rounded-xl transition-colors sm:hidden">
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Full Name</label>
@@ -300,9 +305,9 @@ export default function AdminManagement() {
                   System default password: <span className="font-black text-amber-900 ml-1">hms@admin</span>
                 </div>
               )}
-              <div className="flex gap-4 pt-4">
-                <button type="button" onClick={handleCloseModal} className="flex-1 px-6 py-3 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-50">Cancel</button>
-                <button type="submit" className="flex-1 px-6 py-3 bg-gray-900 text-white rounded-xl text-xs font-black shadow-lg shadow-gray-200 hover:bg-black">{editingAdmin ? 'Update Admin' : 'Add Admin'}</button>
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
+                <button type="button" onClick={handleCloseModal} className="flex-1 px-6 py-3.5 sm:py-3 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-50 order-2 sm:order-1">Cancel</button>
+                <button type="submit" className="flex-1 px-6 py-3.5 sm:py-3 bg-gray-900 text-white rounded-xl text-xs font-black shadow-lg shadow-gray-200 hover:bg-black order-1 sm:order-2">{editingAdmin ? 'Update Admin' : 'Add Admin'}</button>
               </div>
             </form>
           </div>
@@ -310,18 +315,18 @@ export default function AdminManagement() {
       )}
 
       {showDetailModal && detailData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowDetailModal(false)}></div>
-          <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between font-bold">
-              Admin Details
-              <button onClick={() => setShowDetailModal(false)} className="p-2 hover:bg-gray-50 rounded-xl transition-colors">
+          <div className="relative bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full max-h-[96vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="px-6 sm:px-8 py-5 sm:py-6 border-b border-gray-100 flex items-center justify-between font-bold">
+              Admin Profile
+              <button onClick={() => setShowDetailModal(false)} className="p-2 hover:bg-gray-50 rounded-xl transition-colors shrink-0">
                 <X className="w-6 h-6 text-gray-400" />
               </button>
             </div>
-            <div className="p-8">
-              <div className="flex items-center gap-6 mb-8">
-                <div className="w-24 h-24 rounded-3xl bg-primary-100 flex items-center justify-center shadow-lg">
+            <div className="p-6 sm:p-10 flex-1 overflow-y-auto custom-scrollbar">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-8 mb-8 text-center sm:text-left">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl bg-primary-100 flex items-center justify-center shadow-lg shrink-0">
                   {detailData.adminProfile?.profilePhoto ? (
                     <img src={detailData.adminProfile.profilePhoto} className="w-full h-full object-cover rounded-3xl" />
                   ) : (
@@ -329,27 +334,33 @@ export default function AdminManagement() {
                   )}
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">{detailData.name}</h2>
-                  <p className="text-gray-500 font-medium">Administrator</p>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">{detailData.name}</h2>
+                  <p className="text-gray-500 font-medium text-sm sm:text-base">Administrator Access</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-8">
-                <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Email</p>
-                  <p className="text-sm font-bold text-gray-900">{detailData.email}</p>
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+                <div className="p-4 bg-gray-50 rounded-2xl">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Email Address</p>
+                  <p className="text-sm font-bold text-gray-900 break-all">{detailData.email}</p>
                 </div>
-                <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Phone</p>
-                  <p className="text-sm font-bold text-gray-900">{detailData.phone || 'N/A'}</p>
+                <div className="p-4 bg-gray-50 rounded-2xl">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Phone Number</p>
+                  <p className="text-sm font-bold text-gray-900">{detailData.phone || 'Not provided'}</p>
                 </div>
-                <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Onboarding Date</p>
-                  <p className="text-sm font-bold text-gray-900">{detailData.adminProfile?.joiningDate ? new Date(detailData.adminProfile.joiningDate).toLocaleDateString() : 'N/A'}</p>
+                <div className="p-4 bg-gray-50 rounded-2xl">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Official Joining Date</p>
+                  <p className="text-sm font-bold text-gray-900">{detailData.adminProfile?.joiningDate ? new Date(detailData.adminProfile.joiningDate).toLocaleDateString() : 'Pending Record'}</p>
                 </div>
-                <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Status</p>
-                  <p className="text-sm font-bold text-emerald-600">{detailData.isActive ? 'Active' : 'Locked'}</p>
+                <div className="p-4 bg-gray-50 rounded-2xl">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Access Integrity Status</p>
+                  <div className={cn(
+                    "inline-flex items-center gap-1.5 text-sm font-black",
+                    detailData.isActive ? "text-emerald-600" : "text-rose-600"
+                  )}>
+                    <div className={cn("w-1.5 h-1.5 rounded-full", detailData.isActive ? "bg-emerald-500" : "bg-rose-500")}></div>
+                    {detailData.isActive ? 'Active' : 'Locked'}
+                  </div>
                 </div>
               </div>
             </div>

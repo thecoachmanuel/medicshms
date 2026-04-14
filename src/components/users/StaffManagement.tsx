@@ -276,49 +276,49 @@ export default function StaffManagement() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-6 animate-in fade-in zoom-in-95 duration-300">
           <div className="absolute inset-0 bg-gray-950/40 backdrop-blur-md" onClick={handleCloseModal}></div>
-          <div className="relative bg-white/90 backdrop-blur-2xl rounded-[3rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] max-w-2xl w-full p-12 border border-white/60 overflow-hidden ring-1 ring-black/5 max-h-[90vh] overflow-y-auto custom-scrollbar">
+          <div className="relative bg-white/95 backdrop-blur-2xl rounded-2xl sm:rounded-[3rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] max-w-2xl w-full p-6 sm:p-12 border border-white/60 overflow-hidden ring-1 ring-black/5 max-h-[96vh] sm:max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500" />
             
-            <div className="flex justify-between items-start mb-12">
-              <div>
-                <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+            <div className="flex justify-between items-start mb-8 sm:mb-12">
+              <div className="min-w-0">
+                <h2 className="text-xl sm:text-3xl font-bold text-gray-900 tracking-tight truncate">
                   {editingStaff ? 'Identity Editor' : 'System Provisioning'}
                 </h2>
-                <p className="text-gray-400 text-[11px] font-black uppercase tracking-[0.3em] mt-2">Node Credential Management</p>
+                <p className="text-gray-400 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.3em] mt-2 truncate">Node Credential Management</p>
               </div>
               <button 
                 onClick={handleCloseModal} 
-                className="p-4 bg-gray-50/50 hover:bg-rose-50 text-gray-400 hover:text-rose-600 rounded-[1.5rem] transition-all duration-300 active:scale-95"
+                className="p-2 sm:p-4 bg-gray-50/50 hover:bg-rose-50 text-gray-400 hover:text-rose-600 rounded-xl sm:rounded-[1.5rem] transition-all duration-300 active:scale-95 shrink-0 ml-2"
               >
                 <X className="w-6 h-6"/>
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="grid grid-cols-2 gap-8">
-                <div className="col-span-2">
-                  <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Full Name</label>
-                  <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full mt-3 px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="Jane Doe" />
+            <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+                <div className="sm:col-span-2">
+                  <label className="text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Full Name</label>
+                  <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full mt-2 sm:mt-3 px-6 py-4 sm:py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="Jane Doe" />
                 </div>
                 <div>
-                  <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">E-Mail</label>
-                  <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full mt-3 px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="jane@hospital.com" />
+                  <label className="text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">E-Mail</label>
+                  <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full mt-2 sm:mt-3 px-6 py-4 sm:py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="jane@hospital.com" />
                 </div>
                 <div>
-                  <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Phone Number</label>
-                  <input required type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full mt-3 px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="+234 810 123 4567" />
+                  <label className="text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Phone Number</label>
+                  <input required type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full mt-2 sm:mt-3 px-6 py-4 sm:py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="+234 810 123 4567" />
                 </div>
-                <div className="grid grid-cols-2 gap-8 col-span-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 sm:col-span-2">
                   <div>
-                    <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Professional Role</label>
-                    <div className="relative mt-3">
+                    <label className="text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Professional Role</label>
+                    <div className="relative mt-2 sm:mt-3">
                       <select 
                         disabled={!!editingStaff}
                         value={formData.role} 
                         onChange={e => setFormData({...formData, role: e.target.value as User['role']})} 
-                        className="w-full appearance-none px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-gray-700 focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all cursor-pointer disabled:bg-gray-50 disabled:text-gray-400"
+                        className="w-full appearance-none px-6 py-4 sm:py-4.5 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-gray-700 focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all cursor-pointer disabled:bg-gray-50 disabled:text-gray-400"
                       >
                         {roles.map(r => <option key={r} value={r}>{r}</option>)}
                       </select>
@@ -328,13 +328,13 @@ export default function StaffManagement() {
                     </div>
                   </div>
                   <div>
-                    <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Clinical Unit</label>
-                    <div className="relative mt-3">
+                    <label className="text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Clinical Unit</label>
+                    <div className="relative mt-2 sm:mt-3">
                       <select 
                         required 
                         value={formData.departmentId} 
                         onChange={e => setFormData({...formData, departmentId: e.target.value})} 
-                        className="w-full appearance-none px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-gray-700 focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all cursor-pointer"
+                        className="w-full appearance-none px-6 py-4 sm:py-4.5 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-gray-700 focus:ring-[6px] focus:ring-emerald-500/10 outline-none transition-all cursor-pointer"
                       >
                         <option value="">Select Unit</option>
                         {departments.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
@@ -347,10 +347,10 @@ export default function StaffManagement() {
                 </div>
               </div>
               
-              <div className="flex items-center justify-between p-8 bg-emerald-50/20 rounded-[2.5rem] border border-emerald-100/30">
-                <div className="space-y-1">
+              <div className="flex flex-col sm:flex-row items-center justify-between p-6 sm:p-8 bg-emerald-50/20 rounded-2xl sm:rounded-[2.5rem] border border-emerald-100/30 gap-4">
+                <div className="space-y-1 w-full sm:w-auto">
                   <p className="text-base font-bold text-gray-900">System Integration Status</p>
-                  <p className={cn("text-[11px] font-black uppercase tracking-[0.2em]", formData.isActive ? "text-emerald-600" : "text-rose-500")}>
+                  <p className={cn("text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em]", formData.isActive ? "text-emerald-600" : "text-rose-500")}>
                     {formData.isActive ? 'Synchronized and Active' : 'Uplink Terminated'}
                   </p>
                 </div>
@@ -358,7 +358,7 @@ export default function StaffManagement() {
                   type="button" 
                   onClick={() => setFormData({...formData, isActive: !formData.isActive})} 
                   className={cn(
-                    "relative inline-flex h-8 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                    "relative inline-flex h-8 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ml-auto sm:ml-0",
                     formData.isActive ? "bg-emerald-500" : "bg-gray-200"
                   )}
                 >
@@ -370,13 +370,13 @@ export default function StaffManagement() {
               </div>
 
               {!editingStaff && (
-                <div className="p-6 bg-amber-50/30 border border-amber-100/50 rounded-[2rem] flex items-start gap-5 text-amber-900 shadow-sm shadow-amber-900/5">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center shrink-0">
+                <div className="p-4 sm:p-6 bg-amber-50/30 border border-amber-100/50 rounded-2xl sm:rounded-[2rem] flex items-start gap-4 sm:gap-5 text-amber-900 shadow-sm shadow-amber-900/5">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-100 flex items-center justify-center shrink-0">
                     <AlertCircle className="w-6 h-6" />
                   </div>
-                  <div>
-                    <p className="text-[11px] font-black uppercase tracking-[0.3em] mb-1.5 text-amber-700">Security Requirement</p>
-                    <p className="text-[13px] font-medium leading-relaxed opacity-80">
+                  <div className="min-w-0">
+                    <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.3em] mb-1.5 text-amber-700">Security Requirement</p>
+                    <p className="text-xs sm:text-[13px] font-medium leading-relaxed opacity-80 break-words">
                       Standard initialization key generated: <span className="font-black underline decoration-2 decoration-amber-500 underline-offset-4">
                         hms@{
                           formData.role === 'Lab Scientist' ? 'lab' : 
@@ -390,19 +390,19 @@ export default function StaffManagement() {
                 </div>
               )}
 
-              <div className="pt-8">
+              <div className="pt-4 sm:pt-8">
                 <button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="w-full py-5 rounded-[1.75rem] text-[11px] font-black uppercase tracking-[0.4em] bg-emerald-600 hover:bg-emerald-700 text-white shadow-[0_20px_40px_-10px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50"
+                  className="w-full py-4 sm:py-5 rounded-2xl sm:rounded-[1.75rem] text-[10px] sm:text-[11px] font-black uppercase tracking-[0.4em] bg-emerald-600 hover:bg-emerald-700 text-white shadow-[0_20px_40px_-10px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Synchronizing Node...
+                      Synchronizing...
                     </>
                   ) : (
-                    editingStaff ? 'Synchronize Record' : `Initialize ${formData.role} Profile`
+                    editingStaff ? 'Synchronize Record' : `Initialize ${formData.role}`
                   )}
                 </button>
               </div>

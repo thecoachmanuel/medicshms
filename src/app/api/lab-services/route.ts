@@ -253,7 +253,8 @@ export async function PUT(request: Request) {
     const { 
       request_id, status, results, file_url, collected_at, 
       min_range, max_range, is_critical, unit,
-      test_price, test_name, unit_id, payment_status
+      test_price, test_name, unit_id, payment_status,
+      hospital_details, unit_name
     } = body;
 
     if (!request_id) {
@@ -293,6 +294,8 @@ export async function PUT(request: Request) {
     if (test_name) updateData.test_name = test_name;
     if (unit_id) updateData.unit_id = unit_id;
     if (payment_status) updateData.payment_status = payment_status;
+    if (hospital_details) updateData.hospital_details = hospital_details;
+    if (unit_name) updateData.unit_name = unit_name;
     
     if (status === 'Completed') updateData.completed_at = new Date().toISOString();
 

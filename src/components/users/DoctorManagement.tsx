@@ -291,54 +291,54 @@ export default function DoctorManagement() {
         </div>
       </div>
 
-      {showModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
-          <div className="absolute inset-0 bg-gray-950/40 backdrop-blur-md" onClick={handleCloseModal}></div>
-          <div className="relative bg-white/90 backdrop-blur-2xl rounded-[3rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] max-w-xl w-full p-12 border border-white/60 overflow-hidden ring-1 ring-black/5 max-h-[90vh] overflow-y-auto custom-scrollbar">
+       {showModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-6 animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-gray-950/40 backdrop-blur-md cursor-pointer" onClick={handleCloseModal}></div>
+          <div className="relative bg-white/90 backdrop-blur-2xl rounded-2xl sm:rounded-[3rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] max-w-xl w-full p-6 sm:p-12 border border-white/60 overflow-hidden ring-1 ring-black/5 max-h-[96vh] sm:max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary-500 via-blue-500 to-primary-500" />
             
-            <div className="flex justify-between items-start mb-12">
-              <div>
-                <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+            <div className="flex justify-between items-start mb-8 sm:mb-12">
+              <div className="min-w-0 pr-4">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight truncate">
                   {editingDoctor ? 'Credential Editor' : 'Medical Onboarding'}
                 </h2>
-                <p className="text-gray-400 text-[11px] font-black uppercase tracking-[0.3em] mt-2">Practitioner Uplink Configuration</p>
+                <p className="text-gray-400 text-[9px] sm:text-[11px] font-black uppercase tracking-[0.3em] mt-2 truncate">IDENTITY CONFIGURATION</p>
               </div>
               <button 
                 onClick={handleCloseModal} 
-                className="p-4 bg-gray-50/50 hover:bg-rose-50 text-gray-400 hover:text-rose-600 rounded-[1.5rem] transition-all duration-300 active:scale-95"
+                className="p-3 sm:p-4 bg-gray-50/50 hover:bg-rose-50 text-gray-400 hover:text-rose-600 rounded-xl sm:rounded-[1.5rem] transition-all duration-300 active:scale-95 shrink-0"
               >
                 <X className="w-6 h-6"/>
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Full Name</label>
-                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full mt-2 px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-primary-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="Dr. John Carter" />
+               <div className="space-y-2">
+                <label className="text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Full Identity Name</label>
+                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full mt-2 px-6 py-4 sm:py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-primary-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="Dr. John Carter" />
               </div>
               
-              <div className="grid grid-cols-2 gap-8">
-                <div>
-                  <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">E-Mail</label>
-                  <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full mt-2 px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-primary-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="doctor@medics.com" />
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+                <div className="space-y-2">
+                  <label className="text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">E-Mail Address</label>
+                  <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full mt-2 px-6 py-4 sm:py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-primary-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="doctor@medics.com" />
                 </div>
-                <div>
-                  <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Phone Number</label>
-                  <input required type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full mt-2 px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-primary-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="+234 810 123 4567" />
+                <div className="space-y-2">
+                  <label className="text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Mobile Contact</label>
+                  <input required type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full mt-2 px-6 py-4 sm:py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-primary-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="+234 810 123 4567" />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Clinical Unit Assignment</label>
+               <div className="space-y-2">
+                <label className="text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Clinical Specialization Node</label>
                 <div className="relative mt-2">
                   <select 
                     required 
                     value={formData.departmentId} 
                     onChange={e => setFormData({...formData, departmentId: e.target.value})}
-                    className="w-full appearance-none px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-gray-700 focus:ring-[6px] focus:ring-primary-500/10 outline-none transition-all cursor-pointer"
+                    className="w-full appearance-none px-6 py-4 sm:py-4.5 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-gray-700 focus:ring-[6px] focus:ring-primary-500/10 outline-none transition-all cursor-pointer"
                   >
-                    <option value="">Select Departmental Node</option>
+                    <option value="">Select Specialized Unit</option>
                     {departments.map(dept => (
                       <option key={dept._id} value={dept._id}>{dept.name}</option>
                     ))}
@@ -349,11 +349,11 @@ export default function DoctorManagement() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-8 bg-primary-50/20 rounded-[2.5rem] border border-primary-100/30">
+               <div className="flex items-center justify-between p-6 sm:p-8 bg-primary-50/20 rounded-2xl sm:rounded-[2.5rem] border border-primary-100/30">
                 <div className="space-y-1">
-                  <p className="text-base font-bold text-gray-900">Clinical Authorization</p>
-                  <p className={cn("text-[11px] font-black uppercase tracking-[0.2em]", formData.isActive ? "text-primary-600" : "text-rose-500")}>
-                    {formData.isActive ? 'Authorized & Monitored' : 'Revoked / Off-Grid'}
+                  <p className="text-sm sm:text-base font-bold text-gray-900">Authorization</p>
+                  <p className={cn("text-[9px] sm:text-[11px] font-black uppercase tracking-[0.2em]", formData.isActive ? "text-primary-600" : "text-rose-500")}>
+                    {formData.isActive ? 'Active Node' : 'Suspended'}
                   </p>
                 </div>
                 <button 
@@ -382,39 +382,39 @@ export default function DoctorManagement() {
                 </div>
               )}
 
-              <div className="flex gap-5 pt-8">
-                <button type="button" onClick={handleCloseModal} className="flex-1 px-8 py-5 bg-white border border-gray-100 rounded-[1.75rem] text-[11px] font-black uppercase tracking-[0.3em] text-gray-400 hover:bg-gray-50 transition-all active:scale-95">Cancel</button>
-                <button type="submit" className="flex-1 px-8 py-5 bg-gray-900 text-white rounded-[1.75rem] text-[11px] font-black uppercase tracking-[0.3em] shadow-xl shadow-gray-900/10 hover:bg-black transition-all active:scale-95">{editingDoctor ? 'Sync Profile' : 'Authorize User'}</button>
+               <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 pt-4 sm:pt-8">
+                <button type="button" onClick={handleCloseModal} className="flex-1 px-8 py-4 sm:py-5 bg-white border border-gray-100 rounded-xl sm:rounded-[1.75rem] text-[10px] sm:text-[11px] font-black uppercase tracking-[0.3em] text-gray-400 hover:bg-gray-50 transition-all active:scale-95 order-2 sm:order-1">Cancel</button>
+                <button type="submit" className="flex-1 px-8 py-4 sm:py-5 bg-gray-900 text-white rounded-xl sm:rounded-[1.75rem] text-[10px] sm:text-[11px] font-black uppercase tracking-[0.3em] shadow-xl shadow-gray-900/10 hover:bg-black transition-all active:scale-95 order-1 sm:order-2">{editingDoctor ? 'Sync Profile' : 'Authorize User'}</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {showDetailModal && detailData && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-500">
-          <div className="absolute inset-0 bg-gray-950/60 backdrop-blur-md" onClick={() => setShowDetailModal(false)}></div>
-          <div className="relative bg-white/95 backdrop-blur-3xl rounded-[3.5rem] shadow-[0_32px_128px_-32px_rgba(0,0,0,0.3)] max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-white/60">
-            <div className="px-12 py-8 border-b border-gray-100/50 flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Clinical Portfolio</h2>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mt-1">Verified Medical practitioner profile</p>
+       {showDetailModal && detailData && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-6 animate-in fade-in duration-500">
+          <div className="absolute inset-0 bg-gray-950/60 backdrop-blur-md cursor-pointer" onClick={() => setShowDetailModal(false)}></div>
+          <div className="relative bg-white/95 backdrop-blur-3xl rounded-2xl sm:rounded-[3.5rem] shadow-[0_32px_128px_-32px_rgba(0,0,0,0.3)] max-w-5xl w-full max-h-[96vh] sm:max-h-[90vh] overflow-hidden flex flex-col border border-white/60">
+             <div className="px-6 sm:px-12 py-5 sm:py-8 border-b border-gray-100/50 flex items-center justify-between">
+              <div className="min-w-0 pr-4">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight truncate">Clinical Portfolio</h2>
+                <p className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mt-1 truncate">VERIFIED MEDICAL PRACTITIONER RECORD</p>
               </div>
-              <button onClick={() => setShowDetailModal(false)} className="p-4 hover:bg-gray-50 rounded-2xl transition-all active:scale-90">
-                <X className="w-7 h-7 text-gray-400" />
+              <button onClick={() => setShowDetailModal(false)} className="p-3 sm:p-4 hover:bg-gray-50 rounded-2xl transition-all active:scale-90 shrink-0">
+                <X className="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-12 custom-scrollbar focus:outline-none">
-              <div className="flex flex-col md:flex-row gap-16 items-start">
-                <div className="w-48 h-48 rounded-[3.5rem] bg-gradient-to-br from-primary-50 to-blue-50 border-8 border-white shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] flex-shrink-0 flex items-center justify-center overflow-hidden transition-transform hover:scale-105 duration-500">
+            <div className="flex-1 overflow-y-auto p-6 sm:p-12 custom-scrollbar focus:outline-none overscroll-behavior-contain">
+               <div className="flex flex-col lg:flex-row gap-10 sm:gap-16 items-center lg:items-start text-center lg:text-left">
+                <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-2xl sm:rounded-[3.5rem] bg-gradient-to-br from-primary-50 to-blue-50 border-4 sm:border-8 border-white shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] flex-shrink-0 flex items-center justify-center overflow-hidden transition-transform hover:scale-105 duration-500">
                   {detailData.doctorProfile?.profilePhoto ? (
                     <img src={detailData.doctorProfile.profilePhoto} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <UserIcon className="w-16 h-16 text-primary-200" />
+                    <UserIcon className="w-12 h-12 sm:w-16 sm:h-16 text-primary-200" />
                   )}
                 </div>
-                <div className="flex-1 space-y-12 w-full">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-12 pb-12 border-b border-gray-100/50">
+                <div className="flex-1 space-y-10 sm:y-12 w-full">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12 pb-10 sm:pb-12 border-b border-gray-100/50">
                     <div className="space-y-1">
                       <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em]">Qualifications</p>
                       <p className="text-base font-bold text-gray-950">{detailData.doctorProfile?.qualifications || 'N/A'}</p>

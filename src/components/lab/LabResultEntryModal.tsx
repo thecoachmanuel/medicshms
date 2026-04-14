@@ -420,25 +420,25 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+     <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-300">
       <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-md cursor-pointer" onClick={onClose}></div>
       <div className={cn(
-        "relative bg-white/95 backdrop-blur-md rounded-[3rem] w-full p-10 shadow-[0_32px_128px_rgba(30,41,59,0.15)] border border-white/40 max-h-[95vh] flex flex-col animate-in fade-in zoom-in-95 duration-300 transition-all",
-        showLibrary ? "max-w-6xl" : "max-w-4xl"
+        "relative bg-white/95 backdrop-blur-3xl rounded-2xl sm:rounded-[3.5rem] w-full p-4 sm:p-12 shadow-[0_32px_128px_-32px_rgba(0,0,0,0.3)] border border-white/60 max-h-[98vh] sm:max-h-[90vh] flex flex-col transition-all duration-500",
+        showLibrary ? "max-w-7xl" : "max-w-4xl"
       )}>
         
         {/* Header */}
-        <div className="flex justify-between items-start mb-8 shrink-0">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100/50">
-              <Microscope className="w-6 h-6 text-indigo-600" />
+        <div className="flex justify-between items-start mb-6 sm:mb-10 shrink-0">
+          <div className="flex items-center gap-4 sm:gap-6 min-w-0">
+            <div className="w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-[2rem] bg-indigo-50 flex items-center justify-center border border-indigo-100/50 shrink-0 shadow-inner">
+              <Microscope className="w-5 h-5 sm:w-8 sm:h-8 text-indigo-600" />
             </div>
-            <div>
-              <h2 className="text-2xl font-black text-gray-900 tracking-tight">Diagnostic Workspace</h2>
-              <div className="flex items-center gap-2 mt-0.5">
-                <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Clinical Protocol Entry</p>
-                <div className="w-1 h-1 rounded-full bg-gray-300" />
-                <p className="text-[10px] text-indigo-600 font-black uppercase tracking-[0.2em]">
+            <div className="min-w-0 pr-4">
+              <h2 className="text-xl sm:text-3xl font-black text-gray-900 tracking-tight truncate leading-none mb-2">Diagnostic Workspace</h2>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <p className="text-[9px] sm:text-[11px] text-gray-400 font-black uppercase tracking-[0.25em] truncate">CLINICAL PROTOCOL ENTRY</p>
+                <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-indigo-500/20" />
+                <p className="text-[9px] sm:text-[11px] text-indigo-600 font-black uppercase tracking-[0.25em] truncate bg-indigo-50 px-2 py-0.5 rounded-full">
                   {(Array.isArray(request.handled_by_profile?.assignments) ? request.handled_by_profile?.assignments[0] : request.handled_by_profile?.assignments)?.unit?.name ||
                    (Array.isArray(request.handled_by_profile?.staff_record) ? request.handled_by_profile?.staff_record[0] : request.handled_by_profile?.staff_record)?.dept?.name || 
                    request.unit?.name || 
@@ -446,29 +446,39 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                 </p>
               </div>
             </div>
-            <button 
+          </div>
+          <div className="flex items-center gap-3">
+             <button 
               onClick={() => setShowLibrary(!showLibrary)}
               className={cn(
-                "ml-4 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-2 transition-all cursor-pointer",
-                showLibrary ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600"
+                "hidden lg:flex px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] items-center gap-2.5 transition-all active:scale-95 shadow-lg shadow-indigo-100/50",
+                showLibrary ? "bg-indigo-600 text-white" : "bg-white text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 border border-gray-100"
               )}
             >
-              <Database className="w-3 h-3" />
-              {showLibrary ? "Hide Library" : "Show Library"}
+              <Database className="w-4 h-4" />
+              {showLibrary ? "CONSOLIDATE" : "EXPAND LIBRARY"}
+            </button>
+            <button 
+              onClick={onClose} 
+              className="p-3 sm:p-4 bg-gray-50/50 hover:bg-rose-50 text-gray-400 hover:text-rose-500 rounded-xl sm:rounded-3xl transition-all duration-500 active:scale-90 border border-transparent hover:border-rose-100"
+            >
+              <X className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </div>
-          <button 
-            onClick={onClose} 
-            className="p-3 bg-gray-50 rounded-xl text-gray-400 hover:text-rose-500 hover:rotate-90 transition-all duration-300 cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
-        <div className="flex-1 flex gap-8 min-h-0">
-          {/* Collapsible Sidebar: Test Template Library */}
+        <div className="flex-1 flex gap-4 sm:gap-8 min-h-0 relative">
           {showLibrary && (
-            <div className="w-64 shrink-0 bg-gray-50/50 rounded-[2rem] border border-gray-100 p-4 flex flex-col gap-4 animate-in slide-in-from-left-4 duration-300">
+            <div className="absolute inset-0 z-[60] lg:relative lg:z-auto lg:w-80 shrink-0 bg-white/95 lg:bg-gray-50/50 backdrop-blur-3xl lg:backdrop-blur-none rounded-2xl sm:rounded-[2.5rem] border border-gray-100 p-6 flex flex-col gap-6 animate-in slide-in-from-left-8 duration-500 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] lg:shadow-none">
+              <div className="flex items-center justify-between lg:hidden">
+                <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Protocol Intelligence</h3>
+                <button 
+                  onClick={() => setShowLibrary(false)} 
+                  className="p-3 bg-gray-100 hover:bg-rose-50 text-gray-400 hover:text-rose-500 rounded-2xl transition-all active:scale-90"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
               <div className="px-2">
                 <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Investigation Library</h3>
                 <div className="relative mt-3">
@@ -541,8 +551,15 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
           )}
 
           {/* Main Workspace */}
-          <div className="flex-1 flex flex-col min-h-0 bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm">
-            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar space-y-8">
+          <div className="flex-1 flex flex-col min-h-0 bg-white rounded-2xl sm:rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-8 custom-scrollbar space-y-6 sm:space-y-8 overscroll-behavior-contain">
+              {/* Mobile Library Toggle */}
+              <button 
+                onClick={() => setShowLibrary(true)}
+                className="w-full sm:hidden py-3 bg-indigo-50 text-indigo-600 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 mb-4"
+              >
+                <Database className="w-4 h-4" /> Open Protocol Library
+              </button>
               {/* Patient Context */}
               <div className="bg-slate-50/50 p-6 rounded-[2rem] grid grid-cols-1 md:grid-cols-2 gap-8 border border-slate-100">
                 <div>
@@ -569,8 +586,8 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
               {/* Dynamic Protocol Fields */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center px-2">
-                  <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest uppercase tracking-[0.2em]">Diagnostic Parameters</h3>
-                  <div className="flex gap-2">
+                  <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 sm:mb-0">Diagnostic Parameters</h3>
+                  <div className="flex flex-wrap gap-2">
                     <button 
                       onClick={handleSaveAsMaster}
                       className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-bold flex items-center gap-2 hover:bg-emerald-600 hover:text-white transition-all cursor-pointer"
@@ -588,10 +605,10 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
 
                 <div className="grid grid-cols-1 gap-4">
                   {fields.map((field) => (
-                    <div key={field.id} className="group bg-gray-50/50 hover:bg-white hover:shadow-xl hover:shadow-indigo-500/5 hover:border-indigo-200 rounded-3xl p-5 border border-gray-100 transition-all">
-                      <div className="flex flex-col md:flex-row gap-4">
+                    <div key={field.id} className="group bg-gray-50/50 hover:bg-white hover:shadow-2xl hover:shadow-indigo-500/10 hover:border-indigo-200 rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-8 border border-gray-100 transition-all duration-500">
+                      <div className="flex flex-col lg:flex-row gap-6 lg:items-center">
                         {/* Parameter Label & Metadata */}
-                        <div className="flex-1 space-y-2">
+                        <div className="flex-1 space-y-4">
                           <input 
                             type="text"
                             value={field.label}
@@ -625,20 +642,18 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                               </div>
                             )}
                           </div>
-                        </div>
-
-                        {/* Result Input */}
-                        <div className="w-full md:w-64">
+                                                 {/* Result Input */}
+                        <div className="w-full lg:w-72">
                           {field.type === 'textarea' ? (
                             <textarea 
-                              className="w-full h-24 bg-white border border-gray-200 rounded-2xl px-4 py-3 text-sm font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm"
+                              className="w-full h-32 bg-white border border-gray-200 rounded-2xl px-5 py-4 text-sm font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm"
                               value={fieldValues[field.label] || ''}
                               onChange={e => setFieldValues({...fieldValues, [field.label]: e.target.value})}
                               placeholder="Record finding..."
                             />
                           ) : field.type === 'select' ? (
                             <select 
-                              className="w-full h-[48px] bg-white border border-gray-200 rounded-2xl px-4 text-sm font-black outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm appearance-none"
+                              className="w-full h-[56px] bg-white border border-gray-200 rounded-2xl px-5 text-sm font-black outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm appearance-none"
                               value={fieldValues[field.label] || ''}
                               onChange={e => setFieldValues({...fieldValues, [field.label]: e.target.value})}
                             >
@@ -648,7 +663,7 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                           ) : (
                             <input 
                               type={field.type || 'text'}
-                              className="w-full h-[48px] bg-white border border-gray-200 rounded-2xl px-4 text-sm font-black outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm"
+                              className="w-full h-[56px] bg-white border border-gray-200 rounded-2xl px-5 text-sm font-black outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm"
                               value={fieldValues[field.label] || ''}
                               onChange={e => setFieldValues({...fieldValues, [field.label]: e.target.value})}
                               placeholder="Value..."
@@ -657,38 +672,39 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
                         </div>
 
                         {/* Row Actions */}
-                        <div className="flex md:flex-col gap-2 items-center justify-center border-l border-gray-100 pl-4">
+                        <div className="flex flex-row lg:flex-col gap-2.5 items-center justify-center border-t lg:border-t-0 lg:border-l border-gray-100 pt-5 lg:pt-0 lg:pl-6">
+:pl-4">
                           <button 
                             onClick={() => handleUpdateFieldMeta(field.id, { hideUnit: !field.hideUnit })}
                             className={cn(
-                              "p-2 rounded-xl transition-all cursor-pointer",
-                              field.hideUnit ? "text-gray-300 hover:text-indigo-600 hover:bg-indigo-50" : "text-indigo-600 bg-indigo-50"
+                              "p-2.5 rounded-xl transition-all cursor-pointer",
+                              field.hideUnit ? "text-gray-300 hover:text-indigo-600 hover:bg-indigo-50 bg-gray-50/50" : "text-indigo-600 bg-indigo-50"
                             )}
                             title={field.hideUnit ? "Show Unit Field" : "Hide Unit Field"}
                           >
-                            {field.hideUnit ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                            {field.hideUnit ? <EyeOff className="w-4 h-4 md:w-3.5 md:h-3.5" /> : <Eye className="w-4 h-4 md:w-3.5 md:h-3.5" />}
                           </button>
                           <button 
                             onClick={() => handleUpdateFieldMeta(field.id, { hideRef: !field.hideRef })}
                             className={cn(
-                              "p-2 rounded-xl transition-all cursor-pointer",
-                              field.hideRef ? "text-gray-300 hover:text-rose-600 hover:bg-rose-50" : "text-rose-600 bg-rose-50"
+                              "p-2.5 rounded-xl transition-all cursor-pointer",
+                              field.hideRef ? "text-gray-300 hover:text-rose-600 hover:bg-rose-50 bg-gray-50/50" : "text-rose-600 bg-rose-50"
                             )}
                             title={field.hideRef ? "Show Ref Range" : "Hide Ref Range"}
                           >
-                            {field.hideRef ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                            {field.hideRef ? <EyeOff className="w-4 h-4 md:w-3.5 md:h-3.5" /> : <Eye className="w-4 h-4 md:w-3.5 md:h-3.5" />}
                           </button>
                           <div className="w-full h-px bg-gray-100 my-1 hidden md:block" />
                           <button 
                             onClick={() => handleDuplicateField(field)}
-                            className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all cursor-pointer"
+                            className="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all cursor-pointer bg-gray-50/50"
                             title="Duplicate Entry"
                           >
                             <Copy className="w-4 h-4" />
                           </button>
                           <button 
                             onClick={() => handleRemoveField(field)}
-                            className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all cursor-pointer"
+                            className="p-2.5 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all cursor-pointer bg-gray-50/50"
                             title="Delete Entry"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -772,23 +788,23 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
             </div>
 
             {/* Footer Actions */}
-            <div className="p-8 bg-white border-t border-gray-100 flex gap-4 shrink-0">
+            <div className="p-4 sm:p-10 bg-white border-t border-gray-100 flex flex-col sm:row gap-4 sm:gap-6 shrink-0">
               <button 
                 onClick={() => handleSave('Collected')}
                 disabled={loading}
-                className="flex-1 py-4 rounded-[1.25rem] font-black text-gray-600 bg-gray-50 hover:bg-gray-100 transition-all border border-gray-200 flex items-center justify-center gap-3 disabled:opacity-50 cursor-pointer"
+                className="flex-1 py-4 sm:py-5 rounded-2xl sm:rounded-[1.5rem] font-black text-gray-500 bg-gray-50 hover:bg-gray-100 transition-all border border-gray-100 flex items-center justify-center gap-3 disabled:opacity-50 cursor-pointer order-2 sm:order-1 group"
               >
-                <Clock className="w-5 h-5" />
-                <span className="uppercase tracking-[0.2em] text-[10px]">Save as Draft</span>
+                <Clock className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                <span className="uppercase tracking-[0.25em] text-[10px]">Save Protocol Draft</span>
               </button>
               
               <button 
                 onClick={() => handleSave('Completed')}
                 disabled={loading}
-                className="flex-1 py-4 rounded-[1.25rem] font-black text-white bg-gray-900 hover:bg-emerald-600 hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gray-200 hover:shadow-emerald-100 flex items-center justify-center gap-3 disabled:opacity-50 group cursor-pointer"
+                className="flex-1 py-4 sm:py-5 rounded-2xl sm:rounded-[1.5rem] font-black text-white bg-indigo-600 hover:bg-emerald-600 hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-indigo-200 hover:shadow-emerald-200 flex items-center justify-center gap-3 disabled:opacity-50 group cursor-pointer order-1 sm:order-2"
               >
                 {loading ? <Activity className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5 group-hover:animate-bounce" />}
-                <span className="uppercase tracking-[0.2em] text-[10px]">{loading ? 'Processing protocol...' : 'Authorize & Release Result'}</span>
+                <span className="uppercase tracking-[0.25em] text-[10px]">{loading ? 'Synchronizing results...' : 'Authorize & Release Clinical Data'}</span>
               </button>
             </div>
           </div>

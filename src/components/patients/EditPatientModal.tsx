@@ -61,181 +61,192 @@ export default function EditPatientModal({ isOpen, onClose, onSuccess, patient }
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose}></div>
-      <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
-              <User className="w-5 h-5 text-orange-600" />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4">
+      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md cursor-pointer" onClick={onClose}></div>
+      <div className="relative bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-[3rem] max-w-2xl w-full shadow-[0_32px_128px_rgba(30,41,59,0.15)] border border-white/40 flex flex-col max-h-[96vh] sm:max-h-[90vh] animate-in fade-in zoom-in-95 duration-300">
+        
+        <div className="px-5 sm:px-10 py-5 sm:py-8 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-4 sm:gap-5 min-w-0">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-[1.5rem] bg-orange-600 flex items-center justify-center shadow-xl shadow-orange-100 shrink-0">
+              <User className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">Edit Patient Details</h2>
-              <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Update record for #{patient.patientId}</p>
+            <div className="min-w-0">
+              <h2 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight truncate">Edit Patient Details</h2>
+              <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.3em] mt-0.5 truncate">Update record for #{patient.patientId}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white rounded-xl transition-colors">
-            <X className="w-6 h-6 text-gray-400" />
+          <button onClick={onClose} className="p-2 sm:p-4 hover:bg-white rounded-2xl text-gray-400 hover:text-rose-500 transition-all duration-300 shrink-0 ml-2">
+            <X className="w-6 h-6" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-8 py-8 space-y-6 custom-scrollbar overscroll-behavior-contain">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Full Name */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Full Name</label>
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-10 no-scrollbar custom-scrollbar overscroll-behavior-contain">
+          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-500">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Full Name */}
+              <div className="space-y-2 group">
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] ml-1 group-focus-within:text-orange-600 transition-colors">Full Identity</label>
+                <div className="relative">
+                  <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                  <input
+                    required
+                    type="text"
+                    placeholder="Full Name"
+                    className="w-full pl-14 pr-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-4 focus:ring-orange-500/10 outline-none transition-all shadow-inner"
+                    value={formData.fullName}
+                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {/* Mobile Number */}
+              <div className="space-y-2 group">
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] ml-1 group-focus-within:text-orange-600 transition-colors">Primary Contact</label>
+                <div className="relative">
+                  <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                  <input
+                    required
+                    type="tel"
+                    placeholder="Mobile Number"
+                    className="w-full pl-14 pr-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-sm font-black focus:bg-white focus:ring-4 focus:ring-orange-500/10 outline-none transition-all shadow-inner"
+                    value={formData.mobileNumber}
+                    onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {/* Email */}
+              <div className="space-y-2 group">
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] ml-1 group-focus-within:text-orange-600 transition-colors">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                  <input
+                    type="email"
+                    placeholder="username@email.com"
+                    className="w-full pl-14 pr-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-4 focus:ring-orange-500/10 outline-none transition-all shadow-inner"
+                    value={formData.emailAddress}
+                    onChange={(e) => setFormData({ ...formData, emailAddress: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {/* Gender */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] ml-1">Biological Gender</label>
+                <div className="relative">
+                  <select
+                    className="w-full px-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-sm font-black focus:bg-white focus:ring-4 focus:ring-orange-500/10 outline-none transition-all appearance-none cursor-pointer shadow-inner"
+                    value={formData.gender}
+                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                    <User className="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Date of Birth */}
+              <div className="space-y-2 group">
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] ml-1 group-focus-within:text-orange-600 transition-colors">Birth Date</label>
+                <div className="relative">
+                  <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                  <input
+                    type="date"
+                    className="w-full pl-14 pr-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-4 focus:ring-orange-500/10 outline-none transition-all shadow-inner"
+                    value={formData.dateOfBirth}
+                    onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {/* Blood Group */}
+              <div className="space-y-2 group">
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] ml-1 group-focus-within:text-rose-600 transition-colors">Haematological Group</label>
+                <div className="relative">
+                  <Heart className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-rose-500 transition-colors" />
+                  <input
+                    type="text"
+                    placeholder="e.g. O+ve"
+                    className="w-full pl-14 pr-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-sm font-black text-rose-600 focus:bg-white focus:ring-4 focus:ring-rose-500/10 outline-none transition-all shadow-inner uppercase"
+                    value={formData.bloodGroup}
+                    onChange={(e) => setFormData({ ...formData, bloodGroup: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Address */}
+            <div className="space-y-3 group">
+              <label className="text-[10px] font-black uppercase text-gray-400 tracking-[0.3em] ml-1 group-focus-within:text-orange-600 transition-colors">Residential Domicile</label>
               <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  required
-                  type="text"
-                  placeholder="e.g. John Doe"
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                <MapPin className="absolute left-5 top-6 w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                <textarea
+                  placeholder="Complete home address..."
+                  rows={3}
+                  className="w-full pl-14 pr-5 py-5 bg-gray-50/50 border border-gray-100 rounded-[2rem] text-sm font-medium focus:bg-white focus:ring-4 focus:ring-orange-500/10 outline-none transition-all resize-none shadow-inner"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 />
               </div>
             </div>
 
-            {/* Mobile Number */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Mobile Number</label>
-              <div className="relative">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  required
-                  type="tel"
-                  placeholder="e.g. +91 9876543210"
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
-                  value={formData.mobileNumber}
-                  onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value })}
-                />
+            <div className="pt-10 border-t border-gray-100 space-y-8">
+              <h3 className="text-xs font-black text-gray-900 uppercase tracking-[0.3em] ml-1">Emergency Protocol</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Emergency Contact Name */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] ml-1">Primary Kin</label>
+                  <input
+                    type="text"
+                    placeholder="Full Name"
+                    className="w-full px-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-4 focus:ring-orange-500/10 outline-none transition-all shadow-inner"
+                    value={formData.emergencyContactName}
+                    onChange={(e) => setFormData({ ...formData, emergencyContactName: e.target.value })}
+                  />
+                </div>
+
+                {/* Emergency Contact Number */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] ml-1">Kin Hotline</label>
+                  <input
+                    type="tel"
+                    placeholder="Contact Number"
+                    className="w-full px-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-sm font-black focus:bg-white focus:ring-4 focus:ring-orange-500/10 outline-none transition-all shadow-inner"
+                    value={formData.emergencyContactNumber}
+                    onChange={(e) => setFormData({ ...formData, emergencyContactNumber: e.target.value })}
+                  />
+                </div>
               </div>
-            </div>
-
-            {/* Email */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="email"
-                  placeholder="username@email.com"
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
-                  value={formData.emailAddress}
-                  onChange={(e) => setFormData({ ...formData, emailAddress: e.target.value })}
-                />
-              </div>
-            </div>
-
-            {/* Gender */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Gender</label>
-              <select
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary-500/10 outline-none transition-all appearance-none cursor-pointer"
-                value={formData.gender}
-                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-              >
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            {/* Date of Birth */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Date of Birth</label>
-              <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="date"
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
-                  value={formData.dateOfBirth}
-                  onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-                />
-              </div>
-            </div>
-
-            {/* Blood Group */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Blood Group</label>
-              <div className="relative">
-                <Heart className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="e.g. O+ve"
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
-                  value={formData.bloodGroup}
-                  onChange={(e) => setFormData({ ...formData, bloodGroup: e.target.value })}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Address */}
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Residential Address</label>
-            <div className="relative">
-              <MapPin className="absolute left-4 top-4 w-4 h-4 text-gray-400" />
-              <textarea
-                placeholder="Complete address..."
-                rows={3}
-                className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary-500/10 outline-none transition-all resize-none"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-50">
-            {/* Emergency Contact Name */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Emergency Contact Name</label>
-              <input
-                type="text"
-                placeholder="Next of kin name"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
-                value={formData.emergencyContactName}
-                onChange={(e) => setFormData({ ...formData, emergencyContactName: e.target.value })}
-              />
-            </div>
-
-            {/* Emergency Contact Number */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Emergency Contact Phone</label>
-              <input
-                type="tel"
-                placeholder="Emergency number"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
-                value={formData.emergencyContactNumber}
-                onChange={(e) => setFormData({ ...formData, emergencyContactNumber: e.target.value })}
-              />
             </div>
           </div>
         </form>
 
-        <div className="px-8 py-6 border-t border-gray-100 bg-gray-50/50 flex items-center justify-end gap-3 shrink-0">
+        <div className="px-5 sm:px-10 py-5 sm:py-8 bg-gray-50/50 border-t border-gray-100 flex flex-col-reverse sm:flex-row items-center justify-end gap-4 shrink-0">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors"
+            className="w-full sm:w-auto px-10 py-4 text-[11px] font-black uppercase text-gray-400 hover:text-gray-600 transition-colors tracking-widest shrink-0"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="btn-primary"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-4 px-12 py-5 bg-gray-900 text-white rounded-[1.75rem] text-[11px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-orange-600 transition-all active:scale-[0.98] disabled:opacity-50 group shrink-0"
           >
             {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Updating...
-              </>
+              <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              'Save Changes'
+              <User className="w-5 h-5 group-hover:scale-110 transition-transform" />
             )}
+            Persist Updates
           </button>
         </div>
+      </div>
+    </div>
       </div>
     </div>
   );

@@ -62,26 +62,27 @@ export default function RegisterPatientModal({ isOpen, onClose, onSuccess }: Pro
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose}></div>
-      <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center">
-              <User className="w-5 h-5 text-primary-600" />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4">
+      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md cursor-pointer" onClick={onClose}></div>
+      <div className="relative bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-[3rem] max-w-2xl w-full shadow-[0_32px_128px_rgba(30,41,59,0.15)] border border-white/40 flex flex-col max-h-[96vh] sm:max-h-[90vh] animate-in fade-in zoom-in-95 duration-300">
+        
+        <div className="px-5 sm:px-10 py-5 sm:py-8 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-4 sm:gap-5 min-w-0">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-[1.5rem] bg-indigo-600 flex items-center justify-center shadow-xl shadow-indigo-200 shrink-0">
+              <User className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">Register New Patient</h2>
-              <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Add a new entry to the lifetime registry</p>
+            <div className="min-w-0">
+              <h2 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight truncate">Register Patient</h2>
+              <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.3em] mt-0.5 truncate">Lifetime Registry Entry</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white rounded-xl transition-colors">
-            <X className="w-6 h-6 text-gray-400" />
+          <button onClick={onClose} className="p-2 sm:p-4 hover:bg-white rounded-2xl text-gray-400 hover:text-rose-500 transition-all duration-300 shrink-0 ml-2">
+            <X className="w-6 h-6" />
           </button>
         </div>
 
         {duplicatePatient && (
-          <div className="px-8 py-4 bg-amber-50 border-b border-amber-100 flex items-center justify-between animate-in slide-in-from-top-4 duration-300">
+          <div className="px-4 sm:px-8 py-4 bg-amber-50 border-b border-amber-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-in slide-in-from-top-4 duration-300">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
                 <ShieldCheck className="w-5 h-5 text-amber-600" />
@@ -93,25 +94,25 @@ export default function RegisterPatientModal({ isOpen, onClose, onSuccess }: Pro
             </div>
             <button 
               onClick={handleUseExisting}
-              className="px-6 py-2 bg-amber-600 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-amber-200 hover:bg-amber-700 transition-all active:scale-95"
+              className="w-full sm:w-auto px-6 py-2.5 bg-amber-600 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-amber-200 hover:bg-amber-700 transition-all active:scale-95"
             >
               Select Profile
             </button>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-8 py-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-10 space-y-8 custom-scrollbar overscroll-behavior-contain">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
             {/* Full Name */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Full Name</label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <label className="text-[11px] font-black uppercase text-gray-400 tracking-widest ml-1">Full Name</label>
+              <div className="relative group">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                 <input
                   required
                   type="text"
                   placeholder="e.g. John Doe"
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
+                  className="w-full pl-11 pr-4 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all"
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                 />
@@ -120,14 +121,14 @@ export default function RegisterPatientModal({ isOpen, onClose, onSuccess }: Pro
 
             {/* Mobile Number */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Mobile Number</label>
-              <div className="relative">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <label className="text-[11px] font-black uppercase text-gray-400 tracking-widest ml-1">Mobile Number</label>
+              <div className="relative group">
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                 <input
                   required
                   type="tel"
-                  placeholder="e.g. +91 9876543210"
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
+                  placeholder="e.g. +234 81 2345 6789"
+                  className="w-full pl-11 pr-4 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all"
                   value={formData.mobileNumber}
                   onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value })}
                 />
@@ -136,13 +137,13 @@ export default function RegisterPatientModal({ isOpen, onClose, onSuccess }: Pro
 
             {/* Email */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <label className="text-[11px] font-black uppercase text-gray-400 tracking-widest ml-1">Email Address</label>
+              <div className="relative group">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                 <input
                   type="email"
                   placeholder="username@email.com"
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
+                  className="w-full pl-11 pr-4 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all"
                   value={formData.emailAddress}
                   onChange={(e) => setFormData({ ...formData, emailAddress: e.target.value })}
                 />
@@ -151,9 +152,9 @@ export default function RegisterPatientModal({ isOpen, onClose, onSuccess }: Pro
 
             {/* Gender */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Gender</label>
+              <label className="text-[11px] font-black uppercase text-gray-400 tracking-widest ml-1">Gender</label>
               <select
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary-500/10 outline-none transition-all appearance-none cursor-pointer"
+                className="w-full px-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all appearance-none cursor-pointer"
                 value={formData.gender}
                 onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
               >
@@ -165,12 +166,12 @@ export default function RegisterPatientModal({ isOpen, onClose, onSuccess }: Pro
 
             {/* Date of Birth */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Date of Birth</label>
-              <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <label className="text-[11px] font-black uppercase text-gray-400 tracking-widest ml-1">Date of Birth</label>
+              <div className="relative group">
+                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                 <input
                   type="date"
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
+                  className="w-full pl-11 pr-4 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all"
                   value={formData.dateOfBirth}
                   onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
                 />
@@ -179,13 +180,13 @@ export default function RegisterPatientModal({ isOpen, onClose, onSuccess }: Pro
 
             {/* Blood Group */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Blood Group</label>
-              <div className="relative">
-                <Heart className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <label className="text-[11px] font-black uppercase text-gray-400 tracking-widest ml-1">Blood Group</label>
+              <div className="relative group">
+                <Heart className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                 <input
                   type="text"
                   placeholder="e.g. O+ve"
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
+                  className="w-full pl-11 pr-4 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-sm font-bold focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all"
                   value={formData.bloodGroup}
                   onChange={(e) => setFormData({ ...formData, bloodGroup: e.target.value })}
                 />
@@ -235,25 +236,28 @@ export default function RegisterPatientModal({ isOpen, onClose, onSuccess }: Pro
           </div>
         </form>
 
-        <div className="px-8 py-6 border-t border-gray-100 bg-gray-50/50 flex items-center justify-end gap-3">
+         <div className="px-5 sm:px-10 py-5 sm:py-8 border-t border-gray-100 bg-gray-50/50 flex flex-col-reverse sm:flex-row items-center justify-end gap-4 shrink-0">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors"
+            className="w-full sm:w-auto px-8 py-4 text-[10px] font-black uppercase text-gray-400 hover:text-gray-600 transition-colors tracking-widest"
           >
-            Cancel
+            Discard
           </button>
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="btn-primary"
+            className="w-full sm:w-auto px-10 py-5 bg-indigo-600 hover:bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-indigo-100 hover:shadow-emerald-100 transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
           >
             {loading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Registering...
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Synchronizing...
               </>
             ) : (
-              'Complete Registration'
+              <>
+                <CheckCircle className="w-5 h-5" />
+                Complete Enrollment
+              </>
             )}
           </button>
         </div>

@@ -280,48 +280,48 @@ export default function ReceptionistManagement() {
       </div>
 
        {showModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
-          <div className="absolute inset-0 bg-gray-950/40 backdrop-blur-md" onClick={handleCloseModal}></div>
-          <div className="relative bg-white/90 backdrop-blur-2xl rounded-[3rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] max-w-xl w-full p-12 border border-white/60 overflow-hidden ring-1 ring-black/5 max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-6 animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-gray-950/40 backdrop-blur-md cursor-pointer" onClick={handleCloseModal}></div>
+          <div className="relative bg-white/90 backdrop-blur-2xl rounded-2xl sm:rounded-[3rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] max-w-xl w-full p-6 sm:p-12 border border-white/60 overflow-hidden ring-1 ring-black/5 max-h-[96vh] sm:max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary-500 via-amber-500 to-primary-500" />
             
-            <div className="flex justify-between items-start mb-12">
-              <div>
-                <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+            <div className="flex justify-between items-start mb-8 sm:mb-12">
+              <div className="min-w-0 pr-4">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight truncate">
                   {editingReceptionist ? 'Staff Modification' : 'Officer Onboarding'}
                 </h2>
-                <p className="text-gray-400 text-[11px] font-black uppercase tracking-[0.3em] mt-2">Administrative Node Provisioning</p>
+                <p className="text-gray-400 text-[9px] sm:text-[11px] font-black uppercase tracking-[0.3em] mt-2 truncate">ADMINISTRATIVE NODE PROVISIONING</p>
               </div>
               <button 
                 onClick={handleCloseModal} 
-                className="p-4 bg-gray-50/50 hover:bg-rose-50 text-gray-400 hover:text-rose-600 rounded-[1.5rem] transition-all duration-300 active:scale-95"
+                className="p-3 sm:p-4 bg-gray-50/50 hover:bg-rose-50 text-gray-400 hover:text-rose-600 rounded-xl sm:rounded-[1.5rem] transition-all duration-300 active:scale-95 shrink-0"
               >
                 <X className="w-6 h-6"/>
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Full Name</label>
-                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full mt-2 px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-primary-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="Jane Doe" />
+               <div className="space-y-2">
+                <label className="text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Legal Full Name</label>
+                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full mt-2 px-6 py-4 sm:py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-primary-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="Jane Doe" />
               </div>
 
-               <div className="grid grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
                 <div>
-                  <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">E-Mail</label>
-                  <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full mt-2 px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-primary-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="staff@medics.com" />
+                  <label className="text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">E-Mail Address</label>
+                  <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full mt-2 px-6 py-4 sm:py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-primary-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="staff@medics.com" />
                 </div>
                 <div>
-                   <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Phone Number</label>
-                  <input required type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full mt-2 px-6 py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-primary-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="+234 810 123 4567" />
+                   <label className="text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] pl-1">Mobile Contact</label>
+                  <input required type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full mt-2 px-6 py-4 sm:py-4.5 bg-white border border-gray-100 rounded-2xl text-sm focus:ring-[6px] focus:ring-primary-500/10 outline-none transition-all placeholder:text-gray-300 font-medium" placeholder="+234 810 123 4567" />
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-8 bg-amber-50/20 rounded-[2.5rem] border border-amber-100/30">
+               <div className="flex items-center justify-between p-6 sm:p-8 bg-amber-50/20 rounded-2xl sm:rounded-[2.5rem] border border-amber-100/30">
                 <div className="space-y-1">
-                  <p className="text-base font-bold text-gray-900">Access Authorization</p>
-                  <p className={cn("text-[11px] font-black uppercase tracking-[0.2em]", formData.isActive ? "text-amber-600" : "text-rose-500")}>
-                    {formData.isActive ? 'Active Node' : 'Restricted Uplink'}
+                  <p className="text-sm sm:text-base font-bold text-gray-900">Access Channel</p>
+                  <p className={cn("text-[9px] sm:text-[11px] font-black uppercase tracking-[0.2em]", formData.isActive ? "text-amber-600" : "text-rose-500")}>
+                    {formData.isActive ? 'Active Authorized' : 'Restricted'}
                   </p>
                 </div>
                 <button 
@@ -350,86 +350,86 @@ export default function ReceptionistManagement() {
                 </div>
               )}
 
-              <div className="flex gap-5 pt-8">
-                <button type="button" onClick={handleCloseModal} className="flex-1 px-8 py-5 bg-white border border-gray-100 rounded-[1.75rem] text-[11px] font-black uppercase tracking-[0.3em] text-gray-400 hover:bg-gray-50 transition-all active:scale-95">Cancel</button>
-                <button type="submit" className="flex-1 px-8 py-5 bg-gray-900 text-white rounded-[1.75rem] text-[11px] font-black uppercase tracking-[0.3em] shadow-xl shadow-gray-900/10 hover:bg-black transition-all active:scale-95">{editingReceptionist ? 'Sync Profile' : 'Authorize Staff'}</button>
+               <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 pt-4 sm:pt-8">
+                <button type="button" onClick={handleCloseModal} className="flex-1 px-8 py-4 sm:py-5 bg-white border border-gray-100 rounded-xl sm:rounded-[1.75rem] text-[10px] sm:text-[11px] font-black uppercase tracking-[0.3em] text-gray-400 hover:bg-gray-50 transition-all active:scale-95 order-2 sm:order-1">Cancel</button>
+                <button type="submit" className="flex-1 px-8 py-4 sm:py-5 bg-gray-900 text-white rounded-xl sm:rounded-[1.75rem] text-[10px] sm:text-[11px] font-black uppercase tracking-[0.3em] shadow-xl shadow-gray-900/10 hover:bg-black transition-all active:scale-95 order-1 sm:order-2">{editingReceptionist ? 'Sync Profile' : 'Authorize Staff'}</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {showDetailModal && detailData && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-500">
-          <div className="absolute inset-0 bg-gray-950/60 backdrop-blur-md" onClick={() => setShowDetailModal(false)}></div>
-          <div className="relative bg-white/95 backdrop-blur-3xl rounded-[3.5rem] shadow-[0_32px_128px_-32px_rgba(0,0,0,0.3)] max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-white/60">
-             <div className="px-12 py-8 border-b border-gray-100/50 flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Personnel Dossier</h2>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mt-1">Verified Front Office Identity</p>
+       {showDetailModal && detailData && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-6 animate-in fade-in duration-500">
+          <div className="absolute inset-0 bg-gray-950/60 backdrop-blur-md cursor-pointer" onClick={() => setShowDetailModal(false)}></div>
+          <div className="relative bg-white/95 backdrop-blur-3xl rounded-2xl sm:rounded-[3.5rem] shadow-[0_32px_128px_-32px_rgba(0,0,0,0.3)] max-w-5xl w-full max-h-[96vh] sm:max-h-[90vh] overflow-hidden flex flex-col border border-white/60">
+              <div className="px-6 sm:px-12 py-5 sm:py-8 border-b border-gray-100/50 flex items-center justify-between">
+              <div className="min-w-0 pr-4">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight truncate">Personnel Dossier</h2>
+                <p className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mt-1 truncate">VERIFIED FRONT OFFICE IDENTITY</p>
               </div>
-              <button onClick={() => setShowDetailModal(false)} className="p-4 hover:bg-gray-50 rounded-2xl transition-all active:scale-90">
-                <X className="w-7 h-7 text-gray-400" />
+              <button onClick={() => setShowDetailModal(false)} className="p-3 sm:p-4 hover:bg-gray-50 rounded-2xl transition-all active:scale-90 shrink-0">
+                <X className="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-12 custom-scrollbar focus:outline-none">
-               <div className="flex flex-col md:flex-row gap-16 items-start">
-                  <div className="w-48 h-48 rounded-[3.5rem] bg-gradient-to-br from-amber-50 to-orange-50 border-8 border-white shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] flex-shrink-0 flex items-center justify-center overflow-hidden transition-transform hover:scale-105 duration-500">
+            <div className="flex-1 overflow-y-auto p-6 sm:p-12 custom-scrollbar focus:outline-none overscroll-behavior-contain">
+                <div className="flex flex-col lg:flex-row gap-10 sm:gap-16 items-center lg:items-start text-center lg:text-left">
+                  <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-2xl sm:rounded-[3.5rem] bg-gradient-to-br from-amber-50 to-orange-50 border-4 sm:border-8 border-white shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] flex-shrink-0 flex items-center justify-center overflow-hidden transition-transform hover:scale-105 duration-500">
                     {detailData.receptionistProfile?.profilePhoto ? (
                       <img src={detailData.receptionistProfile.profilePhoto} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <UserIcon className="w-16 h-16 text-amber-200" />
+                      <UserIcon className="w-12 h-12 sm:w-16 sm:h-16 text-amber-200" />
                     )}
                   </div>
                   <div className="flex-1 space-y-12 w-full">
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 pb-12 border-b border-gray-100/50">
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em]">Operational Shift</p>
-                        <p className="text-sm font-bold text-gray-900 uppercase tracking-widest">{detailData.receptionistProfile?.shift || 'Flexible'}</p>
+                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-12 pb-10 sm:pb-12 border-b border-gray-100/50">
+                      <div className="p-4 bg-gray-50/50 rounded-2xl">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] mb-1.5">Operational Shift</p>
+                        <p className="text-sm font-bold text-gray-900 uppercase tracking-widest leading-none">{detailData.receptionistProfile?.shift || 'Flexible'}</p>
                       </div>
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em]">Entry Date</p>
-                        <p className="text-sm font-bold text-gray-900">{detailData.receptionistProfile?.joiningDate ? new Date(detailData.receptionistProfile.joiningDate).toLocaleDateString() : 'Active'}</p>
+                      <div className="p-4 bg-gray-50/50 rounded-2xl">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] mb-1.5">Official Entry Date</p>
+                        <p className="text-sm font-bold text-gray-900 leading-none">{detailData.receptionistProfile?.joiningDate ? new Date(detailData.receptionistProfile.joiningDate).toLocaleDateString() : 'Active System'}</p>
                       </div>
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em]">Seniority</p>
-                        <p className="text-sm font-bold text-gray-900 font-mono">{detailData.receptionistProfile?.experience ? `${detailData.receptionistProfile.experience}Y` : 'Trainee'}</p>
+                      <div className="p-4 bg-gray-50/50 rounded-2xl">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] mb-1.5">Tenure/Seniority</p>
+                        <p className="text-sm font-bold text-gray-900 font-mono leading-none">{detailData.receptionistProfile?.experience ? `${detailData.receptionistProfile.experience} Seasons` : 'Trainee'}</p>
                       </div>
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em]">Credential Level</p>
-                        <p className="text-sm font-bold text-gray-900">{detailData.receptionistProfile?.educationLevel || 'Graduate'}</p>
+                      <div className="p-4 bg-gray-50/50 rounded-2xl">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] mb-1.5">Academic Credentials</p>
+                        <p className="text-sm font-bold text-gray-900 leading-none truncate">{detailData.receptionistProfile?.educationLevel || 'Verified Graduate'}</p>
                       </div>
                     </div>
 
-                    <div className="space-y-8 bg-gray-50/50 p-10 rounded-[3rem] border border-gray-100 shadow-inner">
+                     <div className="space-y-8 bg-gray-50/50 p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] border border-gray-100 shadow-inner">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-8 bg-amber-500 rounded-full" />
                         <h3 className="text-xs font-black text-gray-900 uppercase tracking-[0.3em]">Identity Verification</h3>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
                          <div className="space-y-6">
-                           <div className="p-6 bg-white rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
-                             <div className="w-12 h-12 rounded-2xl bg-primary-50 flex items-center justify-center shrink-0 shadow-sm">
-                               <Shield className="w-6 h-6 text-primary-500" />
+                           <div className="p-5 sm:p-6 bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
+                             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-primary-50 flex items-center justify-center shrink-0 shadow-sm">
+                               <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary-500" />
                              </div>
-                             <div>
-                               <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest leading-none mb-1.5">{detailData.receptionistProfile?.idProofType || 'Proof Identifier'}</p>
-                               <p className="text-base font-black text-gray-900 tracking-tight">{detailData.receptionistProfile?.idProofNumber || 'VERIFIED_USER'}</p>
+                             <div className="min-w-0">
+                               <p className="text-[9px] sm:text-[10px] font-black text-gray-300 uppercase tracking-widest leading-none mb-1.5 truncate">{detailData.receptionistProfile?.idProofType || 'Proof Identifier'}</p>
+                               <p className="text-sm sm:text-base font-black text-gray-900 tracking-tight truncate">{detailData.receptionistProfile?.idProofNumber || 'VERIFIED_USER'}</p>
                              </div>
                            </div>
                          </div>
                          <div className="relative group">
                            {detailData.receptionistProfile?.idProofDocument ? (
-                             <div className="relative overflow-hidden rounded-[2.5rem] border border-gray-200 aspect-video shadow-xl">
+                             <div className="relative overflow-hidden rounded-2xl sm:rounded-[2.5rem] border border-gray-200 aspect-video shadow-xl">
                                <img src={detailData.receptionistProfile.idProofDocument} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center cursor-pointer backdrop-blur-[2px]">
                                  <Download className="w-8 h-8 text-white animate-bounce" />
                                </div>
                              </div>
                            ) : (
-                             <div className="w-full aspect-video bg-white/50 rounded-[2.5rem] border-4 border-dashed border-gray-100 flex flex-col items-center justify-center gap-3">
-                               <AlertCircle className="w-8 h-8 text-gray-200" />
-                               <span className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">Document Pending</span>
+                             <div className="w-full aspect-video bg-white/50 rounded-2xl sm:rounded-[2.5rem] border-2 sm:border-4 border-dashed border-gray-100 flex flex-col items-center justify-center gap-3">
+                               <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-gray-200" />
+                               <span className="text-[9px] sm:text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">Document Pending</span>
                              </div>
                            )}
                          </div>
