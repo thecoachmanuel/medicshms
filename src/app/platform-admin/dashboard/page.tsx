@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import { platformAdminAPI } from '@/lib/api';
 import HospitalLogo from '@/components/common/HospitalLogo';
+import { getInstitutionLabel, INSTITUTION_CONFIGS } from '@/lib/institution-config';
 
 interface Hospital {
   id: string;
@@ -22,6 +23,7 @@ interface Hospital {
   status: 'active' | 'inactive' | 'onboarding';
   subscription_status: 'trial' | 'active' | 'expired' | 'paused' | 'suspended';
   trial_end_date: string;
+  institution_type: 'hospital' | 'dental_clinic' | 'diagnostic_center' | 'eye_clinic';
   created_at: string;
 }
 
@@ -45,7 +47,8 @@ export default function PlatformAdminDashboard() {
     slug: '',
     email: '',
     custom_domain: '',
-    subscription_status: 'trial' as const
+    subscription_status: 'trial' as const,
+    institution_type: 'hospital' as const
   });
 
   // Subscription Management State
@@ -54,7 +57,8 @@ export default function PlatformAdminDashboard() {
   const [subscriptionForm, setSubscriptionForm] = useState({
     subscription_status: 'trial' as Hospital['subscription_status'],
     trial_end_date: '',
-    custom_domain: ''
+    custom_domain: '',
+    institution_type: 'hospital' as Hospital['institution_type']
   });
 
   useEffect(() => {
@@ -100,7 +104,7 @@ export default function PlatformAdminDashboard() {
       
       toast.success('Hospital created successfully');
       setIsModalOpen(false);
-      setFormData({ name: '', slug: '', email: '', custom_domain: '', subscription_status: 'trial' });
+      setFormData({ name: '', slug: '', email: '', custom_domain: '', subscription_status: 'trial', institution_type: 'hospital' });
       fetchHospitals();
     } catch (error: any) {
       toast.error(error.response?.data?.message || error.message);
@@ -130,7 +134,8 @@ export default function PlatformAdminDashboard() {
     setSubscriptionForm({
       subscription_status: hospital.subscription_status,
       trial_end_date: new Date(hospital.trial_end_date).toISOString().split('T')[0],
-      custom_domain: hospital.custom_domain || ''
+      custom_domain: hospital.custom_domain || '',
+      institution_type: hospital.institution_type
     });
     setIsSubscriptionModalOpen(true);
   };
@@ -203,6 +208,25 @@ export default function PlatformAdminDashboard() {
                   className="bg-slate-50 border-slate-100 rounded-xl py-2 pl-10 text-sm font-medium focus:ring-4 focus:ring-primary-600/5 focus:border-primary-600 transition-all w-64"
                 />
              </div>
+             <select 
+                className="bg-slate-50 border-slate-100 rounded-xl py-2 px-4 text-sm font-medium focus:ring-4 focus:ring-primary-600/5 focus:border-primary-600 transition-all outline-none appearance-none cursor-pointer"
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === 'all') {
+                    fetchHospitals();
+                  } else {
+                    platformAdminAPI.getHospitals().then((res: any) => {
+                      const all = res.data.hospitals || [];
+                      setHospitals(all.filter((h: any) => h.institution_type === val));
+                    });
+                  }
+                }}
+             >
+                <option value="all">All Types</option>
+                {Object.values(INSTITUTION_CONFIGS).map(config => (
+                  <option key={config.id} value={config.id}>{config.label}</option>
+                ))}
+             </select>
              <button className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-100 transition-colors">
                 <Filter className="w-4 h-4" />
              </button>
@@ -214,6 +238,7 @@ export default function PlatformAdminDashboard() {
             <thead>
               <tr className="bg-slate-50/50">
                 <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Hospital Name</th>
+                <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Type</th>
                 <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Plan & Status</th>
                 <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Trial Ends</th>
                 <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Joined On</th>
@@ -242,6 +267,13 @@ export default function PlatformAdminDashboard() {
                           )}
                         </div>
                       </div>
+                    </div>
+                  </td>
+                  <td className="p-6">
+                    <div className="flex items-center gap-2">
+                      <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-slate-200">
+                        {getInstitutionLabel(h.institution_type)}
+                      </span>
                     </div>
                   </td>
                   <td className="p-6">
@@ -436,6 +468,19 @@ export default function PlatformAdminDashboard() {
                 </div>
 
                 <div>
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Institution Type</label>
+                  <select
+                    value={formData.institution_type}
+                    onChange={(e) => setFormData({ ...formData, institution_type: e.target.value as any })}
+                    className="w-full bg-slate-50 border-slate-100 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-4 focus:ring-primary-600/5 focus:border-primary-600 transition-all outline-none appearance-none"
+                  >
+                    {Object.values(INSTITUTION_CONFIGS).map(config => (
+                      <option key={config.id} value={config.id}>{config.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Initial Plan</label>
                   <select
                     value={formData.subscription_status}
@@ -502,6 +547,19 @@ export default function PlatformAdminDashboard() {
                     <option value="paused">Paused / Maintenance</option>
                     <option value="suspended">Suspended / Policy</option>
                     <option value="expired">Expired</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Institution Type</label>
+                  <select
+                    value={subscriptionForm.institution_type}
+                    onChange={(e) => setSubscriptionForm({ ...subscriptionForm, institution_type: e.target.value as any })}
+                    className="w-full bg-slate-50 border-slate-100 rounded-2xl py-4 px-6 text-sm font-bold focus:ring-4 focus:ring-primary-600/5 focus:border-primary-600 transition-all outline-none appearance-none"
+                  >
+                    {Object.values(INSTITUTION_CONFIGS).map(config => (
+                      <option key={config.id} value={config.id}>{config.label}</option>
+                    ))}
                   </select>
                 </div>
 

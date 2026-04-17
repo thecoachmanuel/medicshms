@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     const client = supabaseAdmin;
     if (!client) throw new Error('Supabase Admin client not initialized');
 
-    const { name, slug, email, custom_domain, subscription_status } = body;
+    const { name, slug, email, custom_domain, subscription_status, institution_type } = body;
     const finalSlug = slug || name.toLowerCase().replace(/ /g, '-');
 
     // 1. Check for duplicates manually for better error message
@@ -68,6 +68,7 @@ export async function POST(request: Request) {
           email, 
           custom_domain: custom_domain || null,
           subscription_status: subscription_status || 'trial',
+          institution_type: institution_type || 'hospital',
           trial_start_date: new Date().toISOString(),
           trial_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
         }
@@ -121,7 +122,8 @@ export async function POST(request: Request) {
         primary_color: '#2563eb',
         secondary_color: '#0f172a',
         contact_email: hospital.email,
-        emergency_phone: '+1 (800) 123-4567'
+        emergency_phone: '+1 (800) 123-4567',
+        institution_type: hospital.institution_type || 'hospital'
       }]);
 
     if (settingsError) {
