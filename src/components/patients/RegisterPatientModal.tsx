@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, User, Phone, Mail, MapPin, Calendar, Heart, Loader2, ShieldCheck } from 'lucide-react';
+import { X, User, Phone, Mail, MapPin, Calendar, Heart, Loader2, ShieldCheck, CheckCircle } from 'lucide-react';
 import { patientsAPI } from '@/lib/api';
 import { toast } from 'react-hot-toast';
 
