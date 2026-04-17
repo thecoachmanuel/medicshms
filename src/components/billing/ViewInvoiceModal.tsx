@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  X, Eye, Printer, Loader2, CheckCircle2, 
+  X, Eye, Printer, Loader2, CheckCircle2, FileText,
   AlertCircle, Phone, Mail, Building2, User 
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
