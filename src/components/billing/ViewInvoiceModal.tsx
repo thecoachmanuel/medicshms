@@ -521,9 +521,5 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
         </div>
       </div>
     </div>
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }
