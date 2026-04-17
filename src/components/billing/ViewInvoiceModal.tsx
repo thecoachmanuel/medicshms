@@ -250,6 +250,7 @@ export default function ViewInvoiceModal({ billId, appointment, onClose, onUpdat
             <button onClick={onClose} className="p-2 sm:p-4 hover:bg-white rounded-2xl text-gray-400 hover:text-rose-500 transition-all duration-300 shrink-0">
               <X className="w-6 h-6" />
             </button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto no-scrollbar custom-scrollbar overscroll-behavior-contain bg-slate-50/30">
