@@ -165,7 +165,7 @@ export default function PlatformAdminDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
         {[
           { icon: Building2, label: "Total Hospitals", value: stats.total, color: "bg-primary-600" },
           { check: CheckCircle2, label: "Active Subscriptions", value: stats.active, color: "bg-emerald-600" },

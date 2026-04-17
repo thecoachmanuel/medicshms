@@ -6,7 +6,7 @@ import {
   Shield, Globe, Zap, CheckCircle2, 
   ArrowRight, Activity, Users, Heart,
   BarChart3, CloudUpload, Lock, Smartphone,
-  Loader2, Edit3
+  Loader2, Edit3, Menu, X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { subscriptionPlansAPI, uploadAPI } from '@/lib/api';
@@ -38,6 +38,7 @@ export default function SaaSLandingPage() {
   const [demoModalOpen, setDemoModalOpen] = React.useState(false);
   const [siteContent, setSiteContent] = React.useState<any[]>([]);
   const [isEditing, setIsEditing] = React.useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   const isSuperAdmin = user?.role === 'Platform Admin';
 
@@ -142,6 +143,8 @@ export default function SaaSLandingPage() {
           <Link href="/">
             <HospitalLogo size="md" />
           </Link>
+
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
              <a href="#features" className="text-sm font-bold text-slate-600 hover:text-primary-600 transition-colors uppercase tracking-widest">Features</a>
              <a href="#pricing" className="text-sm font-bold text-slate-600 hover:text-primary-600 transition-colors uppercase tracking-widest">Pricing</a>
@@ -164,6 +167,99 @@ export default function SaaSLandingPage() {
                     Start Free Trial
                 </Link>
              )}
+          </div>
+
+          {/* Mobile Menu Toggle */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 -mr-2 md:hidden text-slate-600 hover:text-primary-600 transition-colors"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+
+        {/* Mobile Menu Overlay */}
+        <div className={cn(
+          "fixed inset-0 z-[60] md:hidden transition-all duration-300",
+          mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        )}>
+          <div 
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" 
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div className={cn(
+            "absolute right-0 top-0 h-full w-4/5 max-w-sm bg-white shadow-2xl transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1)",
+            mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+          )}>
+            <div className="flex flex-col h-full bg-slate-50">
+              <div className="flex items-center justify-between px-6 h-20 bg-white border-b border-slate-100">
+                <HospitalLogo size="md" />
+                <button 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-3 -mr-2 bg-slate-50 text-slate-400 hover:text-rose-500 rounded-2xl transition-all active:scale-90"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto py-10 px-8 space-y-10">
+                <div className="flex flex-col gap-8">
+                  <a 
+                    href="#features" 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-xl font-black text-slate-900 uppercase tracking-[0.2em] hover:text-primary-600 transition-colors"
+                  >
+                    Features
+                  </a>
+                  <a 
+                    href="#pricing" 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-xl font-black text-slate-900 uppercase tracking-[0.2em] hover:text-primary-600 transition-colors"
+                  >
+                    Pricing
+                  </a>
+                  <Link 
+                    href="/contact" 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-xl font-black text-slate-900 uppercase tracking-[0.2em] hover:text-primary-600 transition-colors"
+                  >
+                    Contact Area
+                  </Link>
+                  <Link 
+                    href="/login" 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-xl font-black text-slate-900 uppercase tracking-[0.2em] hover:text-primary-600 transition-colors"
+                  >
+                    Login Portal
+                  </Link>
+                </div>
+                
+                <div className="pt-10 border-t border-slate-200">
+                   <Link 
+                    href="/signup" 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="btn-primary w-full py-5 rounded-[2rem] text-center font-black uppercase tracking-[0.25em] shadow-2xl shadow-primary-600/30 text-xs"
+                  >
+                    Start Free Trial
+                  </Link>
+                </div>
+              </div>
+
+              <div className="p-8 bg-white border-t border-slate-100">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] text-center mb-6">Patient Priority Care</p>
+                <div className="flex justify-center gap-4">
+                   <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
+                      <Shield className="w-5 h-5" />
+                   </div>
+                   <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
+                      <Zap className="w-5 h-5" />
+                   </div>
+                   <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
+                      <Globe className="w-5 h-5" />
+                   </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </nav>
