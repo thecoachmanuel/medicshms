@@ -245,9 +245,6 @@ export default function EditPatientModal({ isOpen, onClose, onSuccess, patient }
             Persist Updates
           </button>
         </div>
-      </div>
-    </div>
-      </div>
     </div>
   );
 }

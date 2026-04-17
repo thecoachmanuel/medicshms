@@ -673,7 +673,6 @@ export default function LabResultEntryModal({ request, onClose, onSuccess }: Pro
 
                         {/* Row Actions */}
                         <div className="flex flex-row lg:flex-col gap-2.5 items-center justify-center border-t lg:border-t-0 lg:border-l border-gray-100 pt-5 lg:pt-0 lg:pl-6">
-:pl-4">
                           <button 
                             onClick={() => handleUpdateFieldMeta(field.id, { hideUnit: !field.hideUnit })}
                             className={cn(

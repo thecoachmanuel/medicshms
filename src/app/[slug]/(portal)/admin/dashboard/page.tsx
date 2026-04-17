@@ -25,6 +25,9 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+import { getGenericTerm } from '@/lib/institution-config';
+import { useSiteSettings } from '@/context/SettingsContext';
+
 const PIE_COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444'];
 const BAR_COLORS = { total: '#6366f1', completed: '#22c55e', cancelled: '#f87171' };
 
@@ -40,7 +43,9 @@ const timeAgo = (date: string) => {
 export default function AdminDashboard({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const { user, loading: authLoading } = useAuth();
+  const { institution_type } = useSiteSettings();
   const router = useRouter();
+  const genericTerm = getGenericTerm(institution_type);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>({
     cards: {
@@ -161,7 +166,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 leading-tight">Welcome, {user?.name?.split(' ')[0]}</h1>
-          <p className="text-gray-500 text-sm mt-1">Here's what's happening at your hospital today.</p>
+          <p className="text-gray-500 text-sm mt-1">Here's what's happening at your {genericTerm.toLowerCase()} today.</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="bg-white/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/50 shadow-sm flex items-center gap-4">
@@ -410,7 +415,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
               <div className="flex items-center justify-between mb-8">
                 <div>
                   <h3 className="font-black text-gray-900 text-sm uppercase tracking-tight">System Pulse Feed</h3>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">Real-time hospital signals</p>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">Real-time {genericTerm.toLowerCase()} signals</p>
                 </div>
                 <Activity className="w-4 h-4 text-indigo-500 animate-pulse" />
               </div>

@@ -8,6 +8,7 @@ export interface User {
   isActive: boolean;
   hospital_id?: string;
   hospital_slug?: string;
+  institution_type?: 'hospital' | 'dental_clinic' | 'diagnostic_center' | 'eye_clinic';
   subscription_status?: string;
   trial_end_date?: string;
   next_billing_date?: string;

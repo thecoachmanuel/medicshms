@@ -20,14 +20,15 @@ export default function PlatformAdminLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const savedState = localStorage.getItem('hms_sidebar_collapsed');
     if (savedState !== null) {
       setIsCollapsed(savedState === 'true');
     }
   }, []);
-
   const toggleCollapse = () => {
     setIsCollapsed(prev => {
       const newVal = !prev;
@@ -35,15 +36,15 @@ export default function PlatformAdminLayout({
       return newVal;
     });
   };
+
   const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading) {
+    if (!loading && mounted) {
       if (!user) {
         router.push('/login');
       } else if (!isPlatformAdmin(user.role)) {
-        // If they are a tenant user, redirect to their own login or dashboard
         const slug = (user as any).hospital?.slug || user.hospital_slug || '';
         if (slug) {
           router.push(`/${slug}/login`);
@@ -52,9 +53,9 @@ export default function PlatformAdminLayout({
         }
       }
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, mounted]);
 
-  if (loading) {
+  if (loading || !mounted) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="w-12 h-12 border-4 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
@@ -74,7 +75,7 @@ export default function PlatformAdminLayout({
       />
       
       <div className={cn(
-        "flex-1 flex flex-col min-w-0 transition-all duration-300",
+        "flex-1 flex flex-col min-w-0 relative z-40 transition-all duration-300",
         isCollapsed ? "lg:ml-20" : "lg:ml-64"
       )}>
         <AdminHeader toggleSidebar={() => setSidebarOpen(true)} />

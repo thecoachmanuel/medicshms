@@ -11,6 +11,14 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import HospitalLogo from '@/components/common/HospitalLogo';
+import { INSTITUTION_CONFIGS, getGenericTerm } from '@/lib/institution-config';
+
+const typeIcons: any = {
+  hospital: Building2,
+  dental_clinic: Zap, // Placeholder icons or specific ones
+  diagnostic_center: Globe,
+  eye_clinic: Globe
+};
 
 export default function SignupPage() {
   const router = useRouter();
@@ -18,6 +26,7 @@ export default function SignupPage() {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     hospital_name: '',
+    institution_type: 'hospital' as any,
     hospital_email: '',
     admin_name: '',
     admin_email: '',
@@ -96,7 +105,7 @@ export default function SignupPage() {
               <span className="text-primary-600">{successData.name}!</span>
             </h2>
             <p className="text-lg text-slate-500 font-medium max-w-2xl mx-auto">
-              Your hospital ecosystem is ready. We've set up your isolated tenant environment with all the tools you need.
+              Your {getGenericTerm(formData.institution_type).toLowerCase()} ecosystem is ready. We've set up your isolated tenant environment with all the tools you need.
             </p>
           </div>
 
@@ -223,7 +232,7 @@ export default function SignupPage() {
         <div className="bg-white rounded-[3rem] p-10 md:p-16 shadow-2xl shadow-slate-200/50 border border-slate-100 animate-in fade-in slide-in-from-right-10 duration-1000">
           <div className="mb-12">
             <h2 className="text-3xl font-black text-slate-900 mb-2">Create Account</h2>
-            <p className="text-slate-500 font-medium">Step {step} of 2: {step === 1 ? 'Hospital Details' : 'Admin Credentials'}</p>
+            <p className="text-slate-500 font-medium">Step {step} of 2: {step === 1 ? 'Institution Details' : 'Admin Credentials'}</p>
             <div className="flex gap-2 mt-4">
                <div className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${step >= 1 ? 'bg-primary-600 shadow-md shadow-primary-600/30' : 'bg-slate-100'}`}></div>
                <div className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${step === 2 ? 'bg-primary-600 shadow-md shadow-primary-600/30' : 'bg-slate-100'}`}></div>
@@ -233,8 +242,35 @@ export default function SignupPage() {
           <form onSubmit={handleSignup} className="space-y-6">
             {step === 1 ? (
               <div className="space-y-6 animate-in slide-in-from-left-4 duration-500">
-                <div className="space-y-1.5 text-center sm:text-left">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Hospital Official Name</label>
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Select Institution Type</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {Object.values(INSTITUTION_CONFIGS).map((type) => {
+                      const Icon = typeIcons[type.id] || Building2;
+                      const isSelected = formData.institution_type === type.id;
+                      return (
+                        <button
+                          key={type.id}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, institution_type: type.id })}
+                          className={`flex flex-col items-center justify-center p-4 rounded-2xl border transition-all gap-2 ${
+                            isSelected 
+                              ? 'bg-primary-50 border-primary-600 text-primary-600 shadow-lg shadow-primary-600/10' 
+                              : 'bg-slate-50 border-slate-100 text-slate-400 hover:bg-slate-100'
+                          }`}
+                        >
+                          <Icon className="w-5 h-5" />
+                          <span className="text-[9px] font-black uppercase tracking-tighter text-center leading-tight">{type.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 sm:text-left">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">
+                    {getGenericTerm(formData.institution_type)} Official Name
+                  </label>
                   <div className="relative group">
                     <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-primary-600 transition-colors" />
                     <input 
@@ -242,7 +278,7 @@ export default function SignupPage() {
                       required
                       value={formData.hospital_name}
                       onChange={e => setFormData({...formData, hospital_name: e.target.value})}
-                      placeholder="e.g. St. Mary's Medical Center"
+                      placeholder={`e.g. St. Mary's ${getGenericTerm(formData.institution_type)}`}
                       className="w-full h-14 bg-slate-50 border-slate-100 rounded-2xl pl-12 focus:ring-4 focus:ring-primary-600/5 focus:border-primary-600 transition-all font-medium"
                     />
                   </div>
@@ -349,7 +385,7 @@ export default function SignupPage() {
                   >
                     {loading ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : (
                       <>
-                        Launch Hospital
+                        Launch {getGenericTerm(formData.institution_type)}
                         <CheckCircle2 className="w-6 h-6 ml-2" />
                       </>
                     )}

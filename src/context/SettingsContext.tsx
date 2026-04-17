@@ -10,6 +10,7 @@ interface SettingsContextType {
   loading: boolean;
   refreshSettings: () => Promise<void>;
   slug: string | undefined;
+  institution_type: 'hospital' | 'dental_clinic' | 'diagnostic_center' | 'eye_clinic' | undefined;
   pathname: string;
   hasFeature: (feature: string) => boolean;
 }
@@ -93,7 +94,15 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <SettingsContext.Provider value={{ settings, loading, refreshSettings: fetchSettings, slug, pathname, hasFeature }}>
+    <SettingsContext.Provider value={{ 
+      settings, 
+      loading, 
+      refreshSettings: fetchSettings, 
+      slug, 
+      institution_type: settings?.institution_type,
+      pathname, 
+      hasFeature 
+    }}>
       {children}
     </SettingsContext.Provider>
   );

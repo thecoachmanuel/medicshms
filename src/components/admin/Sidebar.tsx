@@ -58,12 +58,14 @@ interface SidebarProps {
 import HospitalLogo from '../common/HospitalLogo';
 
 import { useSiteSettings } from '@/context/SettingsContext';
+import { getGenericTerm } from '@/lib/institution-config';
 
 export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleCollapse }: SidebarProps) => {
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const { settings, hasFeature } = useSiteSettings();
+  const { settings, hasFeature, institution_type } = useSiteSettings();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const genericTerm = getGenericTerm(institution_type);
 
   const parts = pathname.split('/');
   const isPlatformRoute = pathname.startsWith('/platform-admin');
@@ -79,7 +81,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
     if (isPlatformAdmin(role)) {
       return [
         { icon: LayoutDashboard, label: 'Super Admin', path: '/platform-admin/dashboard', id: 'nav-dashboard' },
-        { icon: Building2, label: 'Hospitals', path: '/platform-admin/dashboard', id: 'nav-hospitals' },
+        { icon: Building2, label: institution_type === 'hospital' ? 'Hospitals' : 'Clinics', path: '/platform-admin/dashboard', id: 'nav-hospitals' },
         { icon: Calendar, label: 'Demo Requests', path: '/platform-admin/demo-requests', id: 'nav-demos' },
         { icon: NairaSign, label: 'Subscription Plans', path: '/platform-admin/plans', id: 'nav-plans' },
         { icon: Globe, label: 'Site Editor', path: '/platform-admin/site-editor', id: 'nav-site-editor' },
@@ -97,7 +99,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
         { icon: NairaSign, label: 'Billing', path: `${base}/admin/billing`, id: 'nav-billing' },
         { icon: ShieldCheck, label: 'Admin', path: `${base}/admin/users`, id: 'nav-admin' },
         { icon: Stethoscope, label: 'Doctors', path: `${base}/admin/doctors`, id: 'nav-doctors' },
-        { icon: Users, label: 'Hospital Staff', path: `${base}/admin/staff`, id: 'nav-staff' },
+        { icon: Users, label: `${genericTerm} Staff`, path: `${base}/admin/staff`, id: 'nav-staff' },
         { icon: FlaskConical, label: 'Laboratory Matrix', path: `${base}/admin/laboratory`, feature: 'Laboratory', id: 'nav-lab' },
         { icon: Building2, label: 'Departments', path: `${base}/admin/departments`, id: 'nav-depts' },
         { icon: Monitor, label: 'Queue Display', path: `${base}/admin/queue`, id: 'nav-queue' },
@@ -196,11 +198,9 @@ export const Sidebar = ({ isOpen, toggleSidebar, isCollapsed = false, toggleColl
           <Link href={slug ? `/${slug}` : "/"} className={cn("hover:opacity-80 transition-opacity flex items-center h-full", isCollapsed && "justify-center w-full")}>
             <HospitalLogo slug={slug} iconClassName="w-8 h-8" textClassName={cn("text-lg", isCollapsed && "hidden")} />
           </Link>
-          {!isCollapsed && (
-            <button onClick={toggleSidebar} className="lg:hidden p-2 -mr-2 text-gray-400 hover:text-indigo-600 transition-colors shrink-0" aria-label="Close menu">
-              <X className="w-6 h-6" />
-            </button>
-          )}
+          <button onClick={toggleSidebar} className="lg:hidden p-2 -mr-2 text-gray-400 hover:text-indigo-600 transition-colors shrink-0" aria-label="Close menu">
+            <X className="w-6 h-6" />
+          </button>
         </div>
 
         <div className={cn("p-4 transition-all duration-300", isCollapsed && "px-2 py-4")}>

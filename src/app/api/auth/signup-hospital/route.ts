@@ -11,6 +11,7 @@ export async function POST(request: Request) {
       password, 
       phone,
       plan_id,
+      institution_type = 'hospital',
       billing_cycle = 'monthly'
     } = await request.json();
     
@@ -38,6 +39,7 @@ export async function POST(request: Request) {
           trial_start_date: new Date().toISOString(),
           trial_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
           plan_id: plan_id || null,
+          institution_type,
           billing_cycle
         }
       ])
@@ -119,6 +121,7 @@ export async function POST(request: Request) {
           hospital_name: hospital_name,
           hospital_short_name: hospital_name.split(' ')[0], // Default short name
           theme_color: '#2563eb', // Default theme color
+          institution_type,
           updated_at: new Date().toISOString(),
         }
       ]);

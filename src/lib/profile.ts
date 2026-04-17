@@ -34,7 +34,7 @@ export async function buildProfileResponse(userId: string) {
   if (profile.hospital_id) {
     const { data: hospital } = await (supabaseAdmin || supabase)
       .from('hospitals')
-      .select('slug, subscription_status, trial_end_date')
+      .select('slug, subscription_status, trial_end_date, institution_type')
       .eq('id', profile.hospital_id)
       .single();
     
@@ -42,6 +42,7 @@ export async function buildProfileResponse(userId: string) {
       profileData.hospital_slug = hospital.slug;
       profileData.subscription_status = hospital.subscription_status;
       profileData.trial_end_date = hospital.trial_end_date;
+      profileData.institution_type = hospital.institution_type;
     }
   }
 
